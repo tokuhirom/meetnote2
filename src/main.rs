@@ -76,7 +76,7 @@ fn main() {
                     .clone();  // Clone the file path for the new thread
                 let openai_api_key_clone = openai_api_key.clone();
                 std::thread::spawn(move || {
-                    match postprocess::postprocess(&*openai_api_key_clone, wav_file_clone.clone()) {
+                    match postprocess::postprocess(&*openai_api_key_clone, wav_file_clone.clone(), "ja") {
                         Ok(_) => {
                             println!("Successfully processed: {}", wav_file_clone);
                         }

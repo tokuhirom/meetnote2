@@ -19,6 +19,7 @@ dependencies = [
  "ogg 0.9.0",
  "reqwest",
  "screencapturekit",
+ "serde",
  "serde_json",
  "tao-core-video-sys",
 ]
