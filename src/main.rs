@@ -1,7 +1,11 @@
 use std::thread::sleep;
 use std::time::Duration;
 use screencapturekit::sc_shareable_content::SCShareableContent;
-use MeetNote2::get_targets;
+use chrono::Local;
+use cpal::InputDevices;
+use cpal::traits::{DeviceTrait, HostTrait}; // for timestamp
+
+mod audio;
 
 pub struct WindowPattern {
     bundle_id: String,
@@ -74,37 +78,48 @@ fn main() {
         println!("✅ Permission granted");
     }
 
-    // #3 Get recording targets
-    let targets = MeetNote2::get_targets();
-    println!("🎯 Targets: {:?}", targets);
+    let mut is_recording = false;
+    let mut recorder: Option<audio::AudioRecorder> = None;
 
-    while true {
-        println!("{}", is_there_target_windows());
-
-        sleep(Duration::from_secs(3))
+    let host = cpal::default_host();
+    match host.input_devices() {
+        Ok(devices) => {
+            for device in devices {
+                if let Ok(name) = device.name() {
+                    println!("Available Input device: '{}'", name);
+                }
+            }
+        }
+        Err(err) => {
+            panic!("Cannot get audio input device list: {}", err)
+        }
     }
 
+    loop {
+        if is_there_target_windows() {
+            if !is_recording {
+                is_recording = true;
 
-    // #4 Create Options
-    let options = MeetNote2::Options {
-        fps: 60,
-        targets,
-        show_cursor: true,
-        show_highlight: true,
-        excluded_targets: None,
-    };
+                let timestamp = Local::now().format("%Y%m%d-%H%M%S").to_string();
+                let output_file = format!("test/audio/{}.wav", timestamp);
 
-    // #5 Create Recorder
-    let output_file = concat!(env!("CARGO_MANIFEST_DIR"), "/test/audio/recorded.wav");
-    let mut recorder = MeetNote2::Recorder::init(options, output_file);
+                recorder = Some(audio::AudioRecorder::new(&output_file));
+                recorder.as_mut().unwrap().start_recording();
+                println!("Start recording...");
+            }
+        } else {
+            if is_recording {
+                // Window disappears, stop recording
+                is_recording = false;
+                recorder.as_mut().unwrap().stop_recording();
+                recorder.take();  // Release the recorder if necessary
+                println!("Stop recording...");
 
-    // #6 Start Capture
-    recorder.start_capture();
+                // TODO send file name to post-processing thread
+            }
+        }
 
-    let mut input = String::new();
-    std::io::stdin().read_line(&mut input).unwrap();
-
-    // #7 Stop Capture
-    recorder.stop_capture();
+        sleep(Duration::from_secs(1))
+    }
 }
 
