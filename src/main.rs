@@ -1,3 +1,73 @@
+use std::thread::sleep;
+use std::time::Duration;
+use screencapturekit::sc_shareable_content::SCShareableContent;
+use MeetNote2::get_targets;
+
+pub struct WindowPattern {
+    bundle_id: String,
+    window_title: String,
+}
+
+pub struct MyStruct {
+    bundle_id: String,
+    window_title: String,
+}
+
+// TOOD make this configurable
+fn get_window_patterns() -> Vec<WindowPattern> {
+    let mut result = Vec::new();
+    result.push(
+        WindowPattern {
+            bundle_id: String::from("us.zoom.xos"),
+            window_title: String::from("Zoom Meeting"),
+        }
+    );
+    result.push(
+        WindowPattern {
+            bundle_id: String::from("us.zoom.xos"),
+            window_title: String::from("zoom share toolbar window"),
+        }
+    );
+    result.push(
+        WindowPattern {
+            bundle_id: String::from("us.zoom.xos"),
+            window_title: String::from("zoom share statusbar window"),
+        }
+    );
+    return result
+}
+
+fn get_current_windows() -> Vec<MyStruct> {
+    let mut result = Vec::new();
+
+    let current = SCShareableContent::current();
+    for window in current.windows {
+        if let Some(title) = window.title {
+            if let Some(app) = window.owning_application {
+                if let Some(bundle_identifier) = app.bundle_identifier {
+                    result.push(MyStruct {
+                        bundle_id: bundle_identifier,
+                        window_title: title
+                    })
+                }
+            }
+        }
+    }
+    return result
+}
+
+fn is_there_target_windows() -> bool {
+    let windows = get_current_windows();
+    let patterns = get_window_patterns();
+    for window in windows {
+        for pattern in &patterns {
+            if (pattern.bundle_id == window.bundle_id && pattern.window_title == window.window_title) {
+                return true
+            }
+        }
+    }
+    return false
+}
 
 fn main() {
     // #1 Check if the platform is supported
@@ -22,6 +92,12 @@ fn main() {
     // #3 Get recording targets
     let targets = MeetNote2::get_targets();
     println!("🎯 Targets: {:?}", targets);
+
+    while true {
+        println!("{}", is_there_target_windows());
+
+        sleep(Duration::from_secs(3))
+    }
 
 
     // #4 Create Options
