@@ -17,7 +17,8 @@ struct Opts {
     target_device: Option<String>,
 }
 
-fn select_input_device_by_name(host: Host, target_device: Option<String>) -> Device {
+fn select_input_device_by_name(target_device: Option<String>) -> Device {
+    let host = cpal::default_host();
     if let Some(target_device) = target_device {
         match host.input_devices() {
             Ok(devices) => {
@@ -66,8 +67,7 @@ fn main() {
     let mut is_recording = false;
     let mut recorder: Option<audio::AudioRecorder> = None;
 
-    let host = cpal::default_host();
-    let input_device = select_input_device_by_name(host, opts.target_device);
+    let input_device = select_input_device_by_name(opts.target_device);
     println!("\n\nReady to processing...");
 
     loop {
