@@ -8,11 +8,6 @@ pub struct WindowPattern {
     window_title: String,
 }
 
-pub struct MyStruct {
-    bundle_id: String,
-    window_title: String,
-}
-
 // TOOD make this configurable
 fn get_window_patterns() -> Vec<WindowPattern> {
     let mut result = Vec::new();
@@ -37,32 +32,22 @@ fn get_window_patterns() -> Vec<WindowPattern> {
     return result
 }
 
-fn get_current_windows() -> Vec<MyStruct> {
-    let mut result = Vec::new();
 
+fn is_there_target_windows() -> bool {
     let current = SCShareableContent::current();
+
+    let patterns = get_window_patterns();
+
     for window in current.windows {
         if let Some(title) = window.title {
             if let Some(app) = window.owning_application {
-                if let Some(bundle_identifier) = app.bundle_identifier {
-                    result.push(MyStruct {
-                        bundle_id: bundle_identifier,
-                        window_title: title
-                    })
+                if let Some(bundle_id) = app.bundle_identifier {
+                    for pattern in &patterns {
+                        if (pattern.bundle_id == bundle_id && pattern.window_title == title) {
+                            return true
+                        }
+                    }
                 }
-            }
-        }
-    }
-    return result
-}
-
-fn is_there_target_windows() -> bool {
-    let windows = get_current_windows();
-    let patterns = get_window_patterns();
-    for window in windows {
-        for pattern in &patterns {
-            if (pattern.bundle_id == window.bundle_id && pattern.window_title == window.window_title) {
-                return true
             }
         }
     }
