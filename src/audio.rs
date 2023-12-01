@@ -12,7 +12,7 @@ pub struct AudioRecorder {
 }
 
 impl AudioRecorder {
-    pub fn new() -> Self {
+    pub fn new(output_file: &str) -> Self {
         let host: Host = cpal::default_host();
         let device: Device = host
             .default_input_device()
@@ -21,19 +21,16 @@ impl AudioRecorder {
             .default_input_config()
             .expect("Failed to get default input config");
 
-        // The WAV file we're recording to.
-        const PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/test/audio/recorded.wav");
-
         let spec = hound::WavSpec {
             channels: config.channels() as _,
             sample_rate: config.sample_rate().0 as _,
             bits_per_sample: (config.sample_format().sample_size() * 8) as _,
             sample_format: sample_format(config.sample_format()),
         };
-        println!("PATH: {:?}", PATH);
+        println!("PATH: {:?}", output_file);
 
         let hounder_writer: hound::WavWriter<BufWriter<File>> =
-            hound::WavWriter::create(PATH, spec).unwrap();
+            hound::WavWriter::create(output_file, spec).unwrap();
 
         /*
         - Wrapping inside a Mutex, which is used for synchronization.

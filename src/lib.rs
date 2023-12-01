@@ -100,8 +100,8 @@ pub struct Recorder {
 }
 
 impl Recorder {
-    pub fn init(options: Options) -> Self {
-        let audio_recorder = audio::AudioRecorder::new();
+    pub fn init(options: Options, output_file: &str) -> Self {
+        let audio_recorder = audio::AudioRecorder::new(output_file);
 
         let recorder = create_recorder(&options);
 

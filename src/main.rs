@@ -34,7 +34,8 @@ fn main() {
     };
 
     // #5 Create Recorder
-    let mut recorder = MeetNote2::Recorder::init(options);
+    let output_file = concat!(env!("CARGO_MANIFEST_DIR"), "/test/audio/recorded.wav");
+    let mut recorder = MeetNote2::Recorder::init(options, output_file);
 
     // #6 Start Capture
     recorder.start_capture();
