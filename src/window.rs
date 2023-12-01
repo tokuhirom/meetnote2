@@ -40,7 +40,7 @@ pub fn is_there_target_windows() -> bool {
             if let Some(app) = window.owning_application {
                 if let Some(bundle_id) = app.bundle_identifier {
                     for pattern in &patterns {
-                        if (pattern.bundle_id == bundle_id && pattern.window_title == title) {
+                        if pattern.bundle_id == bundle_id && pattern.window_title == title {
                             return true
                         }
                     }
