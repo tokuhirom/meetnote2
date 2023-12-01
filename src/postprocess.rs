@@ -54,7 +54,7 @@ pub fn postprocess(openai_api_key: &str, wav_file: String, language: &str) -> Re
             content: vtt_content,
         }
     ];
-    println!("Requesting summarization: {}", vtt_file)
+    println!("Requesting summarization: {}", vtt_file);
     match  openai.chat_completion(&openai::ChatCompletionRequest {
         model: "gpt-4-32k".to_string(),
         messages: chat_messages,
