@@ -5,6 +5,7 @@ use cpal::traits::{DeviceTrait, HostTrait}; // for timestamp
 
 mod audio;
 mod window;
+mod mp3;
 
 use clap::Parser;
 
@@ -38,6 +39,7 @@ fn main() {
     }
 
     let mut is_recording = false;
+    let mut wave_file: Option<String> = None;
     let mut recorder: Option<audio::AudioRecorder> = None;
 
     let input_device = audio::select_input_device_by_name(opts.target_device);
@@ -53,6 +55,8 @@ fn main() {
 
                 recorder = Some(audio::AudioRecorder::new(&output_file, &input_device));
                 recorder.as_mut().unwrap().start_recording();
+                wave_file = Some(output_file);
+
                 println!("Start recording...");
             }
         } else {
@@ -63,7 +67,15 @@ fn main() {
                 recorder.take();  // Release the recorder if necessary
                 println!("Stop recording...");
 
-                // TODO send file name to post-processing thread
+                let wav_file_clone = wave_file.as_ref()
+                    .expect("Expected wave_file to be Some; recording should stop when window disappears.")
+                    .clone();  // Clone the file path for the new thread
+                std::thread::spawn(move || {
+                    let mp3_file = wav_file_clone.replace(".wav", ".mp3");
+                    if let Err(e) = mp3::convert_to_mp3(&wav_file_clone, &mp3_file) {
+                        eprintln!("Failed to convert to mp3: {}", e);
+                    }
+                });
             }
         }
 

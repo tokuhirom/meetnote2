@@ -1,4 +1,5 @@
 mod audio;
+mod mp3;
 
 use core_graphics::{
     access::ScreenCaptureAccess,
