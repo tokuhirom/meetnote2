@@ -12,5 +12,5 @@ image = "0.24.7"
 
 tao-core-video-sys = "0.2.0"
 core-graphics = "0.23.1"
-# screencapturekit = { git = "https://github.com/svtlabs/screencapturekit-rs.git", rev = "f2327fc1206fc7f32918aed3fea2de0775b8ac36", version = "*" }
-screencapturekit = { git = "https://github.com/clearlysid/screencapturekit-rs.git", rev = "56a6708", version = "*" }
+screencapturekit = { git = "https://github.com/svtlabs/screencapturekit-rs.git", rev = "f2327fc1206fc7f32918aed3fea2de0775b8ac36", version = "*" }
+#screencapturekit = { git = "https://github.com/clearlysid/screencapturekit-rs.git", rev = "56a6708", version = "*" }

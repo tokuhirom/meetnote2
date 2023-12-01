@@ -9,16 +9,16 @@ use screencapturekit::{
 use std::process::Command;
 use core_graphics::display::{CGDirectDisplayID, CGDisplay, CGMainDisplayID};
 use core_video_sys::{CVPixelBufferGetBaseAddressOfPlane, CVPixelBufferGetBytesPerRowOfPlane, CVPixelBufferGetHeightOfPlane, CVPixelBufferGetWidthOfPlane, CVPixelBufferLockBaseAddress, CVPixelBufferRef, CVPixelBufferUnlockBaseAddress};
-use screencapturekit::sc_output_handler::CMSampleBuffer;
+use screencapturekit::cm_sample_buffer::CMSampleBuffer;
 use screencapturekit::sc_content_filter::{InitParams, SCContentFilter};
 use screencapturekit::sc_display::SCDisplay;
 use screencapturekit::sc_error_handler::StreamErrorHandler;
 use screencapturekit::sc_output_handler::{SCStreamOutputType, StreamOutput};
 use screencapturekit::sc_stream::SCStream;
 use screencapturekit::sc_stream_configuration::SCStreamConfiguration;
-use screencapturekit::{
-    sc_sys::SCFrameStatus,
-};
+// use screencapturekit::{
+//     sc_sys::SCFrameStatus,
+// };
 
 #[derive(Debug)]
 pub enum TargetKind {
@@ -89,6 +89,36 @@ pub fn get_targets() -> Vec<Target> {
         targets.push(target);
     }
 
+    let applications = content.applications;
+    for application in applications {
+        match application.bundle_identifier {
+            Some(bundleId) => {
+                println!("BundleID: {:?}", bundleId)
+            }
+            None => {}
+        }
+    }
+
+    let windows = content.windows;
+    for window in windows {
+        match window.title {
+            Some(title) => {
+                let name = title;
+                let app = window.owning_application.unwrap().application_name.unwrap();
+                println!("Title: {:?}", app);
+
+                let target = Target {
+                    kind: TargetKind::Window,
+                    id: window.window_id,
+                    title: name,
+                };
+
+                targets.push(target);
+            }
+            None => {}
+        }
+    }
+
     // println!("Targets: {:?}", targets);
     targets
 }
@@ -130,19 +160,24 @@ impl StreamOutput for Capturer {
         match of_type {
             SCStreamOutputType::Screen => {
                 let frame_status = &sample.frame_status;
+                println!(" did_output_sample_buffer: {:?}",frame_status);
 
-                match frame_status {
-                    SCFrameStatus::Complete => {
-                        let ptr = sample.ptr;
-                        let timestamp = ptr.get_presentation_timestamp().value;
-                        let buffer = ptr.get_image_buffer().get_raw() as CVPixelBufferRef;
-
-                        let (width, height, data) = unsafe { get_data_from_buffer(buffer) };
-
-                        println!("Frame: {}", timestamp);
-                    }
-                    _ => {}
-                }
+                // match frame_status {
+                    // SCFrameStatus::Complete => {
+                    //     let ptr = sample.ptr;
+                    //     let timestamp = ptr.get_presentation_timestamp().value;
+                    //     let buffer = ptr.get_image_buffer().get_raw() as CVPixelBufferRef;
+                    //
+                    //     let (width, height, data) = unsafe { get_data_from_buffer(buffer) };
+                    //
+                    //     println!("Frame: {}", timestamp);
+                    // }
+                    // _ => {}
+                // }
+            }
+            SCStreamOutputType::Audio => {
+                let frame_status = &sample.frame_status;
+                println!("AUDIO frame_status: {:?}", frame_status)
             }
             _ => {}
         }
@@ -164,6 +199,12 @@ pub fn create_recorder(options: &Options) -> SCStream {
 
     let stream_config = SCStreamConfiguration {
         shows_cursor: true,
+
+        // 録音設定
+        captures_audio: true,
+        sample_rate: 16000,
+        channel_count: 2,
+
         width,
         height,
         ..Default::default()
