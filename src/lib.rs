@@ -9,11 +9,11 @@ use screencapturekit::{
 use std::process::Command;
 use core_graphics::display::{CGDirectDisplayID, CGDisplay, CGMainDisplayID};
 use core_video_sys::{CVPixelBufferGetBaseAddressOfPlane, CVPixelBufferGetBytesPerRowOfPlane, CVPixelBufferGetHeightOfPlane, CVPixelBufferGetWidthOfPlane, CVPixelBufferLockBaseAddress, CVPixelBufferRef, CVPixelBufferUnlockBaseAddress};
-use screencapturekit::cm_sample_buffer::CMSampleBuffer;
+// use screencapturekit::cm_sample_buffer::CMSampleBuffer;
 use screencapturekit::sc_content_filter::{InitParams, SCContentFilter};
 use screencapturekit::sc_display::SCDisplay;
 use screencapturekit::sc_error_handler::StreamErrorHandler;
-use screencapturekit::sc_output_handler::{SCStreamOutputType, StreamOutput};
+use screencapturekit::sc_output_handler::{CMSampleBuffer, SCStreamOutputType, StreamOutput};
 use screencapturekit::sc_stream::SCStream;
 use screencapturekit::sc_stream_configuration::SCStreamConfiguration;
 // use screencapturekit::{
@@ -160,7 +160,7 @@ impl StreamOutput for Capturer {
         match of_type {
             SCStreamOutputType::Screen => {
                 let frame_status = &sample.frame_status;
-                println!(" did_output_sample_buffer: {:?}",frame_status);
+                // println!(" did_output_sample_buffer: {:?}",frame_status);
 
                 // match frame_status {
                     // SCFrameStatus::Complete => {

@@ -760,6 +760,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "objc-encode"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a34fdd0d389ac7d4a94d1afeb9e2acc8d74ecf6d730519dd1a8625e8e1ed822"
+
+[[package]]
 name = "objc-foundation"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -990,7 +996,7 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 [[package]]
 name = "screencapturekit"
 version = "0.1.0"
-source = "git+https://github.com/svtlabs/screencapturekit-rs.git?rev=f2327fc1206fc7f32918aed3fea2de0775b8ac36#f2327fc1206fc7f32918aed3fea2de0775b8ac36"
+source = "git+https://github.com/clearlysid/screencapturekit-rs.git?rev=56a6708#56a670827eae874b79faf561984b225e7b4d5620"
 dependencies = [
  "screencapturekit-sys",
 ]
@@ -998,11 +1004,12 @@ dependencies = [
 [[package]]
 name = "screencapturekit-sys"
 version = "0.1.0"
-source = "git+https://github.com/svtlabs/screencapturekit-rs.git?rev=f2327fc1206fc7f32918aed3fea2de0775b8ac36#f2327fc1206fc7f32918aed3fea2de0775b8ac36"
+source = "git+https://github.com/clearlysid/screencapturekit-rs.git?rev=56a6708#56a670827eae874b79faf561984b225e7b4d5620"
 dependencies = [
  "block",
  "dispatch",
  "objc",
+ "objc-encode",
  "objc-foundation",
  "objc_id",
  "once_cell",
