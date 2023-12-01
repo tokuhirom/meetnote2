@@ -6,29 +6,26 @@ use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
-struct Message {
-    role: String,
-    content: String,
+pub struct Message {
+    pub role: String,
+    pub content: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct ChatCompletionRequest {
-    model: String,
-    messages: Vec<Message>,
+pub(crate) struct ChatCompletionRequest {
+    pub(crate) model: String,
+    pub(crate) messages: Vec<Message>,
 }
 
 
 #[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ChatChoice {
-    index: i32,
-    message: Message,
-    finish_reason: String,
+    pub index: i32,
+    pub message: Message,
+    pub finish_reason: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ChatCompletionUsage {
     prompt_tokens: i32,
     completion_tokens: i32,
@@ -36,16 +33,15 @@ pub struct ChatCompletionUsage {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ChatCompletionResponse {
-    id: String,
+    pub id: String,
     #[serde(rename = "object")]
-    object_field: String,
-    created: u64,
-    model: String,
-    system_fingerprint: Option<String>,
-    choices: Vec<ChatChoice>,
-    usage: ChatCompletionUsage,
+    pub object_field: String,
+    pub created: u64,
+    pub model: String,
+    pub system_fingerprint: Option<String>,
+    pub choices: Vec<ChatChoice>,
+    pub usage: ChatCompletionUsage,
 }
 
 pub struct OpenAICustomizedClient {
