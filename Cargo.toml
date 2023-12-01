@@ -15,3 +15,4 @@ core-graphics = "0.23.1"
 #screencapturekit = { git = "https://github.com/svtlabs/screencapturekit-rs.git", rev = "f2327fc1206fc7f32918aed3fea2de0775b8ac36", version = "*" }
 screencapturekit = { git = "https://github.com/clearlysid/screencapturekit-rs.git", rev = "56a6708", version = "*" }
 chrono = { version = "0.4.31", features = [] }
+clap = { version = "4.4.10", features = ["derive"] }

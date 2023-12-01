@@ -9,6 +9,7 @@ use screencapturekit::{
 use std::process::Command;
 use core_graphics::display::{CGDirectDisplayID, CGDisplay, CGMainDisplayID};
 use core_video_sys::{CVPixelBufferGetBaseAddressOfPlane, CVPixelBufferGetBytesPerRowOfPlane, CVPixelBufferGetHeightOfPlane, CVPixelBufferGetWidthOfPlane, CVPixelBufferLockBaseAddress, CVPixelBufferRef, CVPixelBufferUnlockBaseAddress};
+use cpal::traits::HostTrait;
 // use screencapturekit::cm_sample_buffer::CMSampleBuffer;
 use screencapturekit::sc_content_filter::{InitParams, SCContentFilter};
 use screencapturekit::sc_display::SCDisplay;
@@ -131,7 +132,9 @@ pub struct Recorder {
 
 impl Recorder {
     pub fn init(options: Options, output_file: &str) -> Self {
-        let audio_recorder = audio::AudioRecorder::new(output_file);
+        let audio_recorder = audio::AudioRecorder::new(output_file,
+                       &cpal::default_host().default_input_device().unwrap()
+        );
 
         let recorder = create_recorder(&options);
 

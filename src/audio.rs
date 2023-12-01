@@ -12,12 +12,8 @@ pub struct AudioRecorder {
 }
 
 impl AudioRecorder {
-    pub fn new(output_file: &str) -> Self {
-        let host: Host = cpal::default_host();
-        let device: Device = host
-            .default_input_device()
-            .expect("failed to find input device");
-        let config: SupportedStreamConfig = device
+    pub fn new(output_file: &str, input_device: &Device) -> Self {
+        let config: SupportedStreamConfig = input_device
             .default_input_config()
             .expect("Failed to get default input config");
 
@@ -49,25 +45,25 @@ impl AudioRecorder {
         };
 
         let stream: cpal::Stream = match config.sample_format() {
-            cpal::SampleFormat::I8 => device.build_input_stream(
+            cpal::SampleFormat::I8 => input_device.build_input_stream(
                 &config.into(),
                 move |data, _: &_| write_input_data::<i8, i8>(data, &writer_cloned),
                 err_fn,
                 None,
             ),
-            cpal::SampleFormat::I16 => device.build_input_stream(
+            cpal::SampleFormat::I16 => input_device.build_input_stream(
                 &config.into(),
                 move |data, _: &_| write_input_data::<i16, i16>(data, &writer_cloned),
                 err_fn,
                 None,
             ),
-            cpal::SampleFormat::I32 => device.build_input_stream(
+            cpal::SampleFormat::I32 => input_device.build_input_stream(
                 &config.into(),
                 move |data, _: &_| write_input_data::<i32, i32>(data, &writer_cloned),
                 err_fn,
                 None,
             ),
-            cpal::SampleFormat::F32 => device.build_input_stream(
+            cpal::SampleFormat::F32 => input_device.build_input_stream(
                 &config.into(),
                 move |data, _: &_| write_input_data::<f32, f32>(data, &writer_cloned),
                 err_fn,
@@ -96,7 +92,6 @@ impl AudioRecorder {
             .unwrap()
             .finalize()
             .unwrap();
-        println!("Recording {} complete!", "/test/audio/recorded.wav");
     }
 }
 

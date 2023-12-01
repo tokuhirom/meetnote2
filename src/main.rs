@@ -1,3 +1,4 @@
+use std::env::Args;
 use std::thread::sleep;
 use std::time::Duration;
 use chrono::Local;
@@ -6,7 +7,43 @@ use cpal::traits::{DeviceTrait, HostTrait}; // for timestamp
 mod audio;
 mod window;
 
+use clap::Parser;
+use cpal::{Device, Host};
+
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Opts {
+    #[clap(long)] // , about = "The target input device")
+    target_device: Option<String>,
+}
+
+fn select_input_device_by_name(host: Host, target_device: Option<String>) -> Device {
+    if let Some(target_device) = target_device {
+        match host.input_devices() {
+            Ok(devices) => {
+                for device in devices {
+                    if let Ok(name) = device.name() {
+                        if (name == target_device) {
+                            println!("Selected audio device: {}", name);
+                            return device
+                        }
+                    }
+                }
+            }
+            Err(err) => {
+                println!("Cannot get audio input device list: {}", err)
+            }
+        }
+    }
+
+    println!("Using default input device...");
+    return host.default_input_device()
+        .expect("There's no available input device.")
+}
+
 fn main() {
+    let opts = Opts::parse();
+
     // #1 Check if the platform is supported
     let supported = MeetNote2::is_supported();
     if !supported {
@@ -30,18 +67,8 @@ fn main() {
     let mut recorder: Option<audio::AudioRecorder> = None;
 
     let host = cpal::default_host();
-    match host.input_devices() {
-        Ok(devices) => {
-            for device in devices {
-                if let Ok(name) = device.name() {
-                    println!("Available Input device: '{}'", name);
-                }
-            }
-        }
-        Err(err) => {
-            panic!("Cannot get audio input device list: {}", err)
-        }
-    }
+    let input_device = select_input_device_by_name(host, opts.target_device);
+    println!("\n\nReady to processing...");
 
     loop {
         if window::is_there_target_windows() {
@@ -51,7 +78,7 @@ fn main() {
                 let timestamp = Local::now().format("%Y%m%d-%H%M%S").to_string();
                 let output_file = format!("test/audio/{}.wav", timestamp);
 
-                recorder = Some(audio::AudioRecorder::new(&output_file));
+                recorder = Some(audio::AudioRecorder::new(&output_file, &input_device));
                 recorder.as_mut().unwrap().start_recording();
                 println!("Start recording...");
             }
@@ -70,4 +97,3 @@ fn main() {
         sleep(Duration::from_secs(1))
     }
 }
-
