@@ -1,5 +1,5 @@
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
-use cpal::{BuildStreamError, Device, FromSample, Host, Sample, Stream, SupportedStreamConfig};
+use cpal::{BuildStreamError, Device, FromSample, Sample, Stream, SupportedStreamConfig};
 use std::fs::File;
 use std::io::BufWriter;
 use std::sync::{Arc, Mutex};
@@ -116,4 +116,29 @@ fn write_input_data<T, U>(input: &[T], writer: &WavWriterHandle)
             }
         }
     }
+}
+
+pub fn select_input_device_by_name(target_device: Option<String>) -> Device {
+    let host = cpal::default_host();
+    if let Some(target_device) = target_device {
+        match host.input_devices() {
+            Ok(devices) => {
+                for device in devices {
+                    if let Ok(name) = device.name() {
+                        if (name == target_device) {
+                            println!("Selected audio device: {}", name);
+                            return device
+                        }
+                    }
+                }
+            }
+            Err(err) => {
+                println!("Cannot get audio input device list: {}", err)
+            }
+        }
+    }
+
+    println!("Using default input device...");
+    return host.default_input_device()
+        .expect("There's no available input device.")
 }
