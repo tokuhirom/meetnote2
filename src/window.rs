@@ -26,7 +26,7 @@ fn get_window_patterns() -> Vec<WindowPattern> {
             window_title: String::from("zoom share statusbar window"),
         }
     );
-    return result
+    result
 }
 
 
@@ -48,5 +48,5 @@ pub fn is_there_target_windows() -> bool {
             }
         }
     }
-    return false
+    false
 }

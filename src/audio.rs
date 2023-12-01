@@ -125,7 +125,7 @@ pub fn select_input_device_by_name(target_device: Option<String>) -> Device {
             Ok(devices) => {
                 for device in devices {
                     if let Ok(name) = device.name() {
-                        if (name == target_device) {
+                        if name == target_device {
                             println!("Selected audio device: {}", name);
                             return device
                         }
@@ -139,6 +139,6 @@ pub fn select_input_device_by_name(target_device: Option<String>) -> Device {
     }
 
     println!("Using default input device...");
-    return host.default_input_device()
+    host.default_input_device()
         .expect("There's no available input device.")
 }

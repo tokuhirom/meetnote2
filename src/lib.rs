@@ -5,12 +5,12 @@ use core_graphics::{
     access::ScreenCaptureAccess,
 };
 use std::process::Command;
-use cpal::traits::HostTrait;
-use screencapturekit::sc_error_handler::StreamErrorHandler;
-use screencapturekit::sc_output_handler::StreamOutput;
+
+
+
 
 pub fn has_permission() -> bool {
-    let access = ScreenCaptureAccess::default();
+    let access = ScreenCaptureAccess;
     access.request()
 }
 

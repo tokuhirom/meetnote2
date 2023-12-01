@@ -1,7 +1,6 @@
 use std::thread::sleep;
 use std::time::Duration;
 use chrono::Local;
-use cpal::traits::{DeviceTrait, HostTrait}; // for timestamp
 
 mod audio;
 mod window;
@@ -63,29 +62,27 @@ fn main() {
 
                 println!("Start recording...");
             }
-        } else {
-            if is_recording {
-                // Window disappears, stop recording
-                is_recording = false;
-                recorder.as_mut().unwrap().stop_recording();
-                recorder.take();  // Release the recorder if necessary
-                println!("Stop recording...");
+        } else if is_recording {
+            // Window disappears, stop recording
+            is_recording = false;
+            recorder.as_mut().unwrap().stop_recording();
+            recorder.take();  // Release the recorder if necessary
+            println!("Stop recording...");
 
-                let wav_file_clone = wave_file.as_ref()
-                    .expect("Expected wave_file to be Some; recording should stop when window disappears.")
-                    .clone();  // Clone the file path for the new thread
-                let openai_api_key_clone = openai_api_key.clone();
-                std::thread::spawn(move || {
-                    match postprocess::postprocess(&*openai_api_key_clone, wav_file_clone.clone(), "ja") {
-                        Ok(_) => {
-                            println!("Successfully processed: {}", wav_file_clone);
-                        }
-                        Err(e) => {
-                            eprintln!("Cannot process {}: {:?}", wav_file_clone, e)
-                        }
+            let wav_file_clone = wave_file.as_ref()
+                .expect("Expected wave_file to be Some; recording should stop when window disappears.")
+                .clone();  // Clone the file path for the new thread
+            let openai_api_key_clone = openai_api_key.clone();
+            std::thread::spawn(move || {
+                match postprocess::postprocess(&openai_api_key_clone, wav_file_clone.clone(), "ja") {
+                    Ok(_) => {
+                        println!("Successfully processed: {}", wav_file_clone);
                     }
-                });
-            }
+                    Err(e) => {
+                        eprintln!("Cannot process {}: {:?}", wav_file_clone, e)
+                    }
+                }
+            });
         }
 
         sleep(Duration::from_secs(1))

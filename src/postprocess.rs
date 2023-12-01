@@ -15,7 +15,7 @@ pub fn postprocess(openai_api_key: &str, wav_file: String, language: &str) -> Re
 
     // convert to VTT
     let vtt_file = wav_file.replace(".wav", ".vtt");
-    match openai.transcript(&*mp3_file, language) {
+    match openai.transcript(&mp3_file, language) {
         Ok(content) => {
             println!("Got transcript: {}", content);
             println!("Write transcript to {}", vtt_file);

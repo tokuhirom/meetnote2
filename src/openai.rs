@@ -71,7 +71,7 @@ impl OpenAICustomizedClient {
             .text("response_format", "vtt")
             .part("file", part);
 
-        let mut res = self.client.post("https://api.openai.com/v1/audio/transcriptions")
+        let res = self.client.post("https://api.openai.com/v1/audio/transcriptions")
             .bearer_auth(&self.open_ai_api_key)
             .multipart(form)
             .send()?;
@@ -84,7 +84,6 @@ impl OpenAICustomizedClient {
     }
 
     pub fn chat_completion(&self, request: &ChatCompletionRequest) -> Result<ChatCompletionResponse> {
-        let client = Client::new();
         let res = self.client.post("https://api.openai.com/v1/chat/completions")
             .bearer_auth(&self.open_ai_api_key)
             .json(request)
