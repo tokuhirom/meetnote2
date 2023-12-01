@@ -6,6 +6,8 @@ use cpal::traits::{DeviceTrait, HostTrait}; // for timestamp
 mod audio;
 mod window;
 mod mp3;
+mod openai;
+mod postprocess;
 
 use clap::Parser;
 
@@ -18,6 +20,8 @@ struct Opts {
 
 fn main() {
     let opts = Opts::parse();
+    let openai_api_key = std::env::var("OPENAI_API_KEY")
+        .expect("Expected environment variable: OPENAI_API_KEY");
 
     // #1 Check if the platform is supported
     let supported = MeetNote2::is_supported();
@@ -70,10 +74,15 @@ fn main() {
                 let wav_file_clone = wave_file.as_ref()
                     .expect("Expected wave_file to be Some; recording should stop when window disappears.")
                     .clone();  // Clone the file path for the new thread
+                let openai_api_key_clone = openai_api_key.clone();
                 std::thread::spawn(move || {
-                    let mp3_file = wav_file_clone.replace(".wav", ".mp3");
-                    if let Err(e) = mp3::convert_to_mp3(&wav_file_clone, &mp3_file) {
-                        eprintln!("Failed to convert to mp3: {}", e);
+                    match postprocess::postprocess(&*openai_api_key_clone, wav_file_clone.clone()) {
+                        Ok(_) => {
+                            println!("Successfully processed: {}", wav_file_clone);
+                        }
+                        Err(e) => {
+                            eprintln!("Cannot process {}: {:?}", wav_file_clone, e)
+                        }
                     }
                 });
             }
