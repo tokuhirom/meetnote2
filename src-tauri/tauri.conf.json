@@ -15,6 +15,19 @@
       "shell": {
         "all": false,
         "open": true
+      },
+      "notification": {
+        "all": true
+      },
+      "process": {
+        "all": true
+      },
+      "fs": {
+        "readFile": true,
+        "writeFile": true,
+        "readDir": true,
+        "removeFile": true,
+        "exists": true
       }
     },
     "bundle": {
