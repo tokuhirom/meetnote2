@@ -9,6 +9,7 @@ mod postprocess;
 mod recording_proc;
 mod config;
 mod screencapture;
+mod data_repo;
 
 use anyhow::anyhow;
 

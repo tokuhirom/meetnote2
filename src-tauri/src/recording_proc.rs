@@ -1,7 +1,6 @@
-use chrono::Local;
 use std::thread::sleep;
 use std::time::Duration;
-use crate::{audio, postprocess, window};
+use crate::{audio, data_repo, postprocess, window};
 
 pub fn start_recording_process(openai_api_key: String, target_device: Option<String>) {
     let mut is_recording = false;
@@ -16,12 +15,24 @@ pub fn start_recording_process(openai_api_key: String, target_device: Option<Str
             if !is_recording {
                 is_recording = true;
 
-                let timestamp = Local::now().format("%Y%m%d-%H%M%S").to_string();
-                let output_file = format!("test/audio/{}.wav", timestamp);
+                let output_path = match data_repo::new_wave_file_name() {
+                    Ok(path) => {
+                        path
+                    }
+                    Err(err) => {
+                        eprintln!("Cannot get new wave file name: {}", err);
+                        continue;
+                    }
+                };
+                let Some(output_file) = output_path.as_path()
+                    .to_str() else {
+                    println!("Cannot get wave output file name");
+                    continue;
+                };
 
                 recorder = Some(audio::AudioRecorder::new(&output_file, &input_device));
                 recorder.as_mut().unwrap().start_recording();
-                wave_file = Some(output_file);
+                wave_file = Some(output_file.to_string());
 
                 println!("Start recording...");
             }
