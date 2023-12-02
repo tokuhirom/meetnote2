@@ -1,0 +1,43 @@
+[package]
+name = "meetnote2"
+version = "0.0.0"
+description = "A Tauri App"
+authors = ["you"]
+license = ""
+repository = ""
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "1.5", features = [] }
+
+[dependencies]
+tauri = { version = "1.5", features = ["shell-open"] }
+
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.108"
+
+dirs = "5.0.1"
+dirs-sys = "0.4.1"
+
+anyhow = { version = "1.0.75", features = [] }
+
+reqwest = { version = "0.11.22", features = ["blocking", "multipart", "json"] }
+
+chrono = { version = "0.4.31", features = [] }
+
+# sound
+cpal = "0.15.2"
+hound = "3.5.1"
+
+# screencapturekit
+core-graphics = "0.23.1"
+#screencapturekit = { git = "https://github.com/svtlabs/screencapturekit-rs.git", rev = "f2327fc1206fc7f32918aed3fea2de0775b8ac36", version = "*" }
+screencapturekit = { git = "https://github.com/clearlysid/screencapturekit-rs.git", rev = "56a6708", version = "*" }
+
+
+[features]
+# this feature is used for production builds or when `devPath` points to the filesystem
+# DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]
