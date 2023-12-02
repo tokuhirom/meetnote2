@@ -7,10 +7,10 @@ mod recording_proc;
 
 use clap::Parser;
 use tray_icon::{
-    menu::{AboutMetadata, Menu, MenuEvent, MenuItem, PredefinedMenuItem},
+    menu::{Menu, MenuEvent, MenuItem},
     TrayIconBuilder, TrayIconEvent,
 };
-use tray_icon::menu::MenuItemBuilder;
+
 use winit::event_loop::{ControlFlow, EventLoopBuilder};
 
 #[derive(Parser, Debug)]
@@ -57,7 +57,7 @@ fn main() {
     let menu = Menu::with_items(&[
         &MenuItem::new("hello", true, Option::None)
     ]).unwrap();
-    let mut tray_icon = Some(
+    let _tray_icon = Some(
         TrayIconBuilder::new()
             .with_menu(Box::new(menu))
             .with_tooltip("winit - awesome windowing lib")
