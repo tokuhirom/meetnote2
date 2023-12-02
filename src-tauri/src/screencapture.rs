@@ -1,13 +1,7 @@
-mod audio;
-mod mp3;
-
 use core_graphics::{
     access::ScreenCaptureAccess,
 };
 use std::process::Command;
-
-
-
 
 pub fn has_permission() -> bool {
     let access = ScreenCaptureAccess;
