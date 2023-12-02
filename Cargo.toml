@@ -16,7 +16,6 @@ core-graphics = "0.23.1"
 #screencapturekit = { git = "https://github.com/svtlabs/screencapturekit-rs.git", rev = "f2327fc1206fc7f32918aed3fea2de0775b8ac36", version = "*" }
 screencapturekit = { git = "https://github.com/clearlysid/screencapturekit-rs.git", rev = "56a6708", version = "*" }
 chrono = { version = "0.4.31", features = [] }
-clap = { version = "4.4.10", features = ["derive"] }
 ogg = "0.9.0"
 lewton = "0.10.2"
 anyhow = { version = "1.0.75", features = [] }
@@ -27,6 +26,8 @@ bytes = "1.5.0"
 serde = { version = "1.0.193", features = ["derive"] }
 tray-icon = "0.11.0"
 winit = "0.29.4"
+dirs = "5.0.1"
+dirs-sys = "0.4.1"
 
 [package.metadata.bundle]
 name = "MeetNote2"

@@ -4,8 +4,11 @@ mod mp3;
 mod openai;
 mod postprocess;
 mod recording_proc;
+mod config;
 
-use clap::Parser;
+use anyhow::__private::kind::TraitKind;
+use anyhow::anyhow;
+use serde::{Deserialize, Serialize};
 use tray_icon::{
     menu::{Menu, MenuEvent, MenuItem},
     TrayIconBuilder, TrayIconEvent,
@@ -13,24 +16,18 @@ use tray_icon::{
 
 use winit::event_loop::{ControlFlow, EventLoopBuilder};
 
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-struct Opts {
-    #[clap(long)] // , about = "The target input device")
-    target_device: Option<String>,
-}
 
-fn main() {
-    let opts = Opts::parse();
-    let openai_api_key = std::env::var("OPENAI_API_KEY")
-        .expect("Expected environment variable: OPENAI_API_KEY");
+fn main() -> anyhow::Result<()> {
+    let config = config::load_config()?;
+    let openai_api_token = config.openai_api_token.ok_or(
+        anyhow!("Missing OpenAI API token in the configuration file: {:?}",
+        config::get_config_path()?)
+    )?;
 
     // #1 Check if the platform is supported
     let supported = MeetNote2::is_supported();
     if !supported {
-        println!("❌ Platform not supported");
-        // TODO: use GUI dialog?
-        return;
+        return Err(anyhow!("❌ Platform not supported"));
     } else {
         println!("✅ Platform supported");
     }
@@ -38,14 +35,13 @@ fn main() {
     // #2 Check if we have permission to capture the screen
     let has_permission = MeetNote2::has_permission();
     if !has_permission {
-        println!("❌ Permission not granted");
-        return;
+        return Err(anyhow!("❌ Permission not granted"));
     } else {
         println!("✅ Permission granted");
     }
 
     std::thread::spawn(move || {
-        recording_proc::start_recording_process(openai_api_key, opts.target_device)
+        recording_proc::start_recording_process(openai_api_token, config.target_device)
     });
 
     let path = concat!(env!("CARGO_MANIFEST_DIR"), "/icon.png");
@@ -79,6 +75,7 @@ fn main() {
             println!("{event:?}");
         }
     }).expect("Cannot start event loop!");
+    Ok(())
 }
 
 
