@@ -6,6 +6,12 @@ mod postprocess;
 mod recording_proc;
 
 use clap::Parser;
+use tray_icon::{
+    menu::{AboutMetadata, Menu, MenuEvent, MenuItem, PredefinedMenuItem},
+    TrayIconBuilder, TrayIconEvent,
+};
+use tray_icon::menu::MenuItemBuilder;
+use winit::event_loop::{ControlFlow, EventLoopBuilder};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -38,5 +44,52 @@ fn main() {
         println!("✅ Permission granted");
     }
 
-    recording_proc::start_recording_process(openai_api_key, opts.target_device)
+    std::thread::spawn(move || {
+        recording_proc::start_recording_process(openai_api_key, opts.target_device)
+    });
+
+    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/icon.png");
+    let icon = load_icon(std::path::Path::new(path));
+
+    let event_loop = EventLoopBuilder::new()
+        .build().unwrap();
+
+    let menu = Menu::with_items(&[
+        &MenuItem::new("hello", true, Option::None)
+    ]).unwrap();
+    let mut tray_icon = Some(
+        TrayIconBuilder::new()
+            .with_menu(Box::new(menu))
+            .with_tooltip("winit - awesome windowing lib")
+            .with_icon(icon)
+            .build()
+            .unwrap(),
+    );
+
+    let menu_channel = MenuEvent::receiver();
+    let tray_channel = TrayIconEvent::receiver();
+
+    event_loop.run(move |_event, event_loop| {
+        event_loop.set_control_flow(ControlFlow::Poll);
+
+        if let Ok(event) = tray_channel.try_recv() {
+            println!("{event:?}");
+        }
+        if let Ok(event) = menu_channel.try_recv() {
+            println!("{event:?}");
+        }
+    }).expect("Cannot start event loop!");
+}
+
+
+fn load_icon(path: &std::path::Path) -> tray_icon::Icon {
+    let (icon_rgba, icon_width, icon_height) = {
+        let image = image::open(path)
+            .expect("Failed to open icon path")
+            .into_rgba8();
+        let (width, height) = image.dimensions();
+        let rgba = image.into_raw();
+        (rgba, width, height)
+    };
+    tray_icon::Icon::from_rgba(icon_rgba, icon_width, icon_height).expect("Failed to open icon")
 }

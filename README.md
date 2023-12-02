@@ -4,6 +4,11 @@ This is a successor of the MeetNote.
 Fully rewritten by Rust. And based on Mac's ScreenCaptureKit API.
 
 
+## Build process
+
+    cargo install cargo-bundle
+    cargo bundle
+
 ## LICENSE
 
     The MIT License (MIT)
