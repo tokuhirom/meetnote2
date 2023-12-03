@@ -12,11 +12,17 @@ mod screencapture;
 mod data_repo;
 
 use anyhow::anyhow;
+use crate::data_repo::MdFile;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
+}
+
+#[tauri::command]
+fn load_files() -> Vec<MdFile> {
+    return data_repo::load_files();
 }
 
 fn main() -> anyhow::Result<()> {
@@ -47,7 +53,7 @@ fn main() -> anyhow::Result<()> {
     });
 
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![greet, load_files])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 
