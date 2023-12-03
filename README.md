@@ -5,12 +5,33 @@ Fully rewritten by Rust.
 
 This application is built top of `Tauri + Svelte + Typescript`.
 
+## Required Environment
+
+ * This application uses Mac OSX APIs.
+ * Use lame for mp3 encoding.
+   * Please install it via `brew install lame`
+
+## Permissions
+
+This application uses ScreenCaptureKit API to detect window names.
+Please allow it.
+
+## Features
+
+ * Detect window names to start the recording.
+ * Record audio to wave file.
+   * Convert it to mp3 file automatically.
+   * Transcribe it to the text using OpenAI's API.
+     * TODO: support whisper.cpp or something to transcribe locally
+   * Summarize it with OpenAI's API
+     * TODO: Summarize it in the local machine.
+
 ## Future plan
 
  * Configuration dialog
  * Show summary logs
  * Show VTT file
- * Delete needdless file
+ * Delete needless file
  * Play mp3 file
  * use ScreenCaptureKit API
 
