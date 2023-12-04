@@ -49,6 +49,12 @@ fn delete_file(filename: String) -> Result<(), String> {
         .map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn save_file(filename: String, content: String) -> Result<(), String> {
+    return data_repo::save_file(&filename, &content)
+        .map_err(|e| e.to_string())
+}
+
 fn main() -> anyhow::Result<()> {
     simplelog::CombinedLogger::init(vec![
         simplelog::TermLogger::new(
@@ -140,7 +146,7 @@ fn main() -> anyhow::Result<()> {
             }
         })
         .invoke_handler(tauri::generate_handler![
-            load_files, delete_file,
+            load_files, delete_file, save_file,
             get_input_devices,
             load_config, save_config])
         .run(tauri::generate_context!())
