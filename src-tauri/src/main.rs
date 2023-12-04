@@ -27,26 +27,26 @@ fn greet(name: &str) -> String {
 
 #[tauri::command]
 fn load_files() -> Vec<MdFile> {
-    return data_repo::load_files();
+    data_repo::load_files()
 }
 
 #[tauri::command]
 fn load_config() -> Result<MeetNoteConfig, String>{
-    return config::load_config()
-        .map_err(|e| e.to_string());
+    config::load_config()
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 fn save_config(config: MeetNoteConfig) -> Result<(), String>{
-    return config::save_config(&config)
-        .map_err(|e| e.to_string());
+    config::save_config(&config)
+        .map_err(|e| e.to_string())
 }
 
 
 #[tauri::command]
 fn get_input_devices() -> Result<Vec<String>, String> {
-    return audio::get_input_devices()
-        .map_err(|e| e.to_string());
+    audio::get_input_devices()
+        .map_err(|e| e.to_string())
 }
 
 fn main() -> anyhow::Result<()> {

@@ -36,7 +36,7 @@ pub struct MdFile {
 impl MdFile {
     fn new(path: &PathBuf) -> anyhow::Result<MdFile> {
         let filename = path.file_name().unwrap().to_str().unwrap().to_string();
-        let mut file = fs::File::open(&path)?;
+        let mut file = fs::File::open(path)?;
         let mut content = String::new();
         file.read_to_string(&mut content)?;
         Ok(MdFile {

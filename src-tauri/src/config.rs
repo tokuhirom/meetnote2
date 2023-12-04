@@ -4,7 +4,7 @@ use std::fs::{File, rename, write};
 use std::io::Read;
 use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
-use serde_json;
+
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct MeetNoteConfig {
