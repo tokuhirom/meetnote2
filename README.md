@@ -25,13 +25,11 @@ Please allow it.
      * TODO: support whisper.cpp or something to transcribe locally
    * Summarize it with OpenAI's API
      * TODO: Summarize it in the local machine.
+ * Edit summary file
 
 ## Future plan
 
- * Configuration dialog
- * Show summary logs
  * Show VTT file
- * Delete needless file
  * Play mp3 file
  * use ScreenCaptureKit API
 
@@ -39,7 +37,6 @@ Please allow it.
 
     bun install
     bun run tauri dev
-
 
 ## LICENSE
 
