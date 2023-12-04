@@ -12,8 +12,9 @@
   "tauri": {
     "allowlist": {
       "all": false,
-      "path": {
-        "all": true
+      "window": {
+        "all": false,
+        "close": true
       },
       "shell": {
         "all": false,
@@ -21,16 +22,6 @@
       },
       "notification": {
         "all": true
-      },
-      "process": {
-        "all": true
-      },
-      "fs": {
-        "readFile": true,
-        "writeFile": true,
-        "readDir": true,
-        "removeFile": true,
-        "exists": true
       }
     },
     "bundle": {

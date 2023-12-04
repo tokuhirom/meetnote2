@@ -14,7 +14,8 @@ mod data_repo;
 use std::fs::File;
 use anyhow::anyhow;
 use simplelog::ColorChoice;
-use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowBuilder};
+use tauri::{CustomMenuItem, Manager, Menu, MenuItem, Submenu, WindowBuilder};
+use crate::config::MeetNoteConfig;
 use crate::data_repo::MdFile;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -27,6 +28,19 @@ fn greet(name: &str) -> String {
 fn load_files() -> Vec<MdFile> {
     return data_repo::load_files();
 }
+
+#[tauri::command]
+fn load_config() -> Result<MeetNoteConfig, String>{
+    return config::load_config()
+        .map_err(|e| e.to_string());
+}
+
+#[tauri::command]
+fn save_config(config: MeetNoteConfig) -> Result<(), String>{
+    return config::save_config(&config)
+        .map_err(|e| e.to_string());
+}
+
 
 #[tauri::command]
 fn get_input_devices() -> Result<Vec<String>, String> {
@@ -77,7 +91,8 @@ fn main() -> anyhow::Result<()> {
     });
 
     let misc_menu = Submenu::new("Misc", Menu::new()
-        .add_item(CustomMenuItem::new("configuration", "Configuration"))
+        .add_item(CustomMenuItem::new("configuration", "Configuration")
+            .accelerator("Command+,"))
         .add_item(CustomMenuItem::new("window_list", "Window list...")));
     let file_menu = Submenu::new("File", Menu::new()
         .add_item(CustomMenuItem::new("exit", "Exit")));
@@ -103,6 +118,16 @@ fn main() -> anyhow::Result<()> {
                 "exit" => {
                     std::process::exit(0);
                 }
+                "configuration" => {
+                    if let Err(err) = WindowBuilder::new(
+                        &event.window().app_handle(),
+                        "config-window".to_string(),
+                        tauri::WindowUrl::App("configuration.html".into()),
+                    )
+                        .build() {
+                        log::error!("Cannot open configuration window: {:?}", err);
+                    };
+                }
                 "window_list" => {
                     // WindowBuilder::new(event.window().app_handle(), )
                     // event.window().close().unwrap();
@@ -110,7 +135,7 @@ fn main() -> anyhow::Result<()> {
                 _ => {}
             }
         })
-        .invoke_handler(tauri::generate_handler![greet, load_files, get_input_devices])
+        .invoke_handler(tauri::generate_handler![greet, load_files,get_input_devices, load_config, save_config])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 
