@@ -11,7 +11,7 @@ pub fn postprocess(openai_api_key: &str, wav_file: String, language: &str) -> Re
         return Err(anyhow!("Cannot convert to mp3({}): {:?}", mp3_file,     e))
     }
 
-    let openai = openai::OpenAICustomizedClient::new(openai_api_key);
+    let openai = openai::OpenAICustomizedClient::new(openai_api_key)?;
 
     // convert to VTT
     let vtt_file = wav_file.replace(".wav", ".vtt");

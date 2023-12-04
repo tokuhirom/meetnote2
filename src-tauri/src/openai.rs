@@ -1,7 +1,8 @@
-use reqwest::blocking::{Client, multipart};
+use reqwest::blocking::{Client, ClientBuilder, multipart};
 use anyhow::Result;
 use std::fs::File;
 use std::io::Read;
+use std::time::Duration;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
@@ -50,11 +51,13 @@ pub struct OpenAICustomizedClient {
 }
 
 impl OpenAICustomizedClient {
-    pub fn new(open_ai_api_key: &str) -> OpenAICustomizedClient {
-        OpenAICustomizedClient {
+    pub fn new(open_ai_api_key: &str) -> anyhow::Result<OpenAICustomizedClient> {
+        Ok(OpenAICustomizedClient {
             open_ai_api_key: open_ai_api_key.to_string(),
-            client: Client::new(),
-        }
+            client: ClientBuilder::new()
+                .timeout(Duration::from_secs(10*60))
+                .build()?
+        })
     }
 
     pub fn transcript(&self, file_path: &str, language: &str) -> Result<String> {
