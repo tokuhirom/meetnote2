@@ -6,7 +6,7 @@
   let inputDevices: string[] = []
 
   onMount(async () => {
-    files = await invoke("load_files", { name })
+    files = await invoke("load_files")
     inputDevices = await invoke("get_input_devices");
   });
 </script>

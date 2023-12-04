@@ -1,17 +1,17 @@
 use std::env;
 use std::path::PathBuf;
-use std::fs::File;
+use std::fs::{File, rename, write};
 use std::io::Read;
 use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
 use serde_json;
 
-#[derive(Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct MeetNoteConfig {
     // OpenAI's API token
-    pub(crate) openai_api_token: Option<String>,
+    pub openai_api_token: Option<String>,
     // The target input device
-    pub(crate) target_device: Option<String>,
+    pub target_device: Option<String>,
 }
 
 fn config_dir() ->  Option<PathBuf> {
@@ -46,4 +46,23 @@ pub fn load_config() -> anyhow::Result<MeetNoteConfig> {
     let config: MeetNoteConfig = serde_json::from_str(&file_data)?;
 
     Ok(config)
+}
+
+pub fn save_config(config: &MeetNoteConfig) -> anyhow::Result<()> {
+    let config_path = get_config_path()?;
+    let tmp_path = config_path.with_extension("tmp");
+
+    log::info!("Saving configuration: {:?}", config);
+
+    // Convert the config data to JSON
+    let config_data = serde_json::to_string_pretty(config)?;
+
+    // Write the config data to the temp file
+    std::fs::create_dir_all(tmp_path.parent().unwrap())?;
+    write(&tmp_path, config_data.clone())?;
+
+    // Atomically replace the old config file with the temp file
+    rename(tmp_path, config_path)?;
+
+    Ok(())
 }
