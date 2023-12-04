@@ -18,6 +18,6 @@ pub(crate) fn convert_to_mp3(wav_file: &str, mp3_file: &str) -> Result<()> {
             String::from_utf8_lossy(&output.stderr)));
     }
 
-    println!("Converted {} to {}", wav_file, mp3_file);
+    log::info!("Converted {} to {}", wav_file, mp3_file);
     Ok(())
 }
