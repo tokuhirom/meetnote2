@@ -10,6 +10,7 @@ mod recording_proc;
 mod config;
 mod screencapture;
 mod data_repo;
+mod postprocess_resumer;
 
 use std::fs::File;
 use anyhow::anyhow;
@@ -88,6 +89,9 @@ fn main() -> anyhow::Result<()> {
 
     std::thread::spawn(move || {
         recording_proc::start_recording_process(openai_api_token, config.target_device)
+    });
+    std::thread::spawn(move || {
+        postprocess_resumer::resume_postprocess().unwrap();
     });
 
     let misc_menu = Submenu::new("Misc", Menu::new()

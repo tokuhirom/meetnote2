@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use anyhow::{anyhow, Result};
 
-pub fn postprocess(openai_api_key: &str, wav_file: String, language: &str) -> Result<()>{
+pub fn postprocess(openai_api_key: &String, wav_file: String, language: &str) -> Result<()>{
     // convert to MP3
     let mp3_file = wav_file.replace(".wav", ".mp3");
     if let Err(e) = mp3::convert_to_mp3(&wav_file, &mp3_file) {
@@ -15,6 +15,7 @@ pub fn postprocess(openai_api_key: &str, wav_file: String, language: &str) -> Re
 
     // convert to VTT
     let vtt_file = wav_file.replace(".wav", ".vtt");
+    log::info!("Convert {} to {}", mp3_file, vtt_file);
     match openai.transcript(&mp3_file, language) {
         Ok(content) => {
             println!("Got transcript: {}", content);
@@ -28,7 +29,7 @@ pub fn postprocess(openai_api_key: &str, wav_file: String, language: &str) -> Re
     }
 
     // Summarize VTT
-    let summary_file = wav_file.replace(".wav", ".md");
+    let summary_file = wav_file.clone().replace(".wav", ".md");
     let vtt_result = fs::read_to_string(vtt_file.clone());
     let Ok(vtt_content) = vtt_result else {
         return Err(anyhow!("Cannot read VTT file({}): {:?}",
@@ -71,6 +72,11 @@ pub fn postprocess(openai_api_key: &str, wav_file: String, language: &str) -> Re
             return Err(anyhow!("Cannot generate summary from vtt file({}): {:?}",
                 vtt_file, err))
         }
+    }
+
+    match fs::remove_file(&wav_file) {
+        Ok(_) => {log::info!("Removed {:?}", wav_file)}
+        Err(err) => {log::error!("Cannot remove {:?}: {:?}", wav_file, err)}
     }
 
     Ok(())

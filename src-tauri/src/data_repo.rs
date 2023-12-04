@@ -76,3 +76,25 @@ pub fn load_files() -> Vec<MdFile> {
     });
     results
 }
+
+pub fn get_unprocessed_wave_files() -> Vec<PathBuf> {
+    log::info!("Loading wave files...");
+
+    let data_dir = match get_data_dir() {
+        Ok(d) => { d }
+        Err(err) => {
+            println!("Cannot get data directory: {}", err);
+            return Vec::new();
+        }
+    };
+    let mut wave_files = Vec::new();
+
+    for entry in WalkDir::new(data_dir).into_iter().filter_map(|e| e.ok()) {
+        if entry.file_type().is_file() && entry.path().extension().unwrap_or_default() == "wav" {
+            let path = entry.into_path();
+            wave_files.push(path);
+        }
+    }
+    wave_files.sort_by_key(|file| Reverse(file.display().to_string()));
+    wave_files
+}
