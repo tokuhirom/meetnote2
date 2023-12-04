@@ -11,8 +11,10 @@ mod config;
 mod screencapture;
 mod data_repo;
 
+use std::fs::File;
 use anyhow::anyhow;
-use tauri::{CustomMenuItem, Manager, Menu, MenuItem, Submenu, WindowBuilder};
+use simplelog::ColorChoice;
+use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowBuilder};
 use crate::data_repo::MdFile;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -27,6 +29,21 @@ fn load_files() -> Vec<MdFile> {
 }
 
 fn main() -> anyhow::Result<()> {
+    simplelog::CombinedLogger::init(vec![
+        simplelog::TermLogger::new(
+            simplelog::LevelFilter::Info,
+            simplelog::Config::default(),
+            simplelog::TerminalMode::Mixed,
+            ColorChoice::Auto
+        ),
+        simplelog::WriteLogger::new(
+            simplelog::LevelFilter::Info,
+            simplelog::Config::default(),
+            File::create(data_repo::get_data_dir().unwrap().join("meetnote2.log"))?
+        ),
+    ])?;
+
+
     let config = config::load_config()?;
     let openai_api_token = config.openai_api_token.ok_or(
         anyhow!("Missing OpenAI API token in the configuration file: {:?}",
@@ -38,7 +55,7 @@ fn main() -> anyhow::Result<()> {
     if !supported {
         return Err(anyhow!("❌ Platform not supported"));
     } else {
-        println!("✅ Platform supported");
+        log::info!("✅ Platform supported");
     }
 
     // #2 Check if we have permission to capture the screen
@@ -46,7 +63,7 @@ fn main() -> anyhow::Result<()> {
     if !has_permission {
         return Err(anyhow!("❌ Permission not granted"));
     } else {
-        println!("✅ Permission granted");
+        log::info!("✅ Permission granted");
     }
 
     std::thread::spawn(move || {
@@ -60,6 +77,7 @@ fn main() -> anyhow::Result<()> {
         .add_item(CustomMenuItem::new("exit", "Exit")));
     let menu = Menu::new()
         .add_native_item(MenuItem::Copy)
+        .add_submenu(file_menu)
         .add_submenu(misc_menu);
 
     tauri::Builder::default()

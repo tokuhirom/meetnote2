@@ -119,6 +119,8 @@ fn write_input_data<T, U>(input: &[T], writer: &WavWriterHandle)
 }
 
 pub fn select_input_device_by_name(target_device: Option<String>) -> Device {
+    log::info!("target device is : {:?}", target_device);
+
     let host = cpal::default_host();
     if let Some(target_device) = target_device {
         match host.input_devices() {
@@ -126,19 +128,19 @@ pub fn select_input_device_by_name(target_device: Option<String>) -> Device {
                 for device in devices {
                     if let Ok(name) = device.name() {
                         if name == target_device {
-                            println!("Selected audio device: {}", name);
+                            log::info!("Selected audio device: {}", name);
                             return device
                         }
                     }
                 }
             }
             Err(err) => {
-                println!("Cannot get audio input device list: {}", err)
+                log::error!("Cannot get audio input device list: {}", err)
             }
         }
     }
 
-    println!("Using default input device...");
+    log::info!("Using default input device...");
     host.default_input_device()
         .expect("There's no available input device.")
 }
