@@ -28,6 +28,12 @@ fn load_files() -> Vec<MdFile> {
     return data_repo::load_files();
 }
 
+#[tauri::command]
+fn get_input_devices() -> Result<Vec<String>, String> {
+    return audio::get_input_devices()
+        .map_err(|e| e.to_string());
+}
+
 fn main() -> anyhow::Result<()> {
     simplelog::CombinedLogger::init(vec![
         simplelog::TermLogger::new(
@@ -104,7 +110,7 @@ fn main() -> anyhow::Result<()> {
                 _ => {}
             }
         })
-        .invoke_handler(tauri::generate_handler![greet, load_files])
+        .invoke_handler(tauri::generate_handler![greet, load_files, get_input_devices])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 
