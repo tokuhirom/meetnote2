@@ -49,13 +49,6 @@
       "csp": null
     },
     "windows": [
-      {
-        "fullscreen": false,
-        "resizable": true,
-        "title": "meetnote2",
-        "width": 800,
-        "height": 600
-      }
     ]
   }
 }
