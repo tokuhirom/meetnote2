@@ -3,7 +3,7 @@
   import {onMount} from "svelte";
   import FileItem from "./lib/FileItem.svelte";
 
-  let files: any[] = []
+  let files: {filename: string, content: string}[] = []
 
   onMount(async () => {
     files = await invoke("load_files")
@@ -16,8 +16,6 @@
 </script>
 
 <main class="container">
-  <h1>MeetNote2</h1>
-
   <div class="files">
     {#each files as file}
       <FileItem file={file}/>
