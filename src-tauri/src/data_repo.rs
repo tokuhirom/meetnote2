@@ -116,3 +116,19 @@ pub(crate) fn delete_file(filename: &String) -> anyhow::Result<()> {
 
     Ok(())
 }
+
+pub(crate) fn save_file(filename: &String, content: &String) -> anyhow::Result<()> {
+    let data_dir = get_data_dir()?;
+    let file_path = data_dir.join(filename);
+
+    log::info!("Saving content to {:?}, {:?}", file_path, content);
+
+    match fs::write(&file_path, content) {
+        Ok(_) => {
+            Ok(())
+        }
+        Err(err) => {
+            Err(anyhow!("Cannot write content to {:?}: {:?}", file_path, err))
+        }
+    }
+}

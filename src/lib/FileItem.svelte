@@ -6,10 +6,18 @@
         content: string
     };
 
+    let editMode = false;
+
     async function deleteItem(filename: string) {
         console.log(`Delete file: ${filename}`)
         await invoke("delete_file", {filename});
         return true;
+    }
+
+    async function saveItem() {
+        console.log(`Save file: ${file.filename}`)
+        await invoke("save_file", file);
+        editMode = false;
     }
 </script>
 
@@ -17,8 +25,23 @@
     <div>
         <h2 style="float: left;">{file.filename}</h2>
         <div style="float: right">
+            <button on:click={e => editMode = true}>Edit</button>
             <button on:click={e => deleteItem(file.filename)}>Delete</button>
         </div>
     </div>
-    <pre style="clear: both">{file.content}</pre>
+    {#if editMode}
+        <form on:submit|preventDefault={saveItem}>
+            <textarea cols="80" rows="40" bind:value={file.content}></textarea>
+            <button type="submit">Save</button>
+        </form>
+    {:else}
+        <pre style="clear: both">{file.content}</pre>
+    {/if}
+
 </div>
+
+<style>
+    pre {
+        word-break: break-all;
+    }
+</style>
