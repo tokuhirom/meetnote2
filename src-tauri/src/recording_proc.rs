@@ -30,7 +30,7 @@ pub fn start_recording_process(openai_api_key: String, target_device: Option<Str
                     continue;
                 };
 
-                recorder = Some(audio::AudioRecorder::new(&output_file, &input_device));
+                recorder = Some(audio::AudioRecorder::new(output_file, &input_device));
                 recorder.as_mut().unwrap().start_recording();
                 wave_file = Some(output_file.to_string());
 

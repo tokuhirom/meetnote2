@@ -130,10 +130,10 @@ pub fn get_input_devices() -> anyhow::Result<Vec<String>> {
                     result.push(name);
                 }
             }
-            return Ok(result)
+            Ok(result)
         }
         Err(err) => {
-            return Err(anyhow!("Cannot get input devices: {:?}", err))
+            Err(anyhow!("Cannot get input devices: {:?}", err))
         }
     }
 }
