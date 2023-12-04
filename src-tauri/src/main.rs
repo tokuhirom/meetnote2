@@ -19,12 +19,6 @@ use tauri::{CustomMenuItem, Manager, Menu, MenuItem, Submenu, WindowBuilder};
 use crate::config::MeetNoteConfig;
 use crate::data_repo::MdFile;
 
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
 #[tauri::command]
 fn load_files() -> Vec<MdFile> {
     data_repo::load_files()
@@ -46,6 +40,12 @@ fn save_config(config: MeetNoteConfig) -> Result<(), String>{
 #[tauri::command]
 fn get_input_devices() -> Result<Vec<String>, String> {
     audio::get_input_devices()
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_file(filename: String) -> Result<(), String> {
+    return data_repo::delete_file(&filename)
         .map_err(|e| e.to_string())
 }
 
@@ -139,7 +139,10 @@ fn main() -> anyhow::Result<()> {
                 _ => {}
             }
         })
-        .invoke_handler(tauri::generate_handler![greet, load_files,get_input_devices, load_config, save_config])
+        .invoke_handler(tauri::generate_handler![
+            load_files, delete_file,
+            get_input_devices,
+            load_config, save_config])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 

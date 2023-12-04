@@ -105,3 +105,8 @@ button {
     background-color: #0f0f0f69;
   }
 }
+
+.file {
+  border-bottom: #535bf2 3px solid;
+  clear: both;
+}
