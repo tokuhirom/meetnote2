@@ -47,7 +47,7 @@ impl MdFile {
 }
 
 pub fn load_files() -> Vec<MdFile> {
-    println!("Loading files...");
+    log::info!("Loading files...");
 
     let data_dir = match get_data_dir() {
         Ok(d) => { d }

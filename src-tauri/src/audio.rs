@@ -3,6 +3,7 @@ use cpal::{BuildStreamError, Device, FromSample, Sample, Stream, SupportedStream
 use std::fs::File;
 use std::io::BufWriter;
 use std::sync::{Arc, Mutex};
+use anyhow::anyhow;
 
 type WavWriterHandle = Arc<Mutex<Option<hound::WavWriter<BufWriter<File>>>>>;
 
@@ -118,6 +119,25 @@ fn write_input_data<T, U>(input: &[T], writer: &WavWriterHandle)
     }
 }
 
+pub fn get_input_devices() -> anyhow::Result<Vec<String>> {
+    let mut result = Vec::new();
+
+    let host = cpal::default_host();
+    match host.input_devices() {
+        Ok(devices) => {
+            for device in devices {
+                if let Ok(name) = device.name() {
+                    result.push(name);
+                }
+            }
+            return Ok(result)
+        }
+        Err(err) => {
+            return Err(anyhow!("Cannot get input devices: {:?}", err))
+        }
+    }
+}
+
 pub fn select_input_device_by_name(target_device: Option<String>) -> Device {
     log::info!("target device is : {:?}", target_device);
 
@@ -141,6 +161,7 @@ pub fn select_input_device_by_name(target_device: Option<String>) -> Device {
     }
 
     log::info!("Using default input device...");
+    log::info!("Available devices are: {:?}", get_input_devices());
     host.default_input_device()
         .expect("There's no available input device.")
 }

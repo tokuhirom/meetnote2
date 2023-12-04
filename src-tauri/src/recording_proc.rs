@@ -1,6 +1,5 @@
 use std::thread::sleep;
 use std::time::Duration;
-use log::log;
 use crate::{audio, data_repo, postprocess, window};
 
 pub fn start_recording_process(openai_api_key: String, target_device: Option<String>) {
