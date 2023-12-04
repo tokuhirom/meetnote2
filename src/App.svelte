@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Greet from './lib/Greet.svelte'
   import { invoke } from "@tauri-apps/api/tauri"
   import {onMount} from "svelte";
 
@@ -20,10 +19,6 @@
         <pre>{content}</pre>
       </div>
     {/each}
-  </div>
-
-  <div class="row">
-    <Greet />
   </div>
 
 </main>

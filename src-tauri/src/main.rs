@@ -12,6 +12,7 @@ mod screencapture;
 mod data_repo;
 
 use anyhow::anyhow;
+use tauri::{CustomMenuItem, Manager, Menu, MenuItem, Submenu, WindowBuilder};
 use crate::data_repo::MdFile;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -52,7 +53,39 @@ fn main() -> anyhow::Result<()> {
         recording_proc::start_recording_process(openai_api_token, config.target_device)
     });
 
+    let misc_menu = Submenu::new("Misc", Menu::new()
+        .add_item(CustomMenuItem::new("configuration", "Configuration"))
+        .add_item(CustomMenuItem::new("window_list", "Window list...")));
+    let file_menu = Submenu::new("File", Menu::new()
+        .add_item(CustomMenuItem::new("exit", "Exit")));
+    let menu = Menu::new()
+        .add_native_item(MenuItem::Copy)
+        .add_submenu(misc_menu);
+
     tauri::Builder::default()
+        .setup(|app| {
+            WindowBuilder::new(
+                app,
+                "main-window".to_string(),
+                tauri::WindowUrl::App("index.html".into()),
+            )
+                .menu(menu)
+                .build()?;
+
+            Ok(())
+        })
+        .on_menu_event(|event| {
+            match event.menu_item_id() {
+                "exit" => {
+                    std::process::exit(0);
+                }
+                "window_list" => {
+                    // WindowBuilder::new(event.window().app_handle(), )
+                    // event.window().close().unwrap();
+                }
+                _ => {}
+            }
+        })
         .invoke_handler(tauri::generate_handler![greet, load_files])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
