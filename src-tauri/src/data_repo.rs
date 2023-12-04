@@ -34,13 +34,15 @@ pub struct MdFile {
 }
 
 impl MdFile {
-    fn new(path: &PathBuf) -> anyhow::Result<MdFile> {
-        let filename = path.file_name().unwrap().to_str().unwrap().to_string();
+    fn new(path: &PathBuf, base_dir: &PathBuf) -> anyhow::Result<MdFile> {
+        let filepath = path.strip_prefix(base_dir)
+            .expect("Failed to get relative path")
+            .to_str().unwrap().to_string();
         let mut file = fs::File::open(path)?;
         let mut content = String::new();
         file.read_to_string(&mut content)?;
         Ok(MdFile {
-            filename,
+            filename: filepath,
             content,
         })
     }
@@ -58,10 +60,10 @@ pub fn load_files() -> Vec<MdFile> {
     };
     let mut results = Vec::new();
 
-    for entry in WalkDir::new(data_dir).into_iter().filter_map(|e| e.ok()) {
+    for entry in WalkDir::new(&data_dir).into_iter().filter_map(|e| e.ok()) {
         if entry.file_type().is_file() && entry.path().extension().unwrap_or_default() == "md" {
             let path = entry.into_path();
-            match MdFile::new(&path) {
+            match MdFile::new(&path, &data_dir) {
                 Ok(mdfile) => {
                     results.push(mdfile);
                 }
@@ -97,4 +99,20 @@ pub fn get_unprocessed_wave_files() -> Vec<PathBuf> {
     }
     wave_files.sort_by_key(|file| Reverse(file.display().to_string()));
     wave_files
+}
+
+pub(crate) fn delete_file(filename: &String) -> anyhow::Result<()> {
+    let data_dir = get_data_dir()?;
+    let file_path = data_dir.join(filename);
+
+    let related_extensions = vec!["md", "vtt", "mp3"];
+    for ext in related_extensions {
+        let related_file_path = file_path.with_extension(ext);
+        if related_file_path.exists() {
+            log::info!("Deleting file: {}", related_file_path.to_str().unwrap());
+            fs::remove_file(&related_file_path).map_err(|e| anyhow!("Failed to delete file {:?}: {}", related_file_path, e))?;
+        }
+    }
+
+    Ok(())
 }
