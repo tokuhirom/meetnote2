@@ -25,8 +25,7 @@ Please allow it.
  * Detect window names to start the recording.
  * Record audio to wave file.
    * Convert it to mp3 file automatically.
-   * Transcribe it to the text using OpenAI's API.
-     * TODO: support whisper.cpp or something to transcribe locally
+   * Transcribe it to the text using whisper.cpp.
    * Summarize it with OpenAI's API
      * TODO: Summarize it in the local machine.
  * Edit summary file
@@ -34,8 +33,10 @@ Please allow it.
 ## Future plan
 
  * Show VTT file
- * Play mp3 file
+ * Play mp3 file(or, use webm or something other format)
  * use ScreenCaptureKit API
+ * drop external dependencies
+   * ffmpeg, etc.
 
 ## How do I build this?
 
