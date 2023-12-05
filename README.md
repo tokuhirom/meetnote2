@@ -11,6 +11,7 @@ This application is built top of `Tauri + Svelte + Typescript`.
  * Use lame for mp3 encoding.
    * Please install it via `brew install lame`
  * `brew install make `
+ * `brew install ffmpeg` ffmpeg で、音声ファイルのサンプリングレートを変換しています。
  * `xcode` 的なサムシングが必要です
    * `xcode-select --install`
 
