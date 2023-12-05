@@ -27,7 +27,6 @@ Please allow it.
    * Convert it to mp3 file automatically.
    * Transcribe it to the text using whisper.cpp.
    * Summarize it with OpenAI's API
-     * TODO: Summarize it in the local machine.
  * Edit summary file
 
 ## Future plan
@@ -37,6 +36,9 @@ Please allow it.
  * use ScreenCaptureKit API
  * drop external dependencies
    * ffmpeg, etc.
+ * TODO: Summarize it in the local machine.
+   * but so, chatgpt can generate excellent summary...
+   * I can't generate the same level summary with OSS and or local LLM.
 
 ## How do I build this?
 
