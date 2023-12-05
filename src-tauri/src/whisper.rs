@@ -1,8 +1,24 @@
+use std::fs;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use anyhow::anyhow;
 use std::time::Instant;
+use uuid::Uuid;
 
-// language: ja
+// 一意の一時ファイル名を生成する関数
+fn generate_temp_file_path(ext: &str) -> PathBuf {
+    // TEMPディレクトリを取得
+    let temp_dir = std::env::temp_dir();
+    // 一意のIDを生成
+    let unique_id = Uuid::new_v4();
+    // ファイル名を構築
+    let file_name = format!("{}.{}", unique_id.to_string(), ext);
+    // 完全なパスを作成
+    let temp_file_path = Path::join(&temp_dir, &file_name);
+
+    temp_file_path
+}
+
 pub(crate) fn run_whisper(version_tag: &str, model: &str, language: &str, in_file: &str, out_file: &str) -> anyhow::Result<()> {
     let cache_dir = dirs::cache_dir()
         .ok_or(anyhow!("Cannot get cache directory"))?;
@@ -54,6 +70,25 @@ pub(crate) fn run_whisper(version_tag: &str, model: &str, language: &str, in_fil
         }
     }
 
+    // 16kbps, 16bit is required for whisper.cpp https://github.com/ggerganov/whisper.cpp
+    let temp_file_path = generate_temp_file_path("wav");
+
+    // Use ffmpeg to convert the input file to the desired sample rate and bit depth
+    let output = Command::new("ffmpeg")
+        .args(&[
+            "-i", in_file,
+            "-ar", "16000",
+            "-acodec", "pcm_s16le",
+            temp_file_path.as_path().to_str().unwrap()
+        ])
+        .output()?;
+    if !output.status.success() {
+        return Err(anyhow!("ffmpeg failed to convert the WAV file: {:?} {:?}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        ));
+    }
+
     log::info!("Start transcribing...{} to {}", in_file, out_file);
     let start = Instant::now();
     let output = Command::new("./main")
@@ -62,15 +97,18 @@ pub(crate) fn run_whisper(version_tag: &str, model: &str, language: &str, in_fil
             "-m", &format!("models/ggml-{}.bin", model),
             "-ovtt",
             "-of", &out_file.replace(".vtt", "").to_string(),
-            "-f", in_file
+            "-f", temp_file_path.to_str().unwrap()
         ])
         .current_dir(&whisper_dir)
         .output()?;
     if !output.status.success() {
+        fs::remove_file(temp_file_path.to_str().unwrap())?;
         return Err(anyhow!("Cannot run whisper.cpp: {} {}",
             in_file,
             String::from_utf8_lossy(&output.stderr)));
     }
+
+    fs::remove_file(temp_file_path.to_str().unwrap())?;
 
     log::info!("Ran whisper.cpp: {:?}, {:?}",
         String::from_utf8_lossy(&output.stdout),
