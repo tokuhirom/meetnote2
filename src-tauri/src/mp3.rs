@@ -14,8 +14,10 @@ pub(crate) fn convert_to_mp3(wav_file: &str, mp3_file: &str) -> Result<()> {
         .output()?;
 
     if !output.status.success() {
-        return Err(anyhow!("Failed to convert to mp3: {}",
-            String::from_utf8_lossy(&output.stderr)));
+        return Err(anyhow!("Failed to convert to mp3: {}, {}",
+            String::from_utf8_lossy(&output.stderr),
+            String::from_utf8_lossy(&output.stdout)
+        ));
     }
 
     log::info!("Converted {} to {}", wav_file, mp3_file);

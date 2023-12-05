@@ -10,6 +10,9 @@ This application is built top of `Tauri + Svelte + Typescript`.
  * This application uses Mac OSX APIs.
  * Use lame for mp3 encoding.
    * Please install it via `brew install lame`
+ * `brew install make `
+ * `xcode` 的なサムシングが必要です
+   * `xcode-select --install`
 
 ## Permissions
 
