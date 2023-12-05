@@ -8,7 +8,7 @@ pub fn postprocess(openai_api_key: &String, wav_file: String, language: &str) ->
     // convert to MP3
     let mp3_file = wav_file.replace(".wav", ".mp3");
     if let Err(e) = mp3::convert_to_mp3(&wav_file, &mp3_file) {
-        return Err(anyhow!("Cannot convert to mp3({}): {:?}", mp3_file,     e))
+        return Err(anyhow!("Cannot convert to mp3({} to {}): {:?}", wav_file, mp3_file, e))
     }
 
     let openai = openai::OpenAICustomizedClient::new(openai_api_key)?;
@@ -16,7 +16,8 @@ pub fn postprocess(openai_api_key: &String, wav_file: String, language: &str) ->
     // convert to VTT
     let vtt_file = wav_file.replace(".wav", ".vtt");
     log::info!("Convert {} to {}", mp3_file, vtt_file);
-    match whisper::run_whisper("v1.5.1", "small",  "ja", &wav_file, &vtt_file) {
+    // バージョンとモデルは変更可能にしたい
+    match whisper::run_whisper("v1.5.1", "small",  language, &wav_file, &vtt_file) {
         Ok(_) => {
             log::info!("Wrote transcript to {}", vtt_file);
         }
