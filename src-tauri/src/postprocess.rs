@@ -1,5 +1,5 @@
 use std::fs;
-use crate::{mp3, openai};
+use crate::{mp3, openai, whisper};
 use std::fs::File;
 use std::io::prelude::*;
 use anyhow::{anyhow, Result};
@@ -16,15 +16,12 @@ pub fn postprocess(openai_api_key: &String, wav_file: String, language: &str) ->
     // convert to VTT
     let vtt_file = wav_file.replace(".wav", ".vtt");
     log::info!("Convert {} to {}", mp3_file, vtt_file);
-    match openai.transcript(&mp3_file, language) {
-        Ok(content) => {
-            println!("Got transcript: {}", content);
-            println!("Write transcript to {}", vtt_file);
-            let mut file = File::create(vtt_file.clone())?;
-            file.write_all(content.as_bytes())?;
+    match whisper::run_whisper("v1.5.1", "small",  "ja", &wav_file, &vtt_file) {
+        Ok(_) => {
+            log::info!("Wrote transcript to {}", vtt_file);
         }
         Err(e) => {
-            return Err(anyhow!("Cannot transcribe from mp3: {:?}", e))
+            return Err(anyhow!("Cannot transcribe from wave file: {:?}, {:?}", wav_file, e))
         }
     }
 

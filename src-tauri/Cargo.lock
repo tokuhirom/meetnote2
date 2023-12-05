@@ -2286,6 +2286,7 @@ dependencies = [
  "simplelog",
  "tauri",
  "tauri-build",
+ "time",
  "walkdir",
 ]
 
