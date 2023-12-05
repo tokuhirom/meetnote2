@@ -11,6 +11,7 @@ mod config;
 mod screencapture;
 mod data_repo;
 mod postprocess_resumer;
+mod whisper;
 
 use std::fs::File;
 use anyhow::anyhow;
@@ -69,7 +70,6 @@ fn main() -> anyhow::Result<()> {
             File::create(data_repo::get_data_dir().unwrap().join("meetnote2.log"))?
         ),
     ])?;
-
 
     let config = config::load_config()?;
     let openai_api_token = config.openai_api_token.ok_or(
