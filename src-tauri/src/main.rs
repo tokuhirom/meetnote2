@@ -12,6 +12,7 @@ mod screencapture;
 mod data_repo;
 mod postprocess_resumer;
 mod whisper;
+mod webvtt;
 
 use std::fs::File;
 use anyhow::anyhow;
