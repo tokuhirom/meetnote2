@@ -37,11 +37,17 @@ pub(crate) fn run_whisper(version_tag: &str, model: &str, language: &str, in_fil
             return Err(anyhow!("Cannot download model: {}", String::from_utf8_lossy(&output.stderr)));
         }
     } else {
-        let output = Command::new("git")
+        log::info!("Checkout {}", version_tag);
+        let output = match Command::new("git")
             .current_dir(whisper_dir.clone())
             .arg("checkout")
             .arg(version_tag)
-            .output()?;
+            .output() {
+            Ok(output) => { output }
+            Err(err) => {
+                return Err(anyhow!("Cannot checkout directory({}): {:?}", version_tag, err));
+            }
+        };
         if !output.status.success() {
             return Err(anyhow!("Cannot checkout directory: {}", String::from_utf8_lossy(&output.stderr)));
         }
@@ -74,14 +80,19 @@ pub(crate) fn run_whisper(version_tag: &str, model: &str, language: &str, in_fil
     let temp_file_path = generate_temp_file_path("wav");
 
     // Use ffmpeg to convert the input file to the desired sample rate and bit depth
-    let output = Command::new("ffmpeg")
+    let output = match Command::new("ffmpeg")
         .args(&[
             "-i", in_file,
             "-ar", "16000",
             "-acodec", "pcm_s16le",
             temp_file_path.as_path().to_str().unwrap()
         ])
-        .output()?;
+        .output() {
+        Ok(output) => { output }
+        Err(err) => {
+            return Err(anyhow!("Cannot run ffmpeg: {}", err))
+        }
+    };
     if !output.status.success() {
         return Err(anyhow!("ffmpeg failed to convert the WAV file: {:?} {:?}",
             String::from_utf8_lossy(&output.stdout),
@@ -91,7 +102,7 @@ pub(crate) fn run_whisper(version_tag: &str, model: &str, language: &str, in_fil
 
     log::info!("Start transcribing...{} to {}", in_file, out_file);
     let start = Instant::now();
-    let output = Command::new("./main")
+    let output = match Command::new("./main")
         .args(&[
             "--language", language,
             "-m", &format!("models/ggml-{}.bin", model),
@@ -100,15 +111,24 @@ pub(crate) fn run_whisper(version_tag: &str, model: &str, language: &str, in_fil
             "-f", temp_file_path.to_str().unwrap()
         ])
         .current_dir(&whisper_dir)
-        .output()?;
+        .output() {
+        Ok(output) => { output }
+        Err(err) => {
+            return Err(anyhow!("Cannot run whisper: {}", err))
+        }
+    };
     if !output.status.success() {
-        fs::remove_file(temp_file_path.to_str().unwrap())?;
+        if let Err(err) = fs::remove_file(temp_file_path.to_str().unwrap()) {
+            return Err(anyhow!("Cannot remove file({:?}): {:?}", temp_file_path, err));
+        }
         return Err(anyhow!("Cannot run whisper.cpp: {} {}",
             in_file,
             String::from_utf8_lossy(&output.stderr)));
     }
 
-    fs::remove_file(temp_file_path.to_str().unwrap())?;
+    if let Err(err) = fs::remove_file(temp_file_path.to_str().unwrap()) {
+        return Err(anyhow!("Cannot remove file({:?}): {:?}", temp_file_path, err));
+    }
 
     log::info!("Ran whisper.cpp: {:?}, {:?}",
         String::from_utf8_lossy(&output.stdout),

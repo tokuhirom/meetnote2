@@ -1,6 +1,5 @@
 use std::fs;
 use crate::{mp3, openai, whisper};
-use std::fs::File;
 use std::io::prelude::*;
 use anyhow::{anyhow, Result};
 
