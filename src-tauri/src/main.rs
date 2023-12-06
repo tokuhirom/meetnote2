@@ -20,6 +20,7 @@ use simplelog::ColorChoice;
 use tauri::{CustomMenuItem, Manager, Menu, MenuItem, Submenu, WindowBuilder};
 use crate::config::MeetNoteConfig;
 use crate::data_repo::MdFile;
+use crate::webvtt::Caption;
 
 #[tauri::command]
 fn load_files() -> Vec<MdFile> {
@@ -54,6 +55,12 @@ fn delete_file(filename: String) -> Result<(), String> {
 #[tauri::command]
 fn save_file(filename: String, content: String) -> Result<(), String> {
     return data_repo::save_file(&filename, &content)
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn load_webvtt(filename: String) -> Result<Vec<Caption>, String> {
+    return data_repo::load_webvtt(&filename)
         .map_err(|e| e.to_string())
 }
 
@@ -149,7 +156,8 @@ fn main() -> anyhow::Result<()> {
         .invoke_handler(tauri::generate_handler![
             load_files, delete_file, save_file,
             get_input_devices,
-            load_config, save_config])
+            load_config, save_config,
+            load_webvtt])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 

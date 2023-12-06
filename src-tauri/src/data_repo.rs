@@ -6,6 +6,7 @@ use anyhow::anyhow;
 use chrono::Local;
 use serde::{Deserialize, Serialize};
 use walkdir::WalkDir;
+use crate::webvtt::{Caption, parse_webvtt};
 
 pub fn get_data_dir() -> anyhow::Result<PathBuf> {
     let home_dir = dirs::home_dir()
@@ -131,4 +132,20 @@ pub(crate) fn save_file(filename: &String, content: &String) -> anyhow::Result<(
             Err(anyhow!("Cannot write content to {:?}: {:?}", file_path, err))
         }
     }
+}
+
+pub(crate) fn load_webvtt(filename: &String) -> anyhow::Result<Vec<Caption>> {
+    let data_dir = get_data_dir()?;
+    let file_path = data_dir.join(filename);
+
+    log::info!("Loading webvtt content from {:?}", file_path);
+    let vtt_src = match fs::read_to_string(file_path.as_path()) {
+        Ok(s) => {s}
+        Err(err) => {
+            return Err(anyhow!("cannot load vtt file: {:?}, {}", file_path, err))
+        }
+    };
+
+    let vtt = parse_webvtt(&*vtt_src);
+    Ok(vtt)
 }

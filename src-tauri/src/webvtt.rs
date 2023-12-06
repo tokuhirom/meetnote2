@@ -1,8 +1,9 @@
 use regex::Regex;
 use std::fmt::Debug;
+use serde::{Deserialize, Serialize};
 
-#[derive(PartialEq)]
-struct Caption {
+#[derive(PartialEq, Serialize, Deserialize)]
+pub struct Caption {
     start_time: String,
     end_time: String,
     text: String,

@@ -1,5 +1,6 @@
 <script lang="ts">
     import {invoke} from "@tauri-apps/api/tauri";
+    import {WebviewWindow} from "@tauri-apps/api/window";
 
     export let file = {
         filename: string,
@@ -20,6 +21,14 @@
         editingContent = file.content
     }
 
+    async function openLog() {
+        console.log("open log");
+        const webview = new WebviewWindow('vttlog', {
+            url: "vtt.html?filename=" + file.filename
+        });
+        await webview.emit("filename", file.filename);
+    }
+
     async function saveItem() {
         console.log(`Save file: ${file.filename}`)
         await invoke("save_file", {
@@ -36,6 +45,7 @@
         <h2 style="float: left;">{file.filename}</h2>
         <div style="float: right">
             <button on:click|preventDefault={enterEditingMode}>Edit</button>
+            <button on:click|preventDefault={openLog}>Log</button>
             <button on:click={e => deleteItem(file.filename)}>Delete</button>
         </div>
     </div>

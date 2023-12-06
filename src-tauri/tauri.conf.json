@@ -14,7 +14,8 @@
       "all": false,
       "window": {
         "all": false,
-        "close": true
+        "close": true,
+        "create": true
       },
       "shell": {
         "all": false,
