@@ -1,6 +1,5 @@
 use std::fs;
 use crate::{mp3, openai, whisper};
-use std::io::prelude::*;
 use anyhow::{anyhow, Result};
 
 pub fn postprocess(openai_api_key: &String, wav_file: String, language: &str) -> Result<()>{
