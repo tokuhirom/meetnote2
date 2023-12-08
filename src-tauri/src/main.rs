@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod audio;
+mod mic_audio;
 mod window;
 mod mp3;
 mod openai;
@@ -42,7 +42,7 @@ fn save_config(config: MeetNoteConfig) -> Result<(), String>{
 
 #[tauri::command]
 fn get_input_devices() -> Result<Vec<String>, String> {
-    audio::get_input_devices()
+    mic_audio::get_input_devices()
         .map_err(|e| e.to_string())
 }
 

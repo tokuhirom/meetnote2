@@ -7,12 +7,12 @@ use anyhow::anyhow;
 
 type WavWriterHandle = Arc<Mutex<Option<hound::WavWriter<BufWriter<File>>>>>;
 
-pub struct AudioRecorder {
+pub struct MicAudioRecorder {
     pub stream: Stream,
     pub writer: WavWriterHandle,
 }
 
-impl AudioRecorder {
+impl MicAudioRecorder {
     pub fn new(output_file: &str, input_device: &Device) -> Self {
         let config: SupportedStreamConfig = input_device
             .default_input_config()
@@ -74,7 +74,7 @@ impl AudioRecorder {
         }
             .unwrap();
 
-        AudioRecorder { stream, writer }
+        MicAudioRecorder { stream, writer }
     }
 
     pub fn start_recording(&mut self) {

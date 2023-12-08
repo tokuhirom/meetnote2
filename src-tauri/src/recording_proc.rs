@@ -1,13 +1,13 @@
 use std::thread::sleep;
 use std::time::Duration;
-use crate::{audio, data_repo, postprocess, window};
+use crate::{mic_audio, data_repo, postprocess, window};
 
 pub fn start_recording_process(openai_api_key: String, target_device: Option<String>) {
     let mut is_recording = false;
     let mut wave_file: Option<String> = None;
-    let mut recorder: Option<audio::AudioRecorder> = None;
+    let mut recorder: Option<mic_audio::MicAudioRecorder> = None;
 
-    let input_device = audio::select_input_device_by_name(target_device);
+    let input_device = mic_audio::select_input_device_by_name(target_device);
     log::info!("\n\nReady to processing...");
 
     loop {
@@ -30,7 +30,7 @@ pub fn start_recording_process(openai_api_key: String, target_device: Option<Str
                     continue;
                 };
 
-                recorder = Some(audio::AudioRecorder::new(output_file, &input_device));
+                recorder = Some(mic_audio::MicAudioRecorder::new(output_file, &input_device));
                 recorder.as_mut().unwrap().start_recording();
                 wave_file = Some(output_file.to_string());
 
