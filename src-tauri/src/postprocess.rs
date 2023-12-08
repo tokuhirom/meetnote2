@@ -101,26 +101,63 @@ fn file_remove(filename: &str) -> anyhow::Result<()> {
 fn merge_audio_files(mic_wav_file: String) -> anyhow::Result<String> {
     let output_wave_file = mic_wav_file.replace(".mic.wav", ".wav");
 
-    let mut command = Command::new("sox");
-    command.arg("-m"); // mix
-
-    let raw_files = glob::glob(&*mic_wav_file.replace(".mic.wav", "*.raw"))?;
-    log::info!("Processing raw files: {:?}", raw_files);
-    for x in raw_files {
-        let y = x.unwrap();
-        let path = y.to_str().unwrap();
-
-        command.arg("-t").arg("raw")
-            .arg("-r").arg("48000")
-            .arg("-e").arg("floating-point")
-            .arg("-b").arg("32")
-            .arg("-c").arg("1")
-            .arg("--endian").arg("little")
-            .arg(path.to_string());
+    // merge raw files to 1 wav file
+    let screen_tmp = tempfile::Builder::new()
+        .suffix(".wav")
+        .rand_bytes(5)
+        .tempfile()
+        .unwrap();
+    {
+        let raw_files = glob::glob(&*mic_wav_file.replace(".mic.wav", "*.raw"))?;
+        log::info!("Processing raw files: {:?}", raw_files);
+        let mut command = Command::new("sox");
+        for x in raw_files {
+            // TODO more flexible format support...
+            command
+                .arg("-t").arg("raw")
+                .arg("-r").arg("48000")
+                .arg("-e").arg("floating-point")
+                .arg("-b").arg("32")
+                .arg("-c").arg("1")
+                .arg("--endian").arg("little");
+            command.arg(x.unwrap().to_str().unwrap().to_string());
+        }
+        command.arg(screen_tmp.path().to_str().unwrap());
+        command.arg("norm");
+        log::info!("Merge & normalize raw file: {:?}", command);
+        let output = command.output()?;
+        if !output.status.success() {
+            log::error!("Cannot run sox: {:?}: {}", command, String::from_utf8_lossy(&output.stderr));
+        }
     }
-    command.arg("-t").arg("wav").arg(mic_wav_file)
+
+    // normalize mic.wav file.
+    let mic_wav_tmp = tempfile::Builder::new()
+        .suffix(".wav")
+        .rand_bytes(5)
+        .tempfile()
+        .unwrap();
+    {
+        let mut command = Command::new("sox");
+        command
+            .arg(mic_wav_file)
+            .arg(mic_wav_tmp.path().to_str().unwrap())
+            .arg("norm");
+        log::info!("normalize mic wave file: {:?}", command);
+        let output = command.output()?;
+        if !output.status.success() {
+            log::error!("Cannot run sox: {:?}: {}", command, String::from_utf8_lossy(&output.stderr));
+        }
+    }
+
+    // mix wave files
+    let mut command = Command::new("sox");
+    command
+        .arg("-m") // mix
+        .arg(mic_wav_tmp.path().to_str().unwrap())
+        .arg(screen_tmp.path().to_str().unwrap())
         .arg(output_wave_file.clone())
-        .arg("gain").arg("-n");
+        ;
     log::info!("Merge audio files: {:?}", command);
     let output = command
         .output()?;
