@@ -9,9 +9,10 @@ use walkdir::WalkDir;
 use crate::webvtt::{Caption, parse_webvtt};
 
 pub fn get_data_dir() -> anyhow::Result<PathBuf> {
-    let home_dir = dirs::home_dir()
-        .ok_or(anyhow!("Cannot get home directory"))?;
-    Ok(home_dir.join("MeetNote"))
+    let app_data_dir = dirs::data_dir()
+        .ok_or(anyhow!("Cannot get home directory"))?
+        .join("com.github.tokuhirom.meetnote2");
+    Ok(app_data_dir)
 }
 
 pub fn new_mic_wave_file_name() -> anyhow::Result<PathBuf> {
@@ -148,4 +149,11 @@ pub(crate) fn load_webvtt(filename: &String) -> anyhow::Result<Vec<Caption>> {
 
     let vtt = parse_webvtt(&*vtt_src);
     Ok(vtt)
+}
+
+pub(crate) fn read_data_tag_mp3(filename: &String) -> anyhow::Result<String> {
+    let data_dir = get_data_dir()?;
+    let file_path = data_dir.join(filename);
+    let vec = fs::read(file_path)?;
+    Ok(format!("data:audio/mpeg;base64,{}", base64::encode(vec)))
 }

@@ -65,6 +65,12 @@ fn load_webvtt(filename: String) -> Result<Vec<Caption>, String> {
         .map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn read_data_tag_mp3(filename: String) -> Result<String, String> {
+    return data_repo::read_data_tag_mp3(&filename)
+        .map_err(|e| e.to_string())
+}
+
 fn main() -> anyhow::Result<()> {
     simplelog::CombinedLogger::init(vec![
         simplelog::TermLogger::new(
@@ -158,7 +164,8 @@ fn main() -> anyhow::Result<()> {
             load_files, delete_file, save_file,
             get_input_devices,
             load_config, save_config,
-            load_webvtt])
+            load_webvtt,
+            read_data_tag_mp3])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 

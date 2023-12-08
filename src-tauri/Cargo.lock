@@ -2277,6 +2277,7 @@ name = "meetnote2"
 version = "0.0.0"
 dependencies = [
  "anyhow",
+ "base64 0.21.5",
  "chrono",
  "config",
  "core-graphics 0.23.1",

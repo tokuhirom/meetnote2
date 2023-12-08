@@ -51,6 +51,7 @@ tempfile = { version = "3.8.1", features = [] }
 tempdir = "0.3.7"
 uuid = { version = "1.6.1", features = ["v4"] }
 regex = "1.10.2"
+base64 = "0.21.5"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
