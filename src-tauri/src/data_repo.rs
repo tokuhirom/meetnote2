@@ -14,7 +14,7 @@ pub fn get_data_dir() -> anyhow::Result<PathBuf> {
     Ok(home_dir.join("MeetNote"))
 }
 
-pub fn new_wave_file_name() -> anyhow::Result<PathBuf> {
+pub fn new_mic_wave_file_name() -> anyhow::Result<PathBuf> {
     let now = Local::now();
     let dirname = now.format("%Y%m%d").to_string();
 
@@ -23,7 +23,7 @@ pub fn new_wave_file_name() -> anyhow::Result<PathBuf> {
 
     fs::create_dir_all(&dir)?;
 
-    let filename = now.format("%Y%m%d%H%M%S.wav").to_string();
+    let filename = now.format("%Y%m%d%H%M%S.mic.wav").to_string();
     Ok(dir.join(filename))
 }
 

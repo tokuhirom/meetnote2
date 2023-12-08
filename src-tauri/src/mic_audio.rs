@@ -10,6 +10,7 @@ type WavWriterHandle = Arc<Mutex<Option<hound::WavWriter<BufWriter<File>>>>>;
 pub struct MicAudioRecorder {
     pub stream: Stream,
     pub writer: WavWriterHandle,
+    pub output_file: String,
 }
 
 impl MicAudioRecorder {
@@ -74,7 +75,11 @@ impl MicAudioRecorder {
         }
             .unwrap();
 
-        MicAudioRecorder { stream, writer }
+        MicAudioRecorder {
+            stream,
+            writer,
+            output_file: String::from(output_file),
+        }
     }
 
     pub fn start_recording(&mut self) {

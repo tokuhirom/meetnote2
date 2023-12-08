@@ -2283,6 +2283,7 @@ dependencies = [
  "cpal",
  "dirs",
  "dirs-sys",
+ "glob",
  "hound",
  "log",
  "regex",

@@ -1,8 +1,12 @@
 use std::fs;
+use std::fs::remove_file;
+use std::process::Command;
 use crate::{mp3, openai, whisper};
 use anyhow::{anyhow, Result};
 
-pub fn postprocess(openai_api_key: &String, wav_file: String, language: &str) -> Result<()>{
+pub fn postprocess(openai_api_key: &String, mic_wav_file: String, language: &str) -> Result<()>{
+    let wav_file = merge_audio_files(mic_wav_file.clone())?;
+
     // convert to MP3
     let mp3_file = wav_file.replace(".wav", ".mp3");
     if let Err(e) = mp3::convert_to_mp3(&wav_file, &mp3_file) {
@@ -70,10 +74,59 @@ pub fn postprocess(openai_api_key: &String, wav_file: String, language: &str) ->
         }
     }
 
-    match fs::remove_file(&wav_file) {
-        Ok(_) => {log::info!("Removed {:?}", wav_file)}
-        Err(err) => {log::error!("Cannot remove {:?}: {:?}", wav_file, err)}
+    remove_file(wav_file)?;
+    remove_file(mic_wav_file.clone())?;
+
+    let raw_files = glob::glob(&*mic_wav_file.replace(".mic.wav", "*.raw"))?;
+    for x in raw_files {
+        let y = x.unwrap();
+        remove_file(y.to_str().unwrap())?;
     }
 
     Ok(())
+}
+
+fn file_remove(filename: &str) -> anyhow::Result<()> {
+    match fs::remove_file(filename) {
+        Ok(_) => {
+            log::info!("Removed {:?}", filename);
+            Ok(())
+        }
+        Err(err) => {
+            Err(anyhow!("Cannot remove {:?}: {:?}", filename, err))
+        }
+    }
+}
+
+fn merge_audio_files(mic_wav_file: String) -> anyhow::Result<String> {
+    let output_wave_file = mic_wav_file.replace(".mic.wav", ".wav");
+
+    let mut command = Command::new("sox");
+    command.arg("-m"); // mix
+
+    let raw_files = glob::glob(&*mic_wav_file.replace(".mic.wav", "*.raw"))?;
+    log::info!("Processing raw files: {:?}", raw_files);
+    for x in raw_files {
+        let y = x.unwrap();
+        let path = y.to_str().unwrap();
+
+        command.arg("-t").arg("raw")
+            .arg("-r").arg("48000")
+            .arg("-e").arg("floating-point")
+            .arg("-b").arg("32")
+            .arg("-c").arg("1")
+            .arg("--endian").arg("little")
+            .arg(path.to_string());
+    }
+    command.arg("-t").arg("wav").arg(mic_wav_file)
+        .arg(output_wave_file.clone())
+        .arg("gain").arg("-n");
+    log::info!("Merge audio files: {:?}", command);
+    let output = command
+        .output()?;
+    if !output.status.success() {
+        log::error!("Cannot run sox: {:?}: {}", command, String::from_utf8_lossy(&output.stderr));
+    }
+
+    Ok(output_wave_file)
 }

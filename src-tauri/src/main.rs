@@ -13,6 +13,7 @@ mod data_repo;
 mod postprocess_resumer;
 mod whisper;
 mod webvtt;
+mod screen_audio;
 
 use std::fs::File;
 use anyhow::anyhow;

@@ -100,7 +100,7 @@ pub(crate) fn run_whisper(version_tag: &str, model: &str, language: &str, in_fil
         ));
     }
 
-    log::info!("Start transcribing...{} to {}", in_file, out_file);
+    log::info!("Start transcribing... {} to {}", in_file, out_file);
     let start = Instant::now();
     let output = match Command::new("./main")
         .args(&[
