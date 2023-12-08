@@ -13,6 +13,18 @@
     logs = await invoke("load_webvtt", {filename: filename});
     mp3 = await invoke("read_data_tag_mp3", {filename: filename.replace(".vtt", ".mp3")});
   });
+
+  function convertToSeconds(time: string): number {
+    const splitTime = time.split(':').map(Number);
+    return splitTime[0] * 3600 + splitTime[1] * 60 + splitTime[2];
+  }
+
+   function seek(log:{start_time: string, end_time: string, text: string}) {
+    const start = convertToSeconds(log.start_time);
+    const audio = document.getElementsByTagName("audio")[0];
+    audio.currentTime = start;
+    audio.play();
+  }
 </script>
 
 <main class="container">
@@ -27,7 +39,7 @@
 
   {#each logs as log}
     <tr>
-      <td>{log.start_time}</td>
+      <td><a href="#" on:click|preventDefault={() => seek(log)}>{log.start_time}</a></td>
       <td>{log.end_time}</td>
       <td>{log.text}</td>
     </tr>
