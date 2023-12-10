@@ -28,17 +28,15 @@ Please allow it.
    * Transcribe it to the text using whisper.cpp.
    * Summarize it with OpenAI's API
  * Edit summary file
-
-## Future plan
-
  * Show VTT file
  * Play mp3 file(or, use webm or something other format)
  * use ScreenCaptureKit API
+ * Summarize it in the local machine.
+
+## Future plan
+
  * drop external dependencies
    * ffmpeg, etc.
- * TODO: Summarize it in the local machine.
-   * but so, chatgpt can generate excellent summary...
-   * I can't generate the same level summary with OSS and or local LLM.
 
 ## How do I build this?
 
