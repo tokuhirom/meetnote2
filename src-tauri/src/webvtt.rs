@@ -2,11 +2,23 @@ use regex::Regex;
 use std::fmt::Debug;
 use serde::{Deserialize, Serialize};
 
-#[derive(PartialEq, Serialize, Deserialize)]
+#[derive(PartialEq, Serialize, Deserialize, Clone)]
 pub struct Caption {
-    start_time: String,
+    pub(crate) start_time: String,
     end_time: String,
-    text: String,
+    pub(crate) text: String,
+}
+
+impl Caption {
+    pub fn parse_start_time(&self) -> u32 {
+        let time_parts: Vec<&str> = self.start_time.split(":").collect();
+        let hour: u32 = time_parts[0].parse().unwrap();
+        let minute: u32 = time_parts[1].parse().unwrap();
+        let second: Vec<&str> = time_parts[2].split(".").collect();
+        let sec: u32 = second[0].parse().unwrap();
+        let millisec: u32 = second[1].parse().unwrap();
+        return millisec + sec * 1000 + minute * 60 * 1000 + hour * 60 * 60 * 1000;
+    }
 }
 
 impl Debug for Caption {

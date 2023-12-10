@@ -1,12 +1,13 @@
 use lindera_analyzer::analyzer::Analyzer;
+use lindera_analyzer::token::Token;
 use serde_json::json;
 
-struct LinderaTokenizer {
+pub  struct LinderaTokenizer {
     analyzer: Analyzer,
 }
 
 impl LinderaTokenizer {
-    fn new() -> anyhow::Result<LinderaTokenizer> {
+    pub(crate) fn new() -> anyhow::Result<LinderaTokenizer> {
         let analyzer = Analyzer::from_value(&json!({
   "character_filters": [
     {
@@ -30,24 +31,6 @@ impl LinderaTokenizer {
     "mode": "normal"
   },
   "token_filters": [
-    {
-      "kind": "japanese_compound_word",
-      "args": {
-        "kind": "ipadic",
-        "tags": [
-          "名詞,数"
-        ],
-        "new_tag": "名詞,数"
-      }
-    },
-    {
-      "kind": "japanese_number",
-      "args": {
-        "tags": [
-          "名詞,数"
-        ]
-      }
-    },
     {
       "kind": "japanese_stop_tags",
       "args": {
@@ -76,7 +59,11 @@ impl LinderaTokenizer {
           "記号,括弧閉",
           "その他,間投",
           "フィラー",
-          "非言語音"
+          "非言語音",
+          "名詞,非自立,一般", // "の" とか。
+          "副詞,助詞類接続",
+          "助詞,接続助詞", // て
+          "動詞,非自立", // ください
         ]
       }
     },
@@ -95,8 +82,14 @@ impl LinderaTokenizer {
 
 impl crate::tokenizer::Tokenizer for LinderaTokenizer {
     fn tokenize(&self, src: String) -> anyhow::Result<Vec<String>> {
-        let vec = self.analyzer.analyze(src.to_string().as_str()).expect("TODO: panic message");
-        Ok(vec.iter().map(|y| {y.text.clone()}).collect())
+        let vec = self.analyzer.analyze(src.to_string().as_str())
+            .expect("TODO: panic message");
+        let vec : Vec<String> = vec.iter().filter(|t| {
+            t.text.len() != 1
+        }).map(|y| {
+            y.text.clone()
+        }).collect();
+        Ok(vec)
     }
 }
 
@@ -111,5 +104,21 @@ mod tests {
         let vec = tokenizer.tokenize("私の名前は中野です。".to_string()).unwrap();
 
         assert_eq!(vec, vec!["私", "名前", "中野"]);
+    }
+
+    #[test]
+    fn it_works_well() {
+        let tokenizer = LinderaTokenizer::new().unwrap();
+        let vec = tokenizer.tokenize("そう!Chromeですね。".to_string()).unwrap();
+
+        assert_eq!(vec, vec!["Chrome"]);
+    }
+
+    #[test]
+    fn test2() {
+        let tokenizer = LinderaTokenizer::new().unwrap();
+        let vec = tokenizer.tokenize("頑張ってください".to_string()).unwrap();
+
+        assert_eq!(vec, vec!["頑張っ"]);
     }
 }

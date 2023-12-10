@@ -1,7 +1,6 @@
 use std::fs;
-use std::fs::remove_file;
 use std::process::Command;
-use crate::{mp3, openai, whisper};
+use crate::{mp3, whisper};
 use anyhow::{anyhow, Result};
 use crate::openai_summarizer::OpenAISummarizer;
 use crate::summarizer::Summarizer;
@@ -48,13 +47,13 @@ pub fn postprocess(openai_api_key: &String, mic_wav_file: String, language: &str
                     summary_file, e))
     }
 
-    remove_file(wav_file)?;
-    remove_file(mic_wav_file.clone())?;
+    file_remove(wav_file.as_str())?;
+    file_remove(mic_wav_file.clone().as_str())?;
 
     let raw_files = glob::glob(&*mic_wav_file.replace(".mic.wav", "*.raw"))?;
     for x in raw_files {
         let y = x.unwrap();
-        remove_file(y.to_str().unwrap())?;
+        file_remove(y.to_str().unwrap())?;
     }
 
     Ok(())
