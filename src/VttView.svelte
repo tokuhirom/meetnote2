@@ -39,8 +39,7 @@
 
   {#each logs as log}
     <tr>
-      <td><a href="#" on:click|preventDefault={() => seek(log)}>{log.start_time}</a></td>
-      <td>{log.end_time}</td>
+      <td><a href="#" on:click|preventDefault={() => seek(log)}>[{log.start_time}]</a></td>
       <td>{log.text}</td>
     </tr>
   {/each}
@@ -48,4 +47,7 @@
 </main>
 
 <style>
+  td {
+    vertical-align: top;
+  }
 </style>
