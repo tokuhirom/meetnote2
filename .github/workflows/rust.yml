@@ -20,6 +20,7 @@ jobs:
       with:
         node-version: '20'
     - run: npm ci
+    - run: npm install --save-dev @tauri-apps/cli
     - name: Build
       run: npm run tauri build
     - name: Run tests
