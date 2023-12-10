@@ -1,15 +1,20 @@
 use anyhow::anyhow;
 use crate::data_repo;
 use crate::config;
-use crate::postprocess::postprocess;
+use crate::postprocess::PostProcessor;
+use crate::tf_idf_summarizer::TFIDFSummarizer;
 
 pub fn resume_postprocess() -> anyhow::Result<()> {
     let wave_files = data_repo::get_unprocessed_wave_files();
     let config = config::load_config()?;
-    let openai_api_token = config.openai_api_token
-        .ok_or(anyhow!("Missing openai api token in configuration file"))?;
+    // let openai_api_token = config.openai_api_token
+    //     .ok_or(anyhow!("Missing openai api token in configuration file"))?;
+    // let summarizer = OpenAISummarizer::new(openai_api_key)?;
+    let post_processor = PostProcessor::new(
+        Box::new(TFIDFSummarizer::new()?)
+    );
     for wave in &wave_files {
-        match postprocess(&openai_api_token,
+        match post_processor.postprocess(
                     wave.to_str().unwrap().to_string(),
                     "ja") {
             Ok(_) => {

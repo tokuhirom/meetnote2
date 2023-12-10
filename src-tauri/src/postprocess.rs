@@ -3,62 +3,70 @@ use std::process::Command;
 use crate::{mp3, whisper};
 use anyhow::{anyhow, Result};
 use crate::summarizer::Summarizer;
-use crate::tf_idf_summarizer::TFIDFSummarizer;
 
-pub fn postprocess(openai_api_key: &String, mic_wav_file: String, language: &str) -> Result<()>{
-    let wav_file = merge_audio_files(mic_wav_file.clone())?;
+pub struct PostProcessor {
+    summarizer: Box<dyn Summarizer>,
+}
 
-    // convert to MP3
-    let mp3_file = wav_file.replace(".wav", ".mp3");
-    if let Err(e) = mp3::convert_to_mp3(&wav_file, &mp3_file) {
-        return Err(anyhow!("Cannot convert to mp3({} to {}): {:?}", wav_file, mp3_file, e))
+impl PostProcessor {
+    pub fn new(summarizer: Box<dyn Summarizer>) -> Box<PostProcessor> {
+        Box::new(PostProcessor { summarizer })
     }
 
-    // convert to VTT
-    let vtt_file = wav_file.replace(".wav", ".vtt");
-    log::info!("Convert {} to {}", mp3_file, vtt_file);
-    // バージョンとモデルは変更可能にしたい
-    match whisper::run_whisper("v1.5.1", "small",  language, &wav_file, &vtt_file) {
-        Ok(_) => {
-            log::info!("Wrote transcript to {}", vtt_file);
-        }
-        Err(e) => {
-            return Err(anyhow!("Cannot transcribe from wave file: {:?}, {:?}", wav_file, e))
-        }
-    }
+    pub fn postprocess(&self, mic_wav_file: String, language: &str) -> Result<()>{
+        let wav_file = merge_audio_files(mic_wav_file.clone())?;
 
-    // Summarize VTT
-    let summary_file = wav_file.clone().replace(".wav", ".md");
-    let vtt_result = fs::read_to_string(vtt_file.clone());
-    let Ok(vtt_content) = vtt_result else {
-        return Err(anyhow!("Cannot read VTT file({}): {:?}",
+        // convert to MP3
+        let mp3_file = wav_file.replace(".wav", ".mp3");
+        if let Err(e) = mp3::convert_to_mp3(&wav_file, &mp3_file) {
+            return Err(anyhow!("Cannot convert to mp3({} to {}): {:?}", wav_file, mp3_file, e))
+        }
+
+        // convert to VTT
+        let vtt_file = wav_file.replace(".wav", ".vtt");
+        log::info!("Convert {} to {}", mp3_file, vtt_file);
+        // バージョンとモデルは変更可能にしたい
+        match whisper::run_whisper("v1.5.1", "small",  language, &wav_file, &vtt_file) {
+            Ok(_) => {
+                log::info!("Wrote transcript to {}", vtt_file);
+            }
+            Err(e) => {
+                return Err(anyhow!("Cannot transcribe from wave file: {:?}, {:?}", wav_file, e))
+            }
+        }
+
+        // Summarize VTT
+        let summary_file = wav_file.clone().replace(".wav", ".md");
+        let vtt_result = fs::read_to_string(vtt_file.clone());
+        let Ok(vtt_content) = vtt_result else {
+            return Err(anyhow!("Cannot read VTT file({}): {:?}",
             vtt_file,
             vtt_result
         ))
-    };
-    println!("Requesting summarization: {}", vtt_file);
+        };
+        println!("Requesting summarization: {}", vtt_file);
 
-    let summarizer = TFIDFSummarizer::new()?;
-    // let summarizer = OpenAISummarizer::new(openai_api_key)?;
-    let summary = summarizer.summarize(vtt_content.as_str())
-        .map_err(|err| { anyhow!("Cannot process {:?}: {:?}", vtt_file, err)})?;
+        let summary = self.summarizer.summarize(vtt_content.as_str())
+            .map_err(|err| { anyhow!("Cannot process {:?}: {:?}", vtt_file, err)})?;
 
-    if let Err(e) = fs::write(summary_file.clone(), summary) {
-        return Err(anyhow!("Cannot write to file({}): {:?}",
+        if let Err(e) = fs::write(summary_file.clone(), summary) {
+            return Err(anyhow!("Cannot write to file({}): {:?}",
                     summary_file, e))
+        }
+
+        file_remove(wav_file.as_str())?;
+        file_remove(mic_wav_file.clone().as_str())?;
+
+        let raw_files = glob::glob(&mic_wav_file.replace(".mic.wav", "*.raw"))?;
+        for x in raw_files {
+            let y = x.unwrap();
+            file_remove(y.to_str().unwrap())?;
+        }
+
+        Ok(())
     }
-
-    file_remove(wav_file.as_str())?;
-    file_remove(mic_wav_file.clone().as_str())?;
-
-    let raw_files = glob::glob(&mic_wav_file.replace(".mic.wav", "*.raw"))?;
-    for x in raw_files {
-        let y = x.unwrap();
-        file_remove(y.to_str().unwrap())?;
-    }
-
-    Ok(())
 }
+
 
 fn file_remove(filename: &str) -> anyhow::Result<()> {
     match fs::remove_file(filename) {

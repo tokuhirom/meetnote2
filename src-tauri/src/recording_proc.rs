@@ -1,7 +1,9 @@
 use std::thread::sleep;
 use std::time::Duration;
 use crate::{mic_audio, data_repo, postprocess, window};
+use crate::postprocess::PostProcessor;
 use crate::screen_audio::ScreenAudioRecorder;
+use crate::tf_idf_summarizer::TFIDFSummarizer;
 
 pub fn start_recording_process(openai_api_key: String, target_device: Option<String>) {
     let mut is_recording = false;
@@ -52,9 +54,13 @@ pub fn start_recording_process(openai_api_key: String, target_device: Option<Str
 
             log::info!("Stop recording...");
 
-            let openai_api_key_clone = openai_api_key.clone();
+            // let openai_api_key_clone = openai_api_key.clone();
             std::thread::spawn(move || {
-                match postprocess::postprocess(&openai_api_key_clone, mic_wave_file.clone(), "ja") {
+                let post_processor = PostProcessor::new(
+                    Box::new(TFIDFSummarizer::new().expect("Cannot create instance of TFIDFSummarizer"))
+                );
+
+                match post_processor.postprocess(mic_wave_file.clone(), "ja") {
                     Ok(_) => {
                         log::info!("Successfully processed: {}", mic_wave_file);
                     }
