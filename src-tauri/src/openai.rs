@@ -13,9 +13,9 @@ pub struct Message {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub(crate) struct ChatCompletionRequest {
-    pub(crate) model: String,
-    pub(crate) messages: Vec<Message>,
+pub struct ChatCompletionRequest {
+    pub model: String,
+    pub messages: Vec<Message>,
 }
 
 
