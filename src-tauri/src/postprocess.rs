@@ -50,7 +50,7 @@ pub fn postprocess(openai_api_key: &String, mic_wav_file: String, language: &str
     file_remove(wav_file.as_str())?;
     file_remove(mic_wav_file.clone().as_str())?;
 
-    let raw_files = glob::glob(&*mic_wav_file.replace(".mic.wav", "*.raw"))?;
+    let raw_files = glob::glob(&mic_wav_file.replace(".mic.wav", "*.raw"))?;
     for x in raw_files {
         let y = x.unwrap();
         file_remove(y.to_str().unwrap())?;
@@ -81,7 +81,7 @@ fn merge_audio_files(mic_wav_file: String) -> anyhow::Result<String> {
         .tempfile()
         .unwrap();
     {
-        let raw_files = glob::glob(&*mic_wav_file.replace(".mic.wav", "*.raw"))?;
+        let raw_files = glob::glob(&mic_wav_file.replace(".mic.wav", "*.raw"))?;
         log::info!("Processing raw files: {:?}", raw_files);
         let mut command = Command::new("sox");
         for x in raw_files {
@@ -93,7 +93,7 @@ fn merge_audio_files(mic_wav_file: String) -> anyhow::Result<String> {
                 .arg("-b").arg("32")
                 .arg("-c").arg("1")
                 .arg("--endian").arg("little");
-            command.arg(x.unwrap().to_str().unwrap().to_string());
+            command.arg(x.unwrap().to_str().unwrap());
         }
         command.arg(screen_tmp.path().to_str().unwrap());
         command.arg("norm");

@@ -11,13 +11,13 @@ pub struct Caption {
 
 impl Caption {
     pub fn parse_start_time(&self) -> u32 {
-        let time_parts: Vec<&str> = self.start_time.split(":").collect();
+        let time_parts: Vec<&str> = self.start_time.split(':').collect();
         let hour: u32 = time_parts[0].parse().unwrap();
         let minute: u32 = time_parts[1].parse().unwrap();
-        let second: Vec<&str> = time_parts[2].split(".").collect();
+        let second: Vec<&str> = time_parts[2].split('.').collect();
         let sec: u32 = second[0].parse().unwrap();
         let millisec: u32 = second[1].parse().unwrap();
-        return millisec + sec * 1000 + minute * 60 * 1000 + hour * 60 * 60 * 1000;
+        millisec + sec * 1000 + minute * 60 * 1000 + hour * 60 * 60 * 1000
     }
 }
 

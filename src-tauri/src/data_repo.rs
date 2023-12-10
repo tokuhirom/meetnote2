@@ -147,7 +147,7 @@ pub(crate) fn load_webvtt(filename: &String) -> anyhow::Result<Vec<Caption>> {
         }
     };
 
-    let vtt = parse_webvtt(&*vtt_src);
+    let vtt = parse_webvtt(&vtt_src);
     Ok(vtt)
 }
 

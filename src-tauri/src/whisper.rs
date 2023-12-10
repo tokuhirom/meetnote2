@@ -12,11 +12,11 @@ fn generate_temp_file_path(ext: &str) -> PathBuf {
     // 一意のIDを生成
     let unique_id = Uuid::new_v4();
     // ファイル名を構築
-    let file_name = format!("{}.{}", unique_id.to_string(), ext);
+    let file_name = format!("{}.{}", unique_id, ext);
     // 完全なパスを作成
-    let temp_file_path = Path::join(&temp_dir, &file_name);
+    
 
-    temp_file_path
+    Path::join(&temp_dir, file_name)
 }
 
 pub(crate) fn run_whisper(version_tag: &str, model: &str, language: &str, in_file: &str, out_file: &str) -> anyhow::Result<()> {
@@ -53,7 +53,7 @@ pub(crate) fn run_whisper(version_tag: &str, model: &str, language: &str, in_fil
         }
     }
 
-    let model_file = whisper_dir.join(&format!("models/ggml-{}.bin", model));
+    let model_file = whisper_dir.join(format!("models/ggml-{}.bin", model));
     if !model_file.exists() {
         log::info!("download model file... {:?}", model_file);
         let output = Command::new("./models/download-ggml-model.sh")
@@ -81,7 +81,7 @@ pub(crate) fn run_whisper(version_tag: &str, model: &str, language: &str, in_fil
 
     // Use ffmpeg to convert the input file to the desired sample rate and bit depth
     let output = match Command::new("ffmpeg")
-        .args(&[
+        .args([
             "-i", in_file,
             "-ar", "16000",
             "-acodec", "pcm_s16le",
@@ -103,7 +103,7 @@ pub(crate) fn run_whisper(version_tag: &str, model: &str, language: &str, in_fil
     log::info!("Start transcribing... {} to {}", in_file, out_file);
     let start = Instant::now();
     let output = match Command::new("./main")
-        .args(&[
+        .args([
             "--language", language,
             "-m", &format!("models/ggml-{}.bin", model),
             "-ovtt",

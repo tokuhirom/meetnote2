@@ -54,25 +54,25 @@ fn get_input_devices() -> Result<Vec<String>, String> {
 
 #[tauri::command]
 fn delete_file(filename: String) -> Result<(), String> {
-    return data_repo::delete_file(&filename)
+    data_repo::delete_file(&filename)
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 fn save_file(filename: String, content: String) -> Result<(), String> {
-    return data_repo::save_file(&filename, &content)
+    data_repo::save_file(&filename, &content)
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 fn load_webvtt(filename: String) -> Result<Vec<Caption>, String> {
-    return data_repo::load_webvtt(&filename)
+    data_repo::load_webvtt(&filename)
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 fn read_data_tag_mp3(filename: String) -> Result<String, String> {
-    return data_repo::read_data_tag_mp3(&filename)
+    data_repo::read_data_tag_mp3(&filename)
         .map_err(|e| e.to_string())
 }
 

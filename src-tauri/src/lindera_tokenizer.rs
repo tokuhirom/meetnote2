@@ -1,5 +1,5 @@
 use lindera_analyzer::analyzer::Analyzer;
-use lindera_analyzer::token::Token;
+
 use serde_json::json;
 
 pub  struct LinderaTokenizer {
