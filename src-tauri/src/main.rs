@@ -14,6 +14,8 @@ mod postprocess_resumer;
 mod whisper;
 mod webvtt;
 mod screen_audio;
+mod lindera_tokenizer;
+pub mod tokenizer;
 
 use std::fs::File;
 use anyhow::anyhow;
