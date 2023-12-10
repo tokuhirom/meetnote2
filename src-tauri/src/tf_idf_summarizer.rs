@@ -7,7 +7,7 @@ use crate::webvtt::{Caption, parse_webvtt};
 /**
  * TF-IDF を用いて、対象の時間帯において、特徴的な文を抽出する。
  */
-struct TFIDFSummarizer {
+pub struct TFIDFSummarizer {
     tokenizer: LinderaTokenizer,
 }
 

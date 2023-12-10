@@ -2,8 +2,8 @@ use std::fs;
 use std::process::Command;
 use crate::{mp3, whisper};
 use anyhow::{anyhow, Result};
-use crate::openai_summarizer::OpenAISummarizer;
 use crate::summarizer::Summarizer;
+use crate::tf_idf_summarizer::TFIDFSummarizer;
 
 pub fn postprocess(openai_api_key: &String, mic_wav_file: String, language: &str) -> Result<()>{
     let wav_file = merge_audio_files(mic_wav_file.clone())?;
@@ -38,7 +38,8 @@ pub fn postprocess(openai_api_key: &String, mic_wav_file: String, language: &str
     };
     println!("Requesting summarization: {}", vtt_file);
 
-    let summarizer = OpenAISummarizer::new(openai_api_key)?;
+    let summarizer = TFIDFSummarizer::new()?;
+    // let summarizer = OpenAISummarizer::new(openai_api_key)?;
     let summary = summarizer.summarize(vtt_content.as_str())
         .map_err(|err| { anyhow!("Cannot process {:?}: {:?}", vtt_file, err)})?;
 
