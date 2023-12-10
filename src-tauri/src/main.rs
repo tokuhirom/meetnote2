@@ -16,6 +16,8 @@ mod webvtt;
 mod screen_audio;
 mod lindera_tokenizer;
 pub mod tokenizer;
+mod summarizer;
+mod openai_summarizer;
 
 use std::fs::File;
 use anyhow::anyhow;

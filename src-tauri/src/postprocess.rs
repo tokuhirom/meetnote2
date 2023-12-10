@@ -3,6 +3,8 @@ use std::fs::remove_file;
 use std::process::Command;
 use crate::{mp3, openai, whisper};
 use anyhow::{anyhow, Result};
+use crate::openai_summarizer::OpenAISummarizer;
+use crate::summarizer::Summarizer;
 
 pub fn postprocess(openai_api_key: &String, mic_wav_file: String, language: &str) -> Result<()>{
     let wav_file = merge_audio_files(mic_wav_file.clone())?;
@@ -12,8 +14,6 @@ pub fn postprocess(openai_api_key: &String, mic_wav_file: String, language: &str
     if let Err(e) = mp3::convert_to_mp3(&wav_file, &mp3_file) {
         return Err(anyhow!("Cannot convert to mp3({} to {}): {:?}", wav_file, mp3_file, e))
     }
-
-    let openai = openai::OpenAICustomizedClient::new(openai_api_key)?;
 
     // convert to VTT
     let vtt_file = wav_file.replace(".wav", ".vtt");
@@ -37,41 +37,15 @@ pub fn postprocess(openai_api_key: &String, mic_wav_file: String, language: &str
             vtt_result
         ))
     };
-    let chat_messages = vec![
-        openai::Message {
-            role: "system".to_string(),
-            content: "
-                Please summarize the main discussions and conclusions of this
-                meeting and organize the result in Markdown format. Specifically,
-                present the title as a section header on the first line, followed
-                by the content in bullet point format. The purpose is to make
-                the content easily comprehensible for later review.
-                Output text must be in Japanese.
-                If the content doesn't contain any meaningful discussion, just output `NO_CONTENT`.
-            ".trim().to_string(),
-        },
-        openai::Message {
-            role: "user".to_string(),
-            content: vtt_content,
-        }
-    ];
     println!("Requesting summarization: {}", vtt_file);
-    match  openai.chat_completion(&openai::ChatCompletionRequest {
-        model: "gpt-4-32k".to_string(),
-        messages: chat_messages,
-    }) {
-        Ok(resp) => {
-            let summary =  &resp.choices[0].message.content;
-            if let Err(e) = fs::write(summary_file.clone(), summary) {
-                return Err(anyhow!("Cannot write to file({}): {:?}",
-                    summary_file, e))
-            }
 
-        }
-        Err(err) => {
-            return Err(anyhow!("Cannot generate summary from vtt file({}): {:?}",
-                vtt_file, err))
-        }
+    let summarizer = OpenAISummarizer::new(openai_api_key)?;
+    let summary = summarizer.summarize(vtt_content.as_str())
+        .map_err(|err| { anyhow!("Cannot process {:?}: {:?}", vtt_file, err)})?;
+
+    if let Err(e) = fs::write(summary_file.clone(), summary) {
+        return Err(anyhow!("Cannot write to file({}): {:?}",
+                    summary_file, e))
     }
 
     remove_file(wav_file)?;
