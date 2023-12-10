@@ -25,17 +25,17 @@ struct StoreAudioHandler {
 
 impl StreamOutput for StoreAudioHandler {
     fn did_output_sample_buffer(&self, sample: CMSampleBuffer, _of_type: SCStreamOutputType) {
-        let format_description = sample.sys_ref.get_format_description()
-            .expect("format description");
-        let description = format_description.audio_format_description_get_stream_basic_description()
-            .expect("Get AudioStreamBasicDescription");
-        println!("format_description={:?}", description);
+        // let format_description = sample.sys_ref.get_format_description()
+        //     .expect("format description");
+        // let description = format_description.audio_format_description_get_stream_basic_description()
+        //     .expect("Get AudioStreamBasicDescription");
+        // println!("format_description={:?}", description);
 
         let audio_buffers = sample.sys_ref.get_av_audio_buffer_list();
-        println!("audio buffer list: number={:?}", audio_buffers.len());
+        // println!("audio buffer list: number={:?}", audio_buffers.len());
         for i in 0..audio_buffers.len() {
             let buffer = &audio_buffers[i];
-            println!("  {}: channels={}, size={}", i, buffer.number_channels, buffer.data.len());
+            // println!("  {}: channels={}, size={}", i, buffer.number_channels, buffer.data.len());
 
             let mut file = OpenOptions::new()
                 .write(true)
