@@ -18,6 +18,7 @@ pub struct MeetNoteConfig {
 }
 
 fn config_dir() ->  Option<PathBuf> {
+    // TODO use dirs::config_dir
     env::var_os("XDG_CONFIG_HOME").and_then(dirs_sys::is_absolute_path)
         .or_else(|| dirs::home_dir().map(|h| h.join(".config")))
 }

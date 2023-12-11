@@ -64,6 +64,7 @@ impl LinderaTokenizer {
           "副詞,助詞類接続",
           "助詞,接続助詞", // て
           "動詞,非自立", // ください
+          "感動詞", // "はい"
         ]
       }
     },
@@ -120,5 +121,13 @@ mod tests {
         let vec = tokenizer.tokenize("頑張ってください".to_string()).unwrap();
 
         assert_eq!(vec, vec!["頑張っ"]);
+    }
+
+    #[test]
+    fn test3() {
+        let tokenizer = LinderaTokenizer::new().unwrap();
+        let vec = tokenizer.tokenize("はいはいはい".to_string()).unwrap();
+
+        assert_eq!(vec, Vec::<String>::new());
     }
 }

@@ -28,7 +28,15 @@ struct Row {
 impl Summarizer for TFIDFSummarizer {
     fn summarize(&self, webvtt: &str) -> anyhow::Result<String> {
         let vec: Vec<Caption> = parse_webvtt(webvtt);
-        let rows: Vec<Row> = vec.iter().map(|row| {
+        let rows: Vec<Row> = vec.iter().filter(
+            |row| {
+                // black list
+                // "ご視聴ありがとうございました" をやたらと whisper.cpp は生成する。
+                // "(ボタンを押す音)" はタイピング音だけのときに文字起こしされる
+                row.text != "ご視聴ありがとうございました"
+                && row.text != "(ボタンを押す音)"
+            }
+        ).map(|row| {
             let start_time = row.parse_start_time();
             let tokens = self.tokenizer.tokenize(row.text.clone()).unwrap().to_vec();
             Row { start_time, tokens, caption: (*row).clone() }
