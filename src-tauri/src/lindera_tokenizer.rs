@@ -65,6 +65,10 @@ impl LinderaTokenizer {
           "助詞,接続助詞", // て
           "動詞,非自立", // ください
           "感動詞", // "はい"
+          "接頭詞,名詞接続", //
+            "副詞,一般", // "どうか"
+            "動詞,自立", // "し"
+            "名詞,代名詞,一般", // "あれ"
         ]
       }
     },
@@ -86,7 +90,7 @@ impl crate::tokenizer::Tokenizer for LinderaTokenizer {
         let vec = self.analyzer.analyze(src.to_string().as_str())
             .expect("TODO: panic message");
         let vec : Vec<String> = vec.iter().filter(|t| {
-            t.text.len() != 1
+            t.text.chars().count() != 1
         }).map(|y| {
             y.text.clone()
         }).collect();
@@ -127,6 +131,22 @@ mod tests {
     fn test3() {
         let tokenizer = LinderaTokenizer::new().unwrap();
         let vec = tokenizer.tokenize("はいはいはい".to_string()).unwrap();
+
+        assert_eq!(vec, Vec::<String>::new());
+    }
+
+    #[test]
+    fn test4() {
+        let tokenizer = LinderaTokenizer::new().unwrap();
+        let vec = tokenizer.tokenize("どうかしないかな".to_string()).unwrap();
+
+        assert_eq!(vec, Vec::<String>::new());
+    }
+
+    #[test]
+    fn test5() {
+        let tokenizer = LinderaTokenizer::new().unwrap();
+        let vec = tokenizer.tokenize("おーあれは".to_string()).unwrap();
 
         assert_eq!(vec, Vec::<String>::new());
     }

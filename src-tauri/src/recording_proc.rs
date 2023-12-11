@@ -11,7 +11,7 @@ pub fn start_recording_process(_openai_api_key: String, target_device: Option<St
     let mut screen_audio_recorder: Option<ScreenAudioRecorder> = None;
 
     let input_device = mic_audio::select_input_device_by_name(target_device);
-    log::info!("\n\nReady to processing...");
+    log::info!("Ready to processing...");
 
     loop {
         if window::is_there_target_windows() {

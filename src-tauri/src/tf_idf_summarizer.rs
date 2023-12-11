@@ -35,6 +35,7 @@ impl Summarizer for TFIDFSummarizer {
                 // "(ボタンを押す音)" はタイピング音だけのときに文字起こしされる
                 row.text != "ご視聴ありがとうございました"
                 && row.text != "(ボタンを押す音)"
+                && row.text != "[音声なし]"
             }
         ).map(|row| {
             let start_time = row.parse_start_time();

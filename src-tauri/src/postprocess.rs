@@ -69,6 +69,8 @@ impl PostProcessor {
                     summary_file, e))
         }
 
+        log::info!("Finished summarization: {}", vtt_file);
+
         Ok(())
     }
 }
