@@ -91,7 +91,14 @@ fn main() -> anyhow::Result<()> {
         ),
     ])?;
 
-    let config = config::load_config()?;
+    let config = match config::load_config() {
+        Ok(c) => { c }
+        Err(err) => {
+            // TODO: show dialog?
+            log::error!("Cannot load configuration: {:?}", err);
+            config::default_config()
+        }
+    };
     let openai_api_token = config.openai_api_token.ok_or(
         anyhow!("Missing OpenAI API token in the configuration file: {:?}",
         config::get_config_path()?)

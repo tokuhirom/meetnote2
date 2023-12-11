@@ -29,28 +29,32 @@ pub fn get_config_path() -> anyhow::Result<PathBuf> {
     Ok(config_dir.join("meetnote2/config.json"))
 }
 
+pub fn default_config() -> MeetNoteConfig {
+    MeetNoteConfig {
+        openai_api_token: None,
+        target_device: None,
+        window_patterns: vec![
+            WindowPattern {
+                bundle_id: String::from("us.zoom.xos"),
+                window_title: String::from("Zoom Meeting"),
+            },
+            WindowPattern {
+                bundle_id: String::from("us.zoom.xos"),
+                window_title: String::from("zoom share toolbar window"),
+            },
+            WindowPattern {
+                bundle_id: String::from("us.zoom.xos"),
+                window_title: String::from("zoom share statusbar window"),
+            },
+        ],
+    }
+}
+
 pub fn load_config() -> anyhow::Result<MeetNoteConfig> {
     let config_path = get_config_path()?;
 
     if !config_path.exists() {
-        return Ok(MeetNoteConfig {
-            openai_api_token: None,
-            target_device: None,
-            window_patterns: vec![
-                WindowPattern {
-                    bundle_id: String::from("us.zoom.xos"),
-                    window_title: String::from("Zoom Meeting"),
-                },
-                WindowPattern {
-                    bundle_id: String::from("us.zoom.xos"),
-                    window_title: String::from("zoom share toolbar window"),
-                },
-                WindowPattern {
-                    bundle_id: String::from("us.zoom.xos"),
-                    window_title: String::from("zoom share statusbar window"),
-                },
-            ],
-        });
+        return Ok(default_config());
     }
 
     let mut file = match File::open(&config_path) {
