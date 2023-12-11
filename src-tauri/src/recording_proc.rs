@@ -5,7 +5,7 @@ use crate::postprocess::PostProcessor;
 use crate::screen_audio::ScreenAudioRecorder;
 use crate::tf_idf_summarizer::TFIDFSummarizer;
 
-pub fn start_recording_process(openai_api_key: String, target_device: Option<String>) {
+pub fn start_recording_process(_openai_api_key: String, target_device: Option<String>) {
     let mut is_recording = false;
     let mut mic_recorder: Option<mic_audio::MicAudioRecorder> = None;
     let mut screen_audio_recorder: Option<ScreenAudioRecorder> = None;
