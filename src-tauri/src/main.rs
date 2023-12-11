@@ -23,7 +23,7 @@ mod tf_idf_summarizer;
 use std::fs::File;
 use anyhow::anyhow;
 use simplelog::ColorChoice;
-use tauri::{CustomMenuItem, Manager, Menu, MenuItem, Submenu, WindowBuilder};
+use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowBuilder, SystemTray, SystemTrayMenu, Manager};
 use crate::config::MeetNoteConfig;
 use crate::data_repo::MdFile;
 use crate::webvtt::Caption;
@@ -145,7 +145,12 @@ fn main() -> anyhow::Result<()> {
         .add_submenu(file_menu)
         .add_submenu(misc_menu);
 
+    let tray_menu = SystemTrayMenu::new();
+    let tray = SystemTray::new()
+        .with_menu(tray_menu);
+
     tauri::Builder::default()
+        .system_tray(tray)
         .setup(|app| {
             WindowBuilder::new(
                 app,
