@@ -6,6 +6,8 @@ use anyhow::anyhow;
 use chrono::Local;
 use serde::{Deserialize, Serialize};
 use walkdir::WalkDir;
+use crate::postprocess::PostProcessor;
+use crate::tf_idf_summarizer::TFIDFSummarizer;
 use crate::webvtt::{Caption, parse_webvtt};
 
 pub fn get_data_dir() -> anyhow::Result<PathBuf> {
@@ -156,4 +158,20 @@ pub(crate) fn read_data_tag_mp3(filename: &String) -> anyhow::Result<String> {
     let file_path = data_dir.join(filename);
     let vec = fs::read(file_path)?;
     Ok(format!("data:audio/mpeg;base64,{}", base64::encode(vec)))
+}
+
+pub(crate) fn regenerate_summary(filename: &String) -> anyhow::Result<()> {
+    let data_dir = get_data_dir()?;
+    let file_path = data_dir.join(filename);
+    let md_path = file_path.as_path().to_str().unwrap();
+    let vtt_path = md_path.replace(".md", ".vtt");
+
+    log::info!("Regenerating summary from {} to {}", vtt_path, md_path);
+
+    let post_processor = PostProcessor::new(
+        Box::new(TFIDFSummarizer::new()?)
+    );
+    post_processor.summarize(vtt_path.as_str(), md_path)?;
+
+    Ok(())
 }

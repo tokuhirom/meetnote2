@@ -76,6 +76,13 @@ fn read_data_tag_mp3(filename: String) -> Result<String, String> {
         .map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn regenerate_summary(filename: String) -> Result<(), String> {
+    data_repo::regenerate_summary(&filename)
+        .map_err(|e| e.to_string())
+}
+
+
 fn main() -> anyhow::Result<()> {
     simplelog::CombinedLogger::init(vec![
         simplelog::TermLogger::new(
@@ -177,7 +184,9 @@ fn main() -> anyhow::Result<()> {
             get_input_devices,
             load_config, save_config,
             load_webvtt,
-            read_data_tag_mp3])
+            read_data_tag_mp3,
+            regenerate_summary,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 

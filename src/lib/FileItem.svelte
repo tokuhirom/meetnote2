@@ -2,17 +2,20 @@
     import {invoke} from "@tauri-apps/api/tauri";
     import {WebviewWindow} from "@tauri-apps/api/window";
 
-    export let file = {
-        filename: string,
-        content: string
+    export let file: {
+        filename: string | null,
+        content: string | null
+    } = {
+        filename: null,
+        content: null
     };
 
     let editMode = false;
     let editingContent : string | null = null;
 
-    async function deleteItem(filename: string) {
-        console.log(`Delete file: ${filename}`)
-        await invoke("delete_file", {filename});
+    async function deleteItem() {
+        console.log(`Delete file: ${file.filename}`)
+        await invoke("delete_file", {filename: file.filename});
         return true;
     }
 
@@ -38,15 +41,22 @@
         file.content = editingContent
         editMode = false;
     }
+
+    async function regenerateSummaryItem() {
+        console.log(`Regenerate summary: ${file.filename}`)
+        await invoke("regenerate_summary", {filename: file.filename});
+        return true;
+    }
 </script>
 
 <div class="file">
     <div>
         <h2 style="float: left;">{file.filename}</h2>
-        <div style="float: right">
+        <div style="float: right" class="buttons">
             <button on:click|preventDefault={enterEditingMode}>Edit</button>
             <button on:click|preventDefault={openLog}>Log</button>
-            <button on:click={e => deleteItem(file.filename)}>Delete</button>
+            <button on:click|preventDefault={deleteItem}>Delete</button>
+            <button on:click|preventDefault={regenerateSummaryItem}>Regenerate Summary</button>
         </div>
     </div>
     {#if editMode}
@@ -63,5 +73,8 @@
 <style>
     pre {
         word-break: break-all;
+    }
+    .file .buttons {
+        font-size: x-small;
     }
 </style>

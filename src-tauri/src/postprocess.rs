@@ -37,14 +37,29 @@ impl PostProcessor {
 
         // Summarize VTT
         let summary_file = wav_file.clone().replace(".wav", ".md");
+        self.summarize(vtt_file.as_str(), summary_file.as_str())?;
+
+        // cleanup files
+        file_remove(wav_file.as_str())?;
+        file_remove(mic_wav_file.clone().as_str())?;
+        let raw_files = glob::glob(&mic_wav_file.replace(".mic.wav", "*.raw"))?;
+        for x in raw_files {
+            let y = x.unwrap();
+            file_remove(y.to_str().unwrap())?;
+        }
+
+        Ok(())
+    }
+
+    pub fn summarize(&self, vtt_file: &str, summary_file: &str) -> anyhow::Result<()> {
         let vtt_result = fs::read_to_string(vtt_file.clone());
         let Ok(vtt_content) = vtt_result else {
             return Err(anyhow!("Cannot read VTT file({}): {:?}",
-            vtt_file,
-            vtt_result
-        ))
+                vtt_file,
+                vtt_result
+            ))
         };
-        println!("Requesting summarization: {}", vtt_file);
+        log::info!("Requesting summarization: {}", vtt_file);
 
         let summary = self.summarizer.summarize(vtt_content.as_str())
             .map_err(|err| { anyhow!("Cannot process {:?}: {:?}", vtt_file, err)})?;
@@ -52,15 +67,6 @@ impl PostProcessor {
         if let Err(e) = fs::write(summary_file.clone(), summary) {
             return Err(anyhow!("Cannot write to file({}): {:?}",
                     summary_file, e))
-        }
-
-        file_remove(wav_file.as_str())?;
-        file_remove(mic_wav_file.clone().as_str())?;
-
-        let raw_files = glob::glob(&mic_wav_file.replace(".mic.wav", "*.raw"))?;
-        for x in raw_files {
-            let y = x.unwrap();
-            file_remove(y.to_str().unwrap())?;
         }
 
         Ok(())
