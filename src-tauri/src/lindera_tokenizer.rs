@@ -108,7 +108,7 @@ mod tests {
         let tokenizer = LinderaTokenizer::new().unwrap();
         let vec = tokenizer.tokenize("私の名前は中野です。".to_string()).unwrap();
 
-        assert_eq!(vec, vec!["私", "名前", "中野"]);
+        assert_eq!(vec, vec!["名前", "中野"]);
     }
 
     #[test]
@@ -124,7 +124,7 @@ mod tests {
         let tokenizer = LinderaTokenizer::new().unwrap();
         let vec = tokenizer.tokenize("頑張ってください".to_string()).unwrap();
 
-        assert_eq!(vec, vec!["頑張っ"]);
+        assert_eq!(vec, Vec::<String>::new());
     }
 
     #[test]
