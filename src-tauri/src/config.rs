@@ -2,6 +2,7 @@ use std::env;
 use std::path::PathBuf;
 use std::fs::{File, rename, write};
 use std::io::Read;
+use std::string::ToString;
 use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
 use crate::window::WindowPattern;
@@ -13,6 +14,8 @@ pub struct MeetNoteConfig {
     pub openai_api_token: Option<String>,
     // The target input device
     pub target_device: Option<String>,
+    // The default model
+    pub whisper_model: String,
     // Target window patterns
     pub window_patterns: Vec<WindowPattern>,
 }
@@ -34,6 +37,7 @@ pub fn default_config() -> MeetNoteConfig {
     MeetNoteConfig {
         openai_api_token: None,
         target_device: None,
+        whisper_model: "small".to_string(),
         window_patterns: vec![
             WindowPattern {
                 bundle_id: String::from("us.zoom.xos"),
@@ -48,6 +52,17 @@ pub fn default_config() -> MeetNoteConfig {
                 window_title: String::from("zoom share statusbar window"),
             },
         ],
+    }
+}
+
+
+pub fn load_config_or_default() -> MeetNoteConfig {
+    match load_config() {
+        Ok(c) => {c }
+        Err(err) => {
+            log::error!("Cannot load config: {:?}", err);
+            default_config()
+        }
     }
 }
 

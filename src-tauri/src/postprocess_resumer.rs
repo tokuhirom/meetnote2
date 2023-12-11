@@ -1,4 +1,4 @@
-
+use crate::config::{default_config, load_config, load_config_or_default};
 use crate::data_repo;
 
 use crate::postprocess::PostProcessor;
@@ -13,10 +13,11 @@ pub fn resume_postprocess() -> anyhow::Result<()> {
     let post_processor = PostProcessor::new(
         Box::new(TFIDFSummarizer::new()?)
     );
+    let config = load_config_or_default();
     for wave in &wave_files {
         match post_processor.postprocess(
                     wave.to_str().unwrap().to_string(),
-                    "ja") {
+                    "ja", config.whisper_model.as_str()) {
             Ok(_) => {
                 log::info!("Proceeded {:?}", wave.to_str());
             }

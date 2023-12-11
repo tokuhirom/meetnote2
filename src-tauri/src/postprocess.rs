@@ -13,7 +13,7 @@ impl PostProcessor {
         Box::new(PostProcessor { summarizer })
     }
 
-    pub fn postprocess(&self, mic_wav_file: String, language: &str) -> Result<()>{
+    pub fn postprocess(&self, mic_wav_file: String, language: &str, whisper_model: &str) -> Result<()>{
         let wav_file = merge_audio_files(mic_wav_file.clone())?;
 
         // convert to MP3
@@ -26,7 +26,7 @@ impl PostProcessor {
         let vtt_file = wav_file.replace(".wav", ".vtt");
         log::info!("Convert {} to {}", mp3_file, vtt_file);
         // バージョンとモデルは変更可能にしたい
-        match whisper::run_whisper("v1.5.1", "small",  language, &wav_file, &vtt_file) {
+        match whisper::run_whisper("v1.5.1", whisper_model,  language, &wav_file, &vtt_file) {
             Ok(_) => {
                 log::info!("Wrote transcript to {}", vtt_file);
             }
