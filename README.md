@@ -8,17 +8,18 @@ This application is built top of `Tauri + Svelte + Typescript`.
 ## Required Environment
 
  * This application uses Mac OSX APIs.
- * Use lame for mp3 encoding.
-   * Please install it via `brew install lame sox`
- * `brew install make `
- * `brew install ffmpeg` ffmpeg で、音声ファイルのサンプリングレートを変換しています。
- * `xcode` 的なサムシングが必要です
+   * 13.2+ is required.
+ * `brew install lame sox make ffmpeg`
+   * Use lame for mp3 encoding.
+   * Use ffmpeg to convert wave format.
+   * Use sox to merge audio files.
+ * `xcode` CLI is required to build `whisper.cpp`
    * `xcode-select --install`
 
 ## Permissions
 
 This application uses ScreenCaptureKit API to detect window names.
-Please allow it.
+It requires accessibility permission. Please allow it.
 
 ## Features
 
@@ -29,13 +30,13 @@ Please allow it.
    * Summarize it with OpenAI's API
  * Edit summary file
  * Show VTT file
- * Play mp3 file(or, use webm or something other format)
+ * Play mp3 file
  * use ScreenCaptureKit API
  * Summarize it in the local machine.
 
 ## Future plan
 
- * drop external dependencies
+ * Reduce external dependencies
    * ffmpeg, etc.
 
 ## How do I build this?
