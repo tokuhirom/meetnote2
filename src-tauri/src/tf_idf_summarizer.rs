@@ -71,7 +71,7 @@ impl Summarizer for TFIDFSummarizer {
 
         let mut sectioned_captions: HashMap<u32, Row> = HashMap::new();
         for row in rows {
-            let bucket = row.start_time / (3 * 60 * 1000);
+            let bucket = row.start_time / (5 * 60 * 1000);
             if sectioned_captions.contains_key(&bucket) {
                 let current = sectioned_captions.get(&bucket).unwrap();
                 let current_score:f64 = current.tokens.iter().map(|token| tfidf.get(token).unwrap()).sum();
