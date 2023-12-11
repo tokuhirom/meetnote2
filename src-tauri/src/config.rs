@@ -4,6 +4,7 @@ use std::fs::{File, rename, write};
 use std::io::Read;
 use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
+use crate::window::WindowPattern;
 
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -12,6 +13,8 @@ pub struct MeetNoteConfig {
     pub openai_api_token: Option<String>,
     // The target input device
     pub target_device: Option<String>,
+    // Target window patterns
+    pub window_patterns: Vec<WindowPattern>,
 }
 
 fn config_dir() ->  Option<PathBuf> {
@@ -30,7 +33,24 @@ pub fn load_config() -> anyhow::Result<MeetNoteConfig> {
     let config_path = get_config_path()?;
 
     if !config_path.exists() {
-        return Ok(MeetNoteConfig { openai_api_token: None, target_device: None });
+        return Ok(MeetNoteConfig {
+            openai_api_token: None,
+            target_device: None,
+            window_patterns: vec![
+                WindowPattern {
+                    bundle_id: String::from("us.zoom.xos"),
+                    window_title: String::from("Zoom Meeting"),
+                },
+                WindowPattern {
+                    bundle_id: String::from("us.zoom.xos"),
+                    window_title: String::from("zoom share toolbar window"),
+                },
+                WindowPattern {
+                    bundle_id: String::from("us.zoom.xos"),
+                    window_title: String::from("zoom share statusbar window"),
+                },
+            ],
+        });
     }
 
     let mut file = match File::open(&config_path) {

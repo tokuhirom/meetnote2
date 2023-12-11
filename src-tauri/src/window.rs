@@ -1,39 +1,24 @@
 use screencapturekit::sc_shareable_content::SCShareableContent;
+use serde::{Deserialize, Serialize};
+use crate::config::load_config;
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct WindowPattern {
-    bundle_id: String,
-    window_title: String,
+    pub(crate) bundle_id: String,
+    pub(crate) window_title: String,
 }
-
-// TOOD make this configurable
-fn get_window_patterns() -> Vec<WindowPattern> {
-    let mut result = Vec::new();
-    result.push(
-        WindowPattern {
-            bundle_id: String::from("us.zoom.xos"),
-            window_title: String::from("Zoom Meeting"),
-        }
-    );
-    result.push(
-        WindowPattern {
-            bundle_id: String::from("us.zoom.xos"),
-            window_title: String::from("zoom share toolbar window"),
-        }
-    );
-    result.push(
-        WindowPattern {
-            bundle_id: String::from("us.zoom.xos"),
-            window_title: String::from("zoom share statusbar window"),
-        }
-    );
-    result
-}
-
 
 pub fn is_there_target_windows() -> bool {
     let current = SCShareableContent::current();
 
-    let patterns = get_window_patterns();
+    let patterns = match load_config() {
+        Ok(conf) => { conf.window_patterns }
+        Err(err) => {
+            log::error!("Cannot load configuration: {:?}", err);
+            // TODO show dialog?
+            return false
+        }
+    };
 
     for window in current.windows {
         if let Some(title) = window.title {
