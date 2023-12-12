@@ -1,4 +1,4 @@
-use crate::config::{default_config, load_config, load_config_or_default};
+use crate::config::{load_config_or_default};
 use crate::data_repo;
 
 use crate::postprocess::PostProcessor;

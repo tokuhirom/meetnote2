@@ -52,7 +52,7 @@ impl PostProcessor {
     }
 
     pub fn summarize(&self, vtt_file: &str, summary_file: &str) -> anyhow::Result<()> {
-        let vtt_result = fs::read_to_string(vtt_file.clone());
+        let vtt_result = fs::read_to_string(vtt_file);
         let Ok(vtt_content) = vtt_result else {
             return Err(anyhow!("Cannot read VTT file({}): {:?}",
                 vtt_file,
@@ -64,7 +64,7 @@ impl PostProcessor {
         let summary = self.summarizer.summarize(vtt_content.as_str())
             .map_err(|err| { anyhow!("Cannot process {:?}: {:?}", vtt_file, err)})?;
 
-        if let Err(e) = fs::write(summary_file.clone(), summary) {
+        if let Err(e) = fs::write(summary_file, summary) {
             return Err(anyhow!("Cannot write to file({}): {:?}",
                     summary_file, e))
         }
