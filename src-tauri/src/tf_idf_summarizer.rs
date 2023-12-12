@@ -36,6 +36,7 @@ impl Summarizer for TFIDFSummarizer {
                 row.text != "ご視聴ありがとうございました"
                 && row.text != "(ボタンを押す音)"
                 && row.text != "[音声なし]"
+                && row.text != "(笑い声)"
             }
         ).map(|row| {
             let start_time = row.parse_start_time();
