@@ -136,8 +136,7 @@ fn main() -> anyhow::Result<()> {
 
     let misc_menu = Submenu::new("Misc", Menu::new()
         .add_item(CustomMenuItem::new("configuration", "Configuration")
-            .accelerator("Command+,"))
-        .add_item(CustomMenuItem::new("window_list", "Window list...")));
+            .accelerator("Command+,")));
     let file_menu = Submenu::new("File", Menu::new()
         .add_item(CustomMenuItem::new("exit", "Exit")));
     let menu = Menu::new()
@@ -176,10 +175,6 @@ fn main() -> anyhow::Result<()> {
                         .build() {
                         log::error!("Cannot open configuration window: {:?}", err);
                     };
-                }
-                "window_list" => {
-                    // WindowBuilder::new(event.window().app_handle(), )
-                    // event.window().close().unwrap();
                 }
                 _ => {}
             }
