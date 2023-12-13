@@ -144,9 +144,13 @@ fn main() -> anyhow::Result<()> {
             .accelerator("Command+,")));
     let file_menu = Submenu::new("File", Menu::new()
         .add_item(CustomMenuItem::new("exit", "Exit")));
+    let window_menu = Submenu::new("Window", Menu::new()
+        .add_item(CustomMenuItem::new("window_close", "Close")
+            .accelerator("Command+w")));
     let menu = Menu::new()
         .add_native_item(MenuItem::Copy)
         .add_submenu(file_menu)
+        .add_submenu(window_menu)
         .add_submenu(misc_menu);
 
     let tray_menu = SystemTrayMenu::new();
@@ -155,13 +159,13 @@ fn main() -> anyhow::Result<()> {
 
     tauri::Builder::default()
         .system_tray(tray)
+        .menu(menu)
         .setup(|app| {
             WindowBuilder::new(
                 app,
                 "main-window".to_string(),
                 tauri::WindowUrl::App("index.html".into()),
             )
-                .menu(menu)
                 .build()?;
 
             Ok(())
@@ -172,6 +176,7 @@ fn main() -> anyhow::Result<()> {
                     std::process::exit(0);
                 }
                 "configuration" => {
+                    log::info!("Got configuration event");
                     if let Err(err) = WindowBuilder::new(
                         &event.window().app_handle(),
                         "config-window".to_string(),
@@ -180,6 +185,12 @@ fn main() -> anyhow::Result<()> {
                         .build() {
                         log::error!("Cannot open configuration window: {:?}", err);
                     };
+                }
+                "window_close" => {
+                    log::info!("Closing window: '{:?}'", event.window().title());
+                    if let Err(err) = event.window().close() {
+                        log::error!("Cannot close window: {:?}", err)
+                    }
                 }
                 _ => {}
             }

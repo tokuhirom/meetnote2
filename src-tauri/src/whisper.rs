@@ -37,7 +37,7 @@ pub(crate) fn run_whisper(version_tag: &str, model: &str, language: &str, in_fil
             return Err(anyhow!("Cannot download model: {}", String::from_utf8_lossy(&output.stderr)));
         }
     } else {
-        log::info!("Checkout {}", version_tag);
+        log::info!("Checkout whipser.cpp {}", version_tag);
         let output = match Command::new("git")
             .current_dir(whisper_dir.clone())
             .arg("checkout")
@@ -80,6 +80,7 @@ pub(crate) fn run_whisper(version_tag: &str, model: &str, language: &str, in_fil
     let temp_file_path = generate_temp_file_path("wav");
 
     // Use ffmpeg to convert the input file to the desired sample rate and bit depth
+    log::info!("Starting ffmpeg to convert wave file...");
     let output = match Command::new("ffmpeg")
         .args([
             "-i", in_file,
