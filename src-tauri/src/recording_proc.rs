@@ -38,7 +38,9 @@ pub fn start_recording_process(_openai_api_key: String, target_device: Option<St
                 mic_recorder.as_mut().unwrap().start_recording();
                 screen_audio_recorder = Some(ScreenAudioRecorder::new(output_file.replace(".mic.wav", ""))
                     .unwrap());
-                screen_audio_recorder.as_mut().unwrap().start_recording();
+                if let Err(err) = screen_audio_recorder.as_mut().unwrap().start_recording() {
+                    log::error!("cannot start recording: {:?}", err);
+                }
 
                 log::info!("Start recording...");
             }
@@ -51,7 +53,10 @@ pub fn start_recording_process(_openai_api_key: String, target_device: Option<St
                 .output_file
                 .clone();  // Clone the file path for the new thread
             mic_recorder.take();  // Release the recorder if necessary
-            screen_audio_recorder.as_mut().unwrap().stop_recording();
+            if let Err(err) = screen_audio_recorder.as_mut().unwrap()
+                .stop_recording() {
+                log::error!("Cannot stop audio recorder: {:?}", err)
+            }
 
             log::info!("Stop recording...");
 

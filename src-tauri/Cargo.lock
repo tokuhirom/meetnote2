@@ -3946,7 +3946,7 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 [[package]]
 name = "screencapturekit"
 version = "0.1.0"
-source = "git+https://github.com/tokuhirom/screencapturekit-rs.git?rev=78cc3db#78cc3dbd2218f3d5edcd331637efd6ec47b3cda9"
+source = "git+https://github.com/tokuhirom/screencapturekit-rs.git?rev=62a599b4fb9f89af875d8746dcfc51c42efb72c8#62a599b4fb9f89af875d8746dcfc51c42efb72c8"
 dependencies = [
  "screencapturekit-sys",
 ]
@@ -3954,7 +3954,7 @@ dependencies = [
 [[package]]
 name = "screencapturekit-sys"
 version = "0.1.0"
-source = "git+https://github.com/tokuhirom/screencapturekit-rs.git?rev=78cc3db#78cc3dbd2218f3d5edcd331637efd6ec47b3cda9"
+source = "git+https://github.com/tokuhirom/screencapturekit-rs.git?rev=62a599b4fb9f89af875d8746dcfc51c42efb72c8#62a599b4fb9f89af875d8746dcfc51c42efb72c8"
 dependencies = [
  "block",
  "dispatch",

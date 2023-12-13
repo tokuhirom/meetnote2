@@ -77,11 +77,11 @@ impl ScreenAudioRecorder {
         })
     }
 
-    pub fn start_recording(&self) {
+    pub fn start_recording(&self) -> Result<(), String> {
         self.stream.start_capture()
     }
 
-    pub fn stop_recording(&self) {
+    pub fn stop_recording(&self) -> Result<(), String> {
         self.stream.stop_capture()
     }
 }
