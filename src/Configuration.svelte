@@ -3,9 +3,16 @@
   import {onMount} from "svelte";
   import {getCurrent} from "@tauri-apps/api/window";
 
-  type WindowType = {
+  type WindowPattern = {
     bundle_id: string;
     window_title: string;
+  };
+  type WindowInfo = {
+    bundle_id: string;
+    window_title: string;
+    width: number;
+    height: number;
+    is_on_screen: boolean,
   };
 
 
@@ -20,7 +27,7 @@
     window_patterns: []
   };
   let devices:  string[] = [];
-  let windows: WindowType[] = [];
+  let windows: WindowInfo[] = [];
 
   onMount(async () => {
     config = await invoke("load_config");
@@ -34,7 +41,7 @@
     await window.close();
   }
 
-  function addItem(window: WindowType) {
+  function addItem(window: WindowInfo) {
     // Check if the window is already in the array
     if (!config.window_patterns.some(w => w.bundle_id === window.bundle_id && w.window_title === window.window_title)) {
       console.log("Pushing window: ", window);
@@ -44,7 +51,7 @@
     }
   }
 
-  function deleteItem(window: WindowType) {
+  function deleteItem(window: WindowPattern) {
     config.window_patterns = config.window_patterns.filter(
             item => item.bundle_id !== window.bundle_id || item.window_title !== window.window_title
     );
@@ -98,7 +105,11 @@
               <tr>
                 <td>{window.bundle_id}</td>
                 <td>{window.window_title}</td>
-                <td><button on:click|preventDefault={() => addItem(window)}>Add</button></td>
+                <td>{window.width}</td>
+                <td>{window.height}</td>
+                <td>{window.is_on_screen}</td>
+                <td>
+                <button on:click|preventDefault={() => addItem(window)}>Add</button></td>
               </tr>
             {/each}
           </table>
