@@ -89,16 +89,21 @@ fn get_windows() -> Vec<WindowInfo> {
 }
 
 fn main() -> anyhow::Result<()> {
+    let config = simplelog::ConfigBuilder::new()
+        .set_time_offset_to_local()
+        .expect("Cannot get timezone")
+        .build();
+
     simplelog::CombinedLogger::init(vec![
         simplelog::TermLogger::new(
             simplelog::LevelFilter::Info,
-            simplelog::Config::default(),
+            config.clone(),
             simplelog::TerminalMode::Mixed,
             ColorChoice::Auto
         ),
         simplelog::WriteLogger::new(
             simplelog::LevelFilter::Info,
-            simplelog::Config::default(),
+            config,
             File::create(data_repo::get_data_dir().unwrap().join("meetnote2.log"))?
         ),
     ])?;
