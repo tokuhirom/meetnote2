@@ -153,7 +153,7 @@ rust ってなにがいいの？
         let result = summarizer.summarize(webvtt).unwrap();
         assert_eq!(
             result,
-            "[00:00:33.000] 速度がやっぱりいいのと、tauri 使えるのもいいかも。\n[00:03:03.000] ところで、最近焼肉食べに行っている？"
+            "[00:00:33.000] 速度がやっぱりいいのと、tauri 使えるのもいいかも。\n[00:05:10.000] タン塩も好きですがねぇ",
         );
     }
 
@@ -208,7 +208,7 @@ I also like Tan-shio (salted tongue).
         let result = summarizer.summarize(webvtt).unwrap();
         assert_eq!(
             result,
-            "[00:00:33.000] The speed is definitely good, and it's also nice that it supports Tauri.\n[00:03:03.000] By the way, have you been going out for Yakiniku (Japanese BBQ) lately?"
+            "[00:00:33.000] The speed is definitely good, and it's also nice that it supports Tauri.\n[00:05:10.000] I also like Tan-shio (salted tongue).",
         );
     }
 }
