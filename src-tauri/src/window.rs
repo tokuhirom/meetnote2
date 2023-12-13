@@ -1,4 +1,4 @@
-use std::cmp::Ordering;
+
 use screencapturekit::sc_shareable_content::SCShareableContent;
 use serde::{Deserialize, Serialize};
 use crate::config::load_config;
