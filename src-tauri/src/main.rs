@@ -27,6 +27,7 @@ use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowBuilder, SystemTray, 
 use crate::config::MeetNoteConfig;
 use crate::data_repo::MdFile;
 use crate::webvtt::Caption;
+use crate::window::WindowInfo;
 
 #[tauri::command]
 fn load_files() -> Vec<MdFile> {
@@ -82,6 +83,10 @@ fn regenerate_summary(filename: String) -> Result<(), String> {
         .map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn get_windows() -> Vec<WindowInfo> {
+    window::get_windows()
+}
 
 fn main() -> anyhow::Result<()> {
     simplelog::CombinedLogger::init(vec![
@@ -186,6 +191,7 @@ fn main() -> anyhow::Result<()> {
             load_webvtt,
             read_data_tag_mp3,
             regenerate_summary,
+            get_windows,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use screencapturekit::sc_shareable_content::SCShareableContent;
 use serde::{Deserialize, Serialize};
 use crate::config::load_config;
@@ -6,6 +7,32 @@ use crate::config::load_config;
 pub struct WindowPattern {
     pub(crate) bundle_id: String,
     pub(crate) window_title: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct WindowInfo {
+    pub bundle_id: String,
+    pub window_title: String,
+}
+
+pub fn get_windows() -> Vec<WindowInfo> {
+    let current = SCShareableContent::current();
+    let mut result = Vec::new();
+    for window in current.windows {
+        if let Some(title) = window.title {
+            if let Some(app) = window.owning_application {
+                if let Some(bundle_id) = app.bundle_identifier {
+                    result.push(WindowInfo {
+                        bundle_id,
+                        window_title: title
+                    });
+                }
+            }
+        }
+    }
+    result.sort_by(|a, b| a.bundle_id.cmp(&b.bundle_id)
+        .then_with(|| a.window_title.cmp(&b.window_title)));
+    result
 }
 
 pub fn is_there_target_windows() -> bool {

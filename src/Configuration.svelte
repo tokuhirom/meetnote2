@@ -3,6 +3,13 @@
   import {onMount} from "svelte";
   import {getCurrent} from "@tauri-apps/api/window";
 
+  type WindowType = {
+    bundle_id: string;
+    window_title: string;
+  };
+
+
+  let showWindowList = false;
   let config : {
     openai_api_token: string | undefined,
     target_device: string | undefined,
@@ -13,16 +20,42 @@
     window_patterns: []
   };
   let devices:  string[] = [];
+  let windows: WindowType[] = [];
 
   onMount(async () => {
     config = await invoke("load_config");
     devices = await invoke("get_input_devices");
+    windows = await invoke("get_windows");
   });
 
   async function saveConfig() {
     await invoke("save_config", {config: config})
     const window = getCurrent();
     await window.close();
+  }
+
+  function addItem(window: WindowType) {
+    // Check if the window is already in the array
+    if (!config.window_patterns.some(w => w.bundle_id === window.bundle_id && w.window_title === window.window_title)) {
+      console.log("Pushing window: ", window);
+      config.window_patterns = [...config.window_patterns, window];
+    } else {
+      console.log("Window is already in the array.");
+    }
+  }
+
+  function deleteItem(window: WindowType) {
+    config.window_patterns = config.window_patterns.filter(
+            item => item.bundle_id !== window.bundle_id || item.window_title !== window.window_title
+    );
+  }
+
+  async function reloadWindows() {
+    windows = await invoke("get_windows");
+  }
+
+  function toggleWindowList() {
+    showWindowList = !showWindowList;
   }
 </script>
 
@@ -47,6 +80,31 @@
     </div>
     <div class="pane">
       <h3>Window patterns</h3>
+
+      <button on:click|preventDefault={toggleWindowList}>Add new window pattern</button>
+
+      {#if showWindowList}
+        <div class="window_list">
+          <div class="header">
+            <h4>Window List</h4>
+            <button on:click|preventDefault={reloadWindows}>Reload</button>
+          </div>
+          <table>
+            <tr>
+              <th>Bundle ID</th>
+              <th>Window Title</th>
+            </tr>
+            {#each windows as window}
+              <tr>
+                <td>{window.bundle_id}</td>
+                <td>{window.window_title}</td>
+                <td><button on:click|preventDefault={() => addItem(window)}>Add</button></td>
+              </tr>
+            {/each}
+          </table>
+        </div>
+      {/if}
+
       <table>
         <tr>
           <th>Bundle ID</th>
@@ -56,6 +114,7 @@
         <tr>
           <td>{pattern.bundle_id}</td>
           <td>{pattern.window_title}</td>
+          <td><button on:click|preventDefault={() => deleteItem(pattern)}>Delete</button></td>
         </tr>
       {/each}
       </table>
@@ -72,5 +131,20 @@
   td, th {
     border-right: 1px solid white;
     padding: 4px;
+  }
+
+  .window_list .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .window_list {
+    padding: 4px;
+    margin: 8px;
+    border: 1px solid white;
+    background-color: darkslategrey;
+  }
+  .window_list button {
+    padding: 2px;
   }
 </style>
