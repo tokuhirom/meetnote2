@@ -9,13 +9,25 @@ use crate::webvtt::{Caption, parse_webvtt};
  */
 pub struct TFIDFSummarizer {
     tokenizer: LinderaTokenizer,
+    ignore_list: HashSet<String>
 }
 
 impl TFIDFSummarizer {
     pub fn new() -> anyhow::Result<TFIDFSummarizer> {
         let tokenizer = LinderaTokenizer::new()?;
 
-        Ok(TFIDFSummarizer { tokenizer })
+        // black list
+        // "ご視聴ありがとうございました" をやたらと whisper.cpp は生成する。
+        // "(ボタンを押す音)" はタイピング音だけのときに文字起こしされる
+        let mut ignore_list = HashSet::new();
+        ignore_list.insert(String::from("ご視聴ありがとうございました"));
+        ignore_list.insert(String::from("(ボタンを押す音)"));
+        ignore_list.insert(String::from("[音声なし]"));
+        ignore_list.insert(String::from("(笑い声)"));
+        ignore_list.insert(String::from("[音楽]"));
+        ignore_list.insert(String::from("(音楽)"));
+
+        Ok(TFIDFSummarizer { tokenizer, ignore_list })
     }
 }
 
@@ -30,13 +42,7 @@ impl Summarizer for TFIDFSummarizer {
         let vec: Vec<Caption> = parse_webvtt(webvtt);
         let rows: Vec<Row> = vec.iter().filter(
             |row| {
-                // black list
-                // "ご視聴ありがとうございました" をやたらと whisper.cpp は生成する。
-                // "(ボタンを押す音)" はタイピング音だけのときに文字起こしされる
-                row.text != "ご視聴ありがとうございました"
-                && row.text != "(ボタンを押す音)"
-                && row.text != "[音声なし]"
-                && row.text != "(笑い声)"
+                !self.ignore_list.contains(&row.text)
             }
         ).map(|row| {
             let start_time = row.parse_start_time();
