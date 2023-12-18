@@ -15,9 +15,10 @@ pub fn start_recording_process(_openai_api_key: String, target_device: Option<St
     log::info!("Ready to processing...");
 
     loop {
-        if window::is_there_target_windows() {
+        if let Some(info) = window::is_there_target_windows() {
             if !is_recording {
                 is_recording = true;
+                log::info!("Starting recording...: window={:?}", info);
 
                 let output_path = match data_repo::new_mic_wave_file_name() {
                     Ok(path) => {
@@ -41,8 +42,6 @@ pub fn start_recording_process(_openai_api_key: String, target_device: Option<St
                 if let Err(err) = screen_audio_recorder.as_mut().unwrap().start_recording() {
                     log::error!("cannot start recording: {:?}", err);
                 }
-
-                log::info!("Start recording...");
             }
         } else if is_recording {
             // Window disappears, stop recording

@@ -44,7 +44,7 @@ pub fn get_windows() -> Vec<WindowInfo> {
     result
 }
 
-pub fn is_there_target_windows() -> bool {
+pub fn is_there_target_windows() -> Option<WindowInfo> {
     let current = SCShareableContent::current();
 
     let patterns = match load_config() {
@@ -52,7 +52,7 @@ pub fn is_there_target_windows() -> bool {
         Err(err) => {
             log::error!("Cannot load configuration: {:?}", err);
             // TODO show dialog?
-            return false
+            return None
         }
     };
 
@@ -62,12 +62,18 @@ pub fn is_there_target_windows() -> bool {
                 if let Some(bundle_id) = app.bundle_identifier {
                     for pattern in &patterns {
                         if pattern.bundle_id == bundle_id && pattern.window_title == title {
-                            return true
+                            return Some(WindowInfo {
+                                bundle_id,
+                                window_title: title,
+                                height: window.height,
+                                width: window.width,
+                                is_on_screen: window.is_on_screen
+                            })
                         }
                     }
                 }
             }
         }
     }
-    false
+    None
 }
