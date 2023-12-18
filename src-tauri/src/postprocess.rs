@@ -99,7 +99,7 @@ fn merge_audio_files(mic_wav_file: String) -> anyhow::Result<String> {
         .unwrap();
     {
         let raw_files = glob::glob(&mic_wav_file.replace(".mic.wav", "*.raw"))?;
-        log::info!("Processing raw files: {:?}", raw_files);
+        // log::info!("Processing raw files: {:?}", raw_files);
         let mut command = Command::new("sox");
         for x in raw_files {
             // TODO more flexible format support...
