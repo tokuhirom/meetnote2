@@ -108,8 +108,7 @@
                 <td>{window.width}</td>
                 <td>{window.height}</td>
                 <td>{window.is_on_screen}</td>
-                <td>
-                <button on:click|preventDefault={() => addItem(window)}>Add</button></td>
+                <td><button on:click|preventDefault={() => addItem(window)}>Add</button></td>
               </tr>
             {/each}
           </table>
