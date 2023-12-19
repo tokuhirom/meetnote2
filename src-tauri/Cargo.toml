@@ -46,7 +46,7 @@ core-graphics = "0.23.1"
 screencapturekit = { git = "https://github.com/tokuhirom/screencapturekit-rs.git", rev = "62a599b4fb9f89af875d8746dcfc51c42efb72c8", version = "*" }
 # screencapturekit = { git = "https://github.com/clearlysid/screencapturekit-rs.git", rev = "56a6708", version = "*" }
 config = "0.13.4"
-time = "0.3.30"
+time = "0.3.31"
 tempfile = { version = "3.8.1", features = [] }
 tempdir = "0.3.7"
 uuid = { version = "1.6.1", features = ["v4"] }
