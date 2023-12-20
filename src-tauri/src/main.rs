@@ -11,7 +11,7 @@ mod config;
 mod screencapture;
 mod data_repo;
 mod postprocess_resumer;
-mod whisper;
+mod whisper_cpp;
 mod webvtt;
 mod screen_audio;
 mod lindera_tokenizer;

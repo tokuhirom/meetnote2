@@ -1,6 +1,6 @@
 use std::fs;
 use std::process::Command;
-use crate::{mp3, whisper};
+use crate::{mp3, whisper_cpp};
 use anyhow::{anyhow, Result};
 use crate::summarizer::Summarizer;
 
@@ -26,7 +26,7 @@ impl PostProcessor {
         let vtt_file = wav_file.replace(".wav", ".vtt");
         log::info!("Convert {} to {}", mp3_file, vtt_file);
         // バージョンとモデルは変更可能にしたい
-        match whisper::run_whisper("v1.5.1", whisper_model,  language, &wav_file, &vtt_file) {
+        match whisper_cpp::run_whisper("v1.5.1", whisper_model, language, &wav_file, &vtt_file) {
             Ok(_) => {
                 log::info!("Wrote transcript to {}", vtt_file);
             }
