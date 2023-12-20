@@ -3,13 +3,13 @@ use screencapturekit::sc_shareable_content::SCShareableContent;
 use serde::{Deserialize, Serialize};
 use crate::config::load_config;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct WindowPattern {
     pub(crate) bundle_id: String,
     pub(crate) window_title: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct WindowInfo {
     pub bundle_id: String,
     pub window_title: String,
@@ -50,7 +50,7 @@ pub fn is_there_target_windows() -> Option<WindowInfo> {
     let patterns = match load_config() {
         Ok(conf) => { conf.window_patterns }
         Err(err) => {
-            log::error!("Cannot load configuration: {:?}", err);
+            log::error!("Cannot load configuration for watching window: {:?}", err);
             // TODO show dialog?
             return None
         }

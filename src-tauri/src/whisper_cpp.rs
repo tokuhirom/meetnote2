@@ -4,6 +4,25 @@ use std::process::Command;
 use anyhow::anyhow;
 use std::time::Instant;
 use uuid::Uuid;
+use crate::transcriber::Transcriber;
+
+pub struct WhisperTranscriber {
+    version: String,
+    model: String,
+    language: String,
+}
+
+impl WhisperTranscriber {
+    pub fn new(version: String, model: String, language: String) -> WhisperTranscriber {
+        WhisperTranscriber { version, model, language }
+     }
+}
+
+impl Transcriber for WhisperTranscriber {
+    fn transcribe(&self, in_file: &str, out_file: &str) -> anyhow::Result<()> {
+        run_whisper(&*self.version, &*self.model, &*self.language, in_file, out_file)
+    }
+}
 
 // 一意の一時ファイル名を生成する関数
 fn generate_temp_file_path(ext: &str) -> PathBuf {
@@ -14,8 +33,6 @@ fn generate_temp_file_path(ext: &str) -> PathBuf {
     // ファイル名を構築
     let file_name = format!("{}.{}", unique_id, ext);
     // 完全なパスを作成
-    
-
     Path::join(&temp_dir, file_name)
 }
 
@@ -37,19 +54,38 @@ pub(crate) fn run_whisper(version_tag: &str, model: &str, language: &str, in_fil
             return Err(anyhow!("Cannot download model: {}", String::from_utf8_lossy(&output.stderr)));
         }
     } else {
-        log::info!("Checkout whipser.cpp {}", version_tag);
-        let output = match Command::new("git")
-            .current_dir(whisper_dir.clone())
-            .arg("checkout")
-            .arg(version_tag)
-            .output() {
-            Ok(output) => { output }
-            Err(err) => {
-                return Err(anyhow!("Cannot checkout directory({}): {:?}", version_tag, err));
+        {
+            let mut command = Command::new("git");
+            command.current_dir(whisper_dir.clone())
+                .arg("fetch");
+            log::info!("Checkout whipser.cpp {}: {:?}", version_tag, command);
+            let output = match command.output() {
+                Ok(output) => { output }
+                Err(err) => {
+                    return Err(anyhow!("Cannot fetch remote repository info({}): {:?}", version_tag, err));
+                }
+            };
+            if !output.status.success() {
+                return Err(anyhow!("Cannot fetch: {}",
+                String::from_utf8_lossy(&output.stderr)));
             }
-        };
-        if !output.status.success() {
-            return Err(anyhow!("Cannot checkout directory: {}", String::from_utf8_lossy(&output.stderr)));
+        }
+        {
+            let mut command = Command::new("git");
+            command.current_dir(whisper_dir.clone())
+                .arg("checkout")
+                .arg(version_tag);
+            log::info!("Checkout whipser.cpp {}: {:?}", version_tag, command);
+            let output = match command.output() {
+                Ok(output) => { output }
+                Err(err) => {
+                    return Err(anyhow!("Cannot checkout directory({}): {:?}", version_tag, err));
+                }
+            };
+            if !output.status.success() {
+                return Err(anyhow!("Cannot checkout directory: {}",
+                String::from_utf8_lossy(&output.stderr)));
+            }
         }
     }
 

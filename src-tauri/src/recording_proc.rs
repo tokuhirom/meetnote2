@@ -1,15 +1,16 @@
 use std::thread::sleep;
 use std::time::Duration;
 use crate::{mic_audio, data_repo, window};
-use crate::config::{load_config_or_default};
+use crate::config::{load_config_or_default, MeetNoteConfig};
 use crate::postprocess::PostProcessor;
 use crate::screen_audio::ScreenAudioRecorder;
 use crate::tf_idf_summarizer::TFIDFSummarizer;
 
-pub fn start_recording_process(_openai_api_key: String, target_device: Option<String>) {
+pub fn start_recording_process(config: MeetNoteConfig) {
     let mut is_recording = false;
     let mut mic_recorder: Option<mic_audio::MicAudioRecorder> = None;
     let mut screen_audio_recorder: Option<ScreenAudioRecorder> = None;
+    let target_device = config.target_device;
 
     let input_device = mic_audio::select_input_device_by_name(target_device);
     log::info!("Ready to processing...");
@@ -67,7 +68,7 @@ pub fn start_recording_process(_openai_api_key: String, target_device: Option<St
 
                 let config = load_config_or_default();
 
-                match post_processor.postprocess(mic_wave_file.clone(), "ja", config.whisper_model.as_str()) {
+                match post_processor.postprocess(mic_wave_file.clone(), config) {
                     Ok(_) => {
                         log::info!("Successfully processed: {}", mic_wave_file);
                     }

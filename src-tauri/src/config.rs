@@ -7,8 +7,14 @@ use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
 use crate::window::WindowPattern;
 
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+pub enum TranscriberType {
+    #[default]
+    WhisperCpp,
+    OpenAI
+}
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MeetNoteConfig {
     // OpenAI's API token
     pub openai_api_token: Option<String>,
@@ -18,6 +24,45 @@ pub struct MeetNoteConfig {
     pub whisper_model: String,
     // Target window patterns
     pub window_patterns: Vec<WindowPattern>,
+    #[serde(default = "default_transcriber_type")]
+    pub transcriber_type: TranscriberType,
+    // Target language
+    #[serde(default = "default_language")]
+    pub language: String,
+}
+
+fn default_language() -> String {
+    "ja".to_string()
+}
+
+fn default_transcriber_type() -> TranscriberType {
+    TranscriberType::WhisperCpp
+}
+
+impl Default for MeetNoteConfig {
+    fn default() -> Self {
+        MeetNoteConfig {
+            transcriber_type: TranscriberType::WhisperCpp,
+            openai_api_token: None,
+            target_device: None,
+            whisper_model: "small".to_string(),
+            language: "ja".to_string(),
+            window_patterns: vec![
+                WindowPattern {
+                    bundle_id: String::from("us.zoom.xos"),
+                    window_title: String::from("Zoom Meeting"),
+                },
+                WindowPattern {
+                    bundle_id: String::from("us.zoom.xos"),
+                    window_title: String::from("zoom share toolbar window"),
+                },
+                WindowPattern {
+                    bundle_id: String::from("us.zoom.xos"),
+                    window_title: String::from("zoom share statusbar window"),
+                },
+            ],
+        }
+    }
 }
 
 fn config_dir() ->  Option<PathBuf> {
@@ -34,25 +79,7 @@ pub fn get_config_path() -> anyhow::Result<PathBuf> {
 }
 
 pub fn default_config() -> MeetNoteConfig {
-    MeetNoteConfig {
-        openai_api_token: None,
-        target_device: None,
-        whisper_model: "small".to_string(),
-        window_patterns: vec![
-            WindowPattern {
-                bundle_id: String::from("us.zoom.xos"),
-                window_title: String::from("Zoom Meeting"),
-            },
-            WindowPattern {
-                bundle_id: String::from("us.zoom.xos"),
-                window_title: String::from("zoom share toolbar window"),
-            },
-            WindowPattern {
-                bundle_id: String::from("us.zoom.xos"),
-                window_title: String::from("zoom share statusbar window"),
-            },
-        ],
-    }
+    Default::default()
 }
 
 
@@ -61,7 +88,7 @@ pub fn load_config_or_default() -> MeetNoteConfig {
         Ok(c) => {c }
         Err(err) => {
             log::error!("Cannot load config: {:?}", err);
-            default_config()
+            Default::default()
         }
     }
 }

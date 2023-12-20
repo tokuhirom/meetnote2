@@ -16,8 +16,9 @@ pub fn resume_postprocess() -> anyhow::Result<()> {
     let config = load_config_or_default();
     for wave in &wave_files {
         match post_processor.postprocess(
-                    wave.to_str().unwrap().to_string(),
-                    "ja", config.whisper_model.as_str()) {
+            wave.to_str().unwrap().to_string(),
+            config.clone()
+        ) {
             Ok(_) => {
                 log::info!("Proceeded {:?}", wave.to_str());
             }

@@ -19,6 +19,8 @@ pub mod tokenizer;
 mod summarizer;
 mod openai_summarizer;
 mod tf_idf_summarizer;
+mod transcriber;
+mod openai_transcriber;
 
 use std::fs::File;
 use anyhow::anyhow;
@@ -116,10 +118,6 @@ fn main() -> anyhow::Result<()> {
             config::default_config()
         }
     };
-    let openai_api_token = config.openai_api_token.ok_or(
-        anyhow!("Missing OpenAI API token in the configuration file: {:?}",
-        config::get_config_path()?)
-    )?;
 
     // #1 Check if the platform is supported
     let supported = screencapture::is_supported();
@@ -138,7 +136,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     std::thread::spawn(move || {
-        recording_proc::start_recording_process(openai_api_token, config.target_device)
+        recording_proc::start_recording_process(config)
     });
     std::thread::spawn(move || {
         postprocess_resumer::resume_postprocess().unwrap();

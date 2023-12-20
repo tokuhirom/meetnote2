@@ -1,8 +1,13 @@
 use std::fs;
 use std::process::Command;
-use crate::{mp3, whisper_cpp};
+use crate::mp3;
 use anyhow::{anyhow, Result};
+use crate::config::{MeetNoteConfig, TranscriberType};
+use crate::openai::OpenAICustomizedClient;
+use crate::openai_transcriber::OpenAITranscriber;
 use crate::summarizer::Summarizer;
+use crate::transcriber::Transcriber;
+use crate::whisper_cpp::WhisperTranscriber;
 
 pub struct PostProcessor {
     summarizer: Box<dyn Summarizer>,
@@ -13,7 +18,7 @@ impl PostProcessor {
         Box::new(PostProcessor { summarizer })
     }
 
-    pub fn postprocess(&self, mic_wav_file: String, language: &str, whisper_model: &str) -> Result<()>{
+    pub fn postprocess(&self, mic_wav_file: String, config: MeetNoteConfig) -> Result<()>{
         let wav_file = merge_audio_files(mic_wav_file.clone())?;
 
         // convert to MP3
@@ -25,8 +30,35 @@ impl PostProcessor {
         // convert to VTT
         let vtt_file = wav_file.replace(".wav", ".vtt");
         log::info!("Convert {} to {}", mp3_file, vtt_file);
-        // バージョンとモデルは変更可能にしたい
-        match whisper_cpp::run_whisper("v1.5.2", whisper_model, language, &wav_file, &vtt_file) {
+        let transcriber: Box<dyn Transcriber> = match config.transcriber_type {
+            TranscriberType::WhisperCpp => {
+                Box::new(WhisperTranscriber::new(
+                    "v1.5.1".to_string(), config.whisper_model.to_string(), config.language.to_string(),
+                ))
+            }
+            TranscriberType::OpenAI => {
+                let token: String = match config.openai_api_token {
+                    Some(token) => { token }
+                    None => {
+                        return Err(anyhow!("OpenAI transcriber requires OpenAI token. But it's missing."));
+                    }
+                };
+                let openai = match OpenAICustomizedClient::new(
+                    token.as_str()
+                ) {
+                    Ok(openai) => { openai }
+                    Err(err) => {
+                        return Err(anyhow!("Cannot create openai client: {:?}", err))
+                    }
+                };
+
+                Box::new(OpenAITranscriber::new(
+                    openai,
+                    config.language.to_string(),
+                ))
+            }
+        };
+        match transcriber.transcribe(&wav_file, &vtt_file) {
             Ok(_) => {
                 log::info!("Wrote transcript to {}", vtt_file);
             }
