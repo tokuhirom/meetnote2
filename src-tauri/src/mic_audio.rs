@@ -14,10 +14,12 @@ pub struct MicAudioRecorder {
 }
 
 impl MicAudioRecorder {
-    pub fn new(output_file: &str, input_device: &Device) -> Self {
+    pub fn new(output_file: &str, input_device: &Device) -> anyhow::Result<Self> {
         let config: SupportedStreamConfig = input_device
             .default_input_config()
-            .expect("Failed to get default input config");
+            .map_err(|e| {
+                anyhow!("Failed to get default input config({:?}): {:?}", input_device.name(), e)
+            })?;
 
         let spec = hound::WavSpec {
             channels: config.channels() as _,
@@ -25,7 +27,6 @@ impl MicAudioRecorder {
             bits_per_sample: (config.sample_format().sample_size() * 8) as _,
             sample_format: sample_format(config.sample_format()),
         };
-        println!("PATH: {:?}", output_file);
 
         let hounder_writer: hound::WavWriter<BufWriter<File>> =
             hound::WavWriter::create(output_file, spec).unwrap();
@@ -72,14 +73,13 @@ impl MicAudioRecorder {
                 None,
             ),
             _sample_format => Err(BuildStreamError::DeviceNotAvailable),
-        }
-            .unwrap();
+        }?;
 
-        MicAudioRecorder {
+        Ok(MicAudioRecorder {
             stream,
             writer,
             output_file: String::from(output_file),
-        }
+        })
     }
 
     pub fn start_recording(&mut self) {
@@ -143,7 +143,7 @@ pub fn get_input_devices() -> anyhow::Result<Vec<String>> {
     }
 }
 
-pub fn select_input_device_by_name(target_device: Option<String>) -> Device {
+pub fn select_input_device_by_name(target_device: &Option<String>) -> Device {
     log::info!("target device is : {:?}", target_device);
 
     let host = cpal::default_host();
@@ -152,7 +152,7 @@ pub fn select_input_device_by_name(target_device: Option<String>) -> Device {
             Ok(devices) => {
                 for device in devices {
                     if let Ok(name) = device.name() {
-                        if name == target_device {
+                        if &name == target_device {
                             log::info!("Selected audio device: {}", name);
                             return device
                         }

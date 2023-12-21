@@ -1,10 +1,10 @@
 use std::thread::sleep;
 use std::time::Duration;
+use cpal::traits::DeviceTrait;
 use crate::{mic_audio, data_repo, window};
 use crate::config::{load_config_or_default, MeetNoteConfig};
 use crate::postprocess::PostProcessor;
 use crate::screen_audio::ScreenAudioRecorder;
-use crate::tf_idf_summarizer::TFIDFSummarizer;
 
 pub fn start_recording_process(config: MeetNoteConfig) {
     let mut is_recording = false;
@@ -12,14 +12,14 @@ pub fn start_recording_process(config: MeetNoteConfig) {
     let mut screen_audio_recorder: Option<ScreenAudioRecorder> = None;
     let target_device = config.target_device;
 
-    let input_device = mic_audio::select_input_device_by_name(target_device);
     log::info!("Ready to processing...");
 
     loop {
         if let Some(info) = window::is_there_target_windows() {
             if !is_recording {
-                is_recording = true;
-                log::info!("Starting recording...: window={:?}", info);
+                let input_device = mic_audio::select_input_device_by_name(&target_device);
+
+                log::info!("Starting recording...: window={:?} input_device={:?}", info, input_device.name());
 
                 let output_path = match data_repo::new_mic_wave_file_name() {
                     Ok(path) => {
@@ -36,18 +36,30 @@ pub fn start_recording_process(config: MeetNoteConfig) {
                     continue;
                 };
 
-                mic_recorder = Some(mic_audio::MicAudioRecorder::new(output_file, &input_device));
-                mic_recorder.as_mut().unwrap().start_recording();
+                match mic_audio::MicAudioRecorder::new(output_file, &input_device) {
+                    Ok(mut recorder) => {
+                        recorder.start_recording();
+                        mic_recorder = Some(recorder)
+                    }
+                    Err(err) => {
+                        log::error!("Cannot start mic recording: {:?}", err);
+                        sleep(Duration::from_secs(1));
+                        continue;
+                    }
+                };
                 screen_audio_recorder = Some(ScreenAudioRecorder::new(output_file.replace(".mic.wav", ""))
                     .unwrap());
                 if let Err(err) = screen_audio_recorder.as_mut().unwrap().start_recording() {
                     log::error!("cannot start recording: {:?}", err);
                 }
+                is_recording = true;
             }
         } else if is_recording {
             // Window disappears, stop recording
             is_recording = false;
-            mic_recorder.as_mut().unwrap().stop_recording();
+            if let Some(recorder) = &mut mic_recorder {
+                recorder.stop_recording();
+            }
             let mic_wave_file = mic_recorder.as_ref()
                 .expect("Expected wave_file to be Some; recording should stop when window disappears.")
                 .output_file
@@ -62,11 +74,10 @@ pub fn start_recording_process(config: MeetNoteConfig) {
 
             // let openai_api_key_clone = openai_api_key.clone();
             std::thread::spawn(move || {
-                let post_processor = PostProcessor::new(
-                    Box::new(TFIDFSummarizer::new().expect("Cannot create instance of TFIDFSummarizer"))
-                );
-
                 let config = load_config_or_default();
+                let summarizer = config.build_summarizer()
+                    .unwrap();
+                let post_processor = PostProcessor::new(summarizer);
 
                 match post_processor.postprocess(mic_wave_file.clone(), config) {
                     Ok(_) => {

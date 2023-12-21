@@ -5,13 +5,25 @@ use std::io::Read;
 use std::string::ToString;
 use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
+use TranscriberType::WhisperCppTranscriberType;
+use crate::config::SummarizerType::{OpenAISummarizerType, TFIDFSummarizerType};
+use crate::openai_summarizer::OpenAISummarizer;
+use crate::summarizer::Summarizer;
+use crate::tf_idf_summarizer::TFIDFSummarizer;
 use crate::window::WindowPattern;
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub enum TranscriberType {
     #[default]
-    WhisperCpp,
-    OpenAI
+    WhisperCppTranscriberType,
+    OpenAITranscriberType,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+pub enum SummarizerType {
+    #[default]
+    TFIDFSummarizerType,
+    OpenAISummarizerType,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -26,6 +38,8 @@ pub struct MeetNoteConfig {
     pub window_patterns: Vec<WindowPattern>,
     #[serde(default = "default_transcriber_type")]
     pub transcriber_type: TranscriberType,
+    #[serde(default = "default_summarizer_type")]
+    pub summarizer_type: SummarizerType,
     // Target language
     #[serde(default = "default_language")]
     pub language: String,
@@ -36,13 +50,38 @@ fn default_language() -> String {
 }
 
 fn default_transcriber_type() -> TranscriberType {
-    TranscriberType::WhisperCpp
+    WhisperCppTranscriberType
+}
+
+fn default_summarizer_type() -> SummarizerType {
+    TFIDFSummarizerType
+}
+
+impl MeetNoteConfig {
+    pub fn build_summarizer(&self) -> anyhow::Result<Box<dyn Summarizer>>{
+        match &self.summarizer_type {
+            TFIDFSummarizerType => {
+                Ok(Box::new(TFIDFSummarizer::new()?))
+            }
+            OpenAISummarizerType => {
+                match &self.openai_api_token {
+                    Some(token) => {
+                        Ok(Box::new(OpenAISummarizer::new(token.as_str())?))
+                    }
+                    None => {
+                        Err(anyhow!("You set OpenAISummarizer, but Missing openai api token in configuration file"))
+                    }
+                }
+            }
+        }
+    }
 }
 
 impl Default for MeetNoteConfig {
     fn default() -> Self {
         MeetNoteConfig {
-            transcriber_type: TranscriberType::WhisperCpp,
+            transcriber_type: WhisperCppTranscriberType,
+            summarizer_type: SummarizerType::TFIDFSummarizerType,
             openai_api_token: None,
             target_device: None,
             whisper_model: "small".to_string(),
@@ -65,7 +104,7 @@ impl Default for MeetNoteConfig {
     }
 }
 
-fn config_dir() ->  Option<PathBuf> {
+fn config_dir() -> Option<PathBuf> {
     // TODO use dirs::config_dir
     env::var_os("XDG_CONFIG_HOME").and_then(dirs_sys::is_absolute_path)
         .or_else(|| dirs::home_dir().map(|h| h.join(".config")))
@@ -85,7 +124,7 @@ pub fn default_config() -> MeetNoteConfig {
 
 pub fn load_config_or_default() -> MeetNoteConfig {
     match load_config() {
-        Ok(c) => {c }
+        Ok(c) => { c }
         Err(err) => {
             log::error!("Cannot load config: {:?}", err);
             Default::default()

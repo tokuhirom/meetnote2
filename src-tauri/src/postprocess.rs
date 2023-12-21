@@ -31,12 +31,12 @@ impl PostProcessor {
         let vtt_file = wav_file.replace(".wav", ".vtt");
         log::info!("Convert {} to {}", mp3_file, vtt_file);
         let transcriber: Box<dyn Transcriber> = match config.transcriber_type {
-            TranscriberType::WhisperCpp => {
+            TranscriberType::WhisperCppTranscriberType => {
                 Box::new(WhisperTranscriber::new(
                     "v1.5.1".to_string(), config.whisper_model.to_string(), config.language.to_string(),
                 ))
             }
-            TranscriberType::OpenAI => {
+            TranscriberType::OpenAITranscriberType => {
                 let token: String = match config.openai_api_token {
                     Some(token) => { token }
                     None => {

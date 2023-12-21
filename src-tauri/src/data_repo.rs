@@ -7,8 +7,8 @@ use chrono::Local;
 use serde::{Deserialize, Serialize};
 use walkdir::WalkDir;
 use crate::postprocess::PostProcessor;
-use crate::tf_idf_summarizer::TFIDFSummarizer;
 use crate::webvtt::{Caption, parse_webvtt};
+use crate::config;
 
 pub fn get_data_dir() -> anyhow::Result<PathBuf> {
     let app_data_dir = dirs::data_dir()
@@ -168,8 +168,10 @@ pub(crate) fn regenerate_summary(filename: &String) -> anyhow::Result<()> {
 
     log::info!("Regenerating summary from {} to {}", vtt_path, md_path);
 
+    let config = config::load_config()?;
+    let summarizer = config.build_summarizer()?;
     let post_processor = PostProcessor::new(
-        Box::new(TFIDFSummarizer::new()?)
+        summarizer
     );
     post_processor.summarize(vtt_path.as_str(), md_path)?;
 
