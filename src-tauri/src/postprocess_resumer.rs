@@ -18,7 +18,7 @@ pub fn resume_postprocess() -> anyhow::Result<()> {
                 log::info!("Proceeded {:?}", wave.to_str());
             }
             Err(err) => {
-                log::error!("Cannot process {:?}: {:?}", wave.to_str(), err)
+                log::error!("Cannot resume postprocess {:?}: {:?}", wave.to_str(), err)
             }
         }
     }

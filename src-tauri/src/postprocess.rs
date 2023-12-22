@@ -94,7 +94,7 @@ impl PostProcessor {
         log::info!("Requesting summarization: {}", vtt_file);
 
         let summary = self.summarizer.summarize(vtt_content.as_str())
-            .map_err(|err| { anyhow!("Cannot process {:?}: {:?}", vtt_file, err)})?;
+            .map_err(|err| { anyhow!("Cannot postprocess summarization process {:?}: {:?}", vtt_file, err)})?;
 
         if let Err(e) = fs::write(summary_file, summary) {
             return Err(anyhow!("Cannot write to file({}): {:?}",

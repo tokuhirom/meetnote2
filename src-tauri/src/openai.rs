@@ -95,7 +95,12 @@ impl OpenAICustomizedClient {
         if res.status() == StatusCode::OK {
             Ok(res.json()?)
         } else {
-            Err(anyhow::anyhow!("Chat completion failed. Status: {:?}", res.status()))
+            Err(anyhow::anyhow!(
+                "Chat completion failed. Status: status={:?}, headers={:?}, text={:?}",
+                res.status(),
+                res.headers(),
+                res.text()
+            ))
         }
     }
 }
