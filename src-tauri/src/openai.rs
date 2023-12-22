@@ -95,11 +95,14 @@ impl OpenAICustomizedClient {
         if res.status() == StatusCode::OK {
             Ok(res.json()?)
         } else {
+            let status = res.status();
+            let headers = res.headers().clone();
+            let text = res.text()?;
             Err(anyhow::anyhow!(
                 "Chat completion failed. Status: status={:?}, headers={:?}, text={:?}",
-                res.status(),
-                res.headers(),
-                res.text()
+                status,
+                headers,
+                text
             ))
         }
     }
