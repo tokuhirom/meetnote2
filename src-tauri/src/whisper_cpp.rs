@@ -36,7 +36,7 @@ fn generate_temp_file_path(ext: &str) -> PathBuf {
     Path::join(&temp_dir, file_name)
 }
 
-pub(crate) fn run_whisper(version_tag: &str, model: &str, language: &str, in_file: &str, out_file: &str) -> anyhow::Result<()> {
+fn run_whisper(version_tag: &str, model: &str, language: &str, in_file: &str, out_file: &str) -> anyhow::Result<()> {
     let cache_dir = dirs::cache_dir()
         .ok_or(anyhow!("Cannot get cache directory"))?;
 
@@ -137,7 +137,7 @@ pub(crate) fn run_whisper(version_tag: &str, model: &str, language: &str, in_fil
         ));
     }
 
-    log::info!("Start transcribing... {} to {}", in_file, out_file);
+    log::info!("[whisper.cpp] Start transcribing... {} to {}", in_file, out_file);
     let start = Instant::now();
     let output = match Command::new("./main")
         .args([
