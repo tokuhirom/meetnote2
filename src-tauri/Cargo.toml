@@ -47,7 +47,7 @@ screencapturekit = { git = "https://github.com/tokuhirom/screencapturekit-rs.git
 # screencapturekit = { git = "https://github.com/clearlysid/screencapturekit-rs.git", rev = "56a6708", version = "*" }
 config = "0.13.4"
 time = "0.3.30"
-tempfile = { version = "3.8.1", features = [] }
+tempfile = { version = "3.9.0", features = [] }
 tempdir = "0.3.7"
 uuid = { version = "1.6.1", features = ["v4"] }
 regex = "1.10.2"
