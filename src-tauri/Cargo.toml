@@ -48,7 +48,7 @@ uuid = { version = "1.6.1", features = ["v4"] }
 regex = "1.10.2"
 base64 = "0.21.5"
 
-lindera-tokenizer = { version = "0.27.1", features = ["ipadic"] }
+lindera-tokenizer = { version = "0.27.2", features = ["ipadic"] }
 lindera-analyzer = { version = "0.27.1", features = ["ipadic", "ipadic-filter"] }
 lindera-dictionary = "0.27.1"
 lindera-core = "0.27.2"
