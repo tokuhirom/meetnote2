@@ -3,6 +3,8 @@ use std::fs;
 use std::io::Read;
 use std::path::PathBuf;
 use anyhow::anyhow;
+use base64::Engine;
+use base64::prelude::BASE64_STANDARD;
 use chrono::Local;
 use serde::{Deserialize, Serialize};
 use walkdir::WalkDir;
@@ -157,7 +159,7 @@ pub(crate) fn read_data_tag_mp3(filename: &String) -> anyhow::Result<String> {
     let data_dir = get_data_dir()?;
     let file_path = data_dir.join(filename);
     let vec = fs::read(file_path)?;
-    Ok(format!("data:audio/mpeg;base64,{}", base64::encode(vec)))
+    Ok(format!("data:audio/mpeg;base64,{}", BASE64_STANDARD.encode(vec)))
 }
 
 pub(crate) fn regenerate_summary(filename: &String) -> anyhow::Result<()> {
