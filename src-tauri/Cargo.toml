@@ -40,15 +40,10 @@ glob = "0.3.1"
 
 # screencapturekit
 core-graphics = "0.23.1"
-#screencapturekit = { git = "https://github.com/svtlabs/screencapturekit-rs.git", rev = "f2327fc1206fc7f32918aed3fea2de0775b8ac36", version = "*" }
-# audio support...
-# https://github.com/svtlabs/screencapturekit-rs/pull/13
-screencapturekit = { git = "https://github.com/tokuhirom/screencapturekit-rs.git", rev = "62a599b4fb9f89af875d8746dcfc51c42efb72c8", version = "*" }
-# screencapturekit = { git = "https://github.com/clearlysid/screencapturekit-rs.git", rev = "56a6708", version = "*" }
+screencapturekit = "0.2.2"
 config = "0.13.4"
 time = "0.3.30"
 tempfile = { version = "3.9.0", features = [] }
-tempdir = "0.3.7"
 uuid = { version = "1.6.1", features = ["v4"] }
 regex = "1.10.2"
 base64 = "0.21.5"
