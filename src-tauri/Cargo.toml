@@ -50,7 +50,7 @@ base64 = "0.21.7"
 
 lindera-tokenizer = { version = "0.27.2", features = ["ipadic"] }
 lindera-analyzer = { version = "0.27.1", features = ["ipadic", "ipadic-filter"] }
-lindera-dictionary = "0.27.1"
+lindera-dictionary = "0.27.2"
 lindera-core = "0.27.2"
 
 [features]
