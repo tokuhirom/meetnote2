@@ -1,13 +1,22 @@
 use std::thread::sleep;
 use std::time::Duration;
 use cpal::traits::DeviceTrait;
+use lazy_static::lazy_static;
 use crate::{mic_audio, data_repo, window};
 use crate::config::{load_config_or_default, MeetNoteConfig};
 use crate::postprocess::PostProcessor;
 use crate::screen_audio::ScreenAudioRecorder;
+use std::sync::RwLock;
+
+lazy_static! {
+    static ref IS_RECORDING: RwLock<bool> = RwLock::new(false);
+}
+
+pub fn is_recording() -> bool {
+    *IS_RECORDING.read().unwrap()
+}
 
 pub fn start_recording_process(config: MeetNoteConfig) {
-    let mut is_recording = false;
     let mut mic_recorder: Option<mic_audio::MicAudioRecorder> = None;
     let mut screen_audio_recorder: Option<ScreenAudioRecorder> = None;
     let target_device = config.target_device;
@@ -16,7 +25,7 @@ pub fn start_recording_process(config: MeetNoteConfig) {
 
     loop {
         if let Some(info) = window::is_there_target_windows() {
-            if !is_recording {
+            if !(*IS_RECORDING.read().unwrap()) {
                 let input_device = mic_audio::select_input_device_by_name(&target_device);
 
                 log::info!("Starting recording...: window={:?} input_device={:?}", info, input_device.name());
@@ -52,11 +61,11 @@ pub fn start_recording_process(config: MeetNoteConfig) {
                 if let Err(err) = screen_audio_recorder.as_mut().unwrap().start_recording() {
                     log::error!("cannot start recording: {:?}", err);
                 }
-                is_recording = true;
+                *(IS_RECORDING.write().unwrap()) = true;
             }
-        } else if is_recording {
+        } else if *IS_RECORDING.read().unwrap() {
             // Window disappears, stop recording
-            is_recording = false;
+            *(IS_RECORDING.write().unwrap()) = false;
             if let Some(recorder) = &mut mic_recorder {
                 recorder.stop_recording();
             }

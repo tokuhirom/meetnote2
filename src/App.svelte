@@ -2,6 +2,7 @@
   import { invoke } from "@tauri-apps/api/tauri"
   import {onMount} from "svelte";
   import FileItem from "./lib/FileItem.svelte";
+  import NowRecordingIndicator from "./lib/NowRecordingIndicator.svelte";
 
   let files: {filename: string, content: string}[] = []
 
@@ -16,6 +17,8 @@
 </script>
 
 <main class="container">
+  <NowRecordingIndicator />
+
   <div class="files">
     {#each files as file}
       <FileItem file={file}/>

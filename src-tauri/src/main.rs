@@ -90,6 +90,11 @@ fn get_windows() -> Vec<WindowInfo> {
     window::get_windows()
 }
 
+#[tauri::command]
+fn is_recording() -> bool {
+    recording_proc::is_recording()
+}
+
 fn main() -> anyhow::Result<()> {
     let config = simplelog::ConfigBuilder::new()
         .set_time_offset_to_local()
@@ -207,6 +212,7 @@ fn main() -> anyhow::Result<()> {
             read_data_tag_mp3,
             regenerate_summary,
             get_windows,
+            is_recording,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
