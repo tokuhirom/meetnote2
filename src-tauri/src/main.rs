@@ -164,12 +164,13 @@ fn main() -> anyhow::Result<()> {
         .system_tray(tray)
         .menu(menu)
         .setup(|app| {
-            WindowBuilder::new(
+            let window = WindowBuilder::new(
                 app,
                 "main-window".to_string(),
                 tauri::WindowUrl::App("index.html".into()),
             )
                 .build()?;
+            window.set_title("MeetNote2")?;
 
             Ok(())
         })
