@@ -28,7 +28,7 @@ simplelog = "0.12.1"
 
 anyhow = { version = "1.0.75", features = [] }
 
-reqwest = { version = "0.11.22", features = ["blocking", "multipart", "json"] }
+reqwest = { version = "0.11.23", features = ["blocking", "multipart", "json"] }
 
 chrono = { version = "0.4.31", features = [] }
 
@@ -48,7 +48,7 @@ uuid = { version = "1.6.1", features = ["v4"] }
 regex = "1.10.2"
 base64 = "0.21.5"
 
-lindera-tokenizer = { version = "0.27.1", features = ["ipadic"] }
+lindera-tokenizer = { version = "0.27.2", features = ["ipadic"] }
 lindera-analyzer = { version = "0.27.1", features = ["ipadic", "ipadic-filter"] }
 lindera-dictionary = "0.27.2"
 lindera-core = "0.27.2"
