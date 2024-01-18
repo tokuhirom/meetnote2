@@ -25,9 +25,14 @@
       logs = [];
       console.error(`Cannot get VTT: ${e}`);
     }
-    mp3 = await entry.readMp3AsDataUri();
-    const audio = document.getElementsByTagName("audio")[0] as HTMLAudioElement;
-    audio.load();
+
+    try {
+      mp3 = await entry.readMp3AsDataUri();
+      const audio = document.getElementsByTagName("audio")[0] as HTMLAudioElement;
+      audio.load();
+    } catch (e) {
+      console.error(`MP3: ${e}`);
+    }
   }
 
    function seek(log: Caption) {

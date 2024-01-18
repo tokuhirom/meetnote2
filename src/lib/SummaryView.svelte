@@ -2,6 +2,7 @@
     import {Entry} from "./entry.js";
     import {dialog} from "@tauri-apps/api";
     import { open } from '@tauri-apps/api/shell';
+    import StatusIndicator from "./StatusIndicator.svelte";
 
     export let entry: Entry;
     export let onDelete: () => void;
@@ -48,6 +49,8 @@
         <button on:click|preventDefault={deleteItem}>Delete</button>
     </div>
 
+    <StatusIndicator entry={entry} />
+
     {#if editMode}
         <form on:submit|preventDefault={saveItem}>
             <textarea cols="80" rows="40" bind:value={editingContent}></textarea>
@@ -73,4 +76,5 @@
         margin: 8px;
         color: yellowgreen;
     }
+
 </style>

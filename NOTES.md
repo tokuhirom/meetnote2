@@ -17,3 +17,11 @@
 - [ ] 自動的に wav からの自動処理をバックグラウンドスレッドで処理する機能を廃止にしようかなー
 - [ ] 後処理やりなおすくん、JS側に実装しなおす
 - [ ] 長すぎる場合は summarize を分離する。
+- [ ] postprocess が中途半端だったら手で動かす方にいくなら。。
+
+
+後処理
+- convert to MP3
+- convert to VTT
+- Summarize VTT
+- cleanup files

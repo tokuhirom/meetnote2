@@ -1,5 +1,5 @@
 import {fs} from "@tauri-apps/api";
-import {removeDir} from "@tauri-apps/api/fs";
+import {exists, removeDir} from "@tauri-apps/api/fs";
 import {invoke} from "@tauri-apps/api/tauri";
 import {parseWebVTT} from "./webvtt";
 
@@ -41,6 +41,18 @@ export class Entry {
 
     vttPath() {
         return this.buildPath("vtt");
+    }
+
+    hasMp3(): Promise<boolean> {
+        return exists(this.mp3Path());
+    }
+
+    hasVTT(): Promise<boolean> {
+        return exists(this.vttPath());
+    }
+
+    hasMD(): Promise<boolean> {
+        return exists(this.mdPath());
     }
 
     async readVTT() {
