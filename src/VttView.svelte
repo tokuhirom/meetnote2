@@ -42,7 +42,7 @@
 
   {#each logs as log}
     <tr>
-      <td><button on:click|preventDefault={() => seek(log)}>[{log.startTime}]</button></td>
+      <td><button on:click|preventDefault={() => seek(log)}>[{log.startTime.replace(/\.000$/, '')}]</button></td>
       <td>{log.text}</td>
     </tr>
   {/each}
@@ -52,5 +52,8 @@
 <style>
   td {
     vertical-align: top;
+  }
+  button {
+    padding: 4px;
   }
 </style>
