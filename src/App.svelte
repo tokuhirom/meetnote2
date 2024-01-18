@@ -5,6 +5,7 @@
   import VttView from "./VttView.svelte";
   import {DataRepo} from "./lib/data_repo";
   import type {Entry} from "./lib/entry";
+  import SummaryView from "./lib/SummaryView.svelte";
 
   let selectedEntry: Entry | undefined = undefined;
   let entries: Entry[] = []
@@ -13,6 +14,10 @@
 
   onMount(async () => {
     entries = await data_repo.list_entries();
+
+    if (entries.length > 0) {
+      selectedEntry = entries[0];
+    }
   });
 
   // todo: better polling logic
@@ -23,13 +28,20 @@
   function onSelectEntry(file: Entry) {
     selectedEntry = file;
   }
+
+  async function onDelete() {
+    entries = await data_repo.list_entries();
+
+    if (entries.length > 0) {
+      selectedEntry = entries[0];
+    }
+  }
 </script>
 
 <main class="container">
-  <NowRecordingIndicator />
-
   <div class="main-container">
     <div class="files">
+      <NowRecordingIndicator />
       {#each entries as entry}
         <FileItem entry={entry} onSelectEntry={onSelectEntry}/>
       {/each}
@@ -37,7 +49,8 @@
     <div class="vtt">
       {#if selectedEntry}
         <h2>{selectedEntry.title()}</h2>
-        <pre class="summary">{selectedEntry.summary}</pre>
+        <SummaryView entry="{selectedEntry}" onDelete={onDelete} />
+        <hr class="separator" />
         <VttView entry={selectedEntry} />
       {/if}
     </div>
@@ -51,13 +64,15 @@
   .files {
     flex: 0 0 30%;
     overflow-y: auto;
+    padding-right: 9px;
   }
   .vtt {
     flex: 1;
+    padding-left: 9px;
   }
 
-  .summary {
+  .separator {
     margin-bottom: 10px;
-    border-bottom: #396cd8 1px solid;
+    /*border-bottom:#396cd8 1px solid;*/
   }
 </style>

@@ -6,7 +6,6 @@ export class DataRepo {
     }
 
     async list_entries(): Promise<Entry[]> {
-        console.log("list_entries");
         // mkdir -p
         if (!await exists('data', { dir: BaseDirectory.AppData })) {
             await createDir('data', {dir: BaseDirectory.AppData, recursive: true });
@@ -15,7 +14,6 @@ export class DataRepo {
         const result: Entry[] = [];
         const entries = await readDir('data', { dir: BaseDirectory.AppData, recursive: false });
         for (const fileEntry of entries) {
-            console.log(`Entry: ${fileEntry.path}`);
             if (await exists(fileEntry.path)) {
                 let entry = await Entry.fromPath(fileEntry.path);
                 result.push(entry);
