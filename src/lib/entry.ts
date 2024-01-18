@@ -31,6 +31,10 @@ export class Entry {
         return `${this.path}/${this.basename()}.${ext}`;
     }
 
+    micWavPath() {
+        return this.buildPath("mic.wav");
+    }
+
     mdPath() {
         return this.buildPath("md");
     }
@@ -41,6 +45,10 @@ export class Entry {
 
     vttPath() {
         return this.buildPath("vtt");
+    }
+
+    hasMicWav(): Promise<boolean> {
+        return exists(this.micWavPath());
     }
 
     hasMp3(): Promise<boolean> {
