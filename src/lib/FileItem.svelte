@@ -16,7 +16,11 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="file" on:click|preventDefault={openLog} role="navigation">
     <div class="title">{entry.title()}</div>
-    <pre style="clear: both">{entry.summary}</pre>
+    {#if entry.summary}
+        <pre>{entry.summary}</pre>
+    {:else}
+        <i>Summary is not available yet.</i>
+    {/if}
 </div>
 
 <style>

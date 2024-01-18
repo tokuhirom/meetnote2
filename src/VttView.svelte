@@ -40,20 +40,25 @@
 </script>
 
 <main class="container">
+  {#if mp3}
   <audio controls>
     <source src="{mp3}">
     Your browser does not support the audio tag.
   </audio>
+  {/if}
 
-  <table>
-
-  {#each logs as log}
-    <tr>
-      <td><button on:click|preventDefault={() => seek(log)}>[{log.startTime.replace(/\.\d{3}$/, '')}]</button></td>
-      <td>{log.text}</td>
-    </tr>
-  {/each}
-  </table>
+  {#if logs}
+    <table>
+    {#each logs as log}
+      <tr>
+        <td><button on:click|preventDefault={() => seek(log)}>[{log.startTime.replace(/\.\d{3}$/, '')}]</button></td>
+        <td>{log.text}</td>
+      </tr>
+    {/each}
+    </table>
+  {:else}
+    VTT log is not available yet.
+  {/if}
 </main>
 
 <style>
