@@ -18,10 +18,16 @@
   }
 
   async function watchFile() {
-    logs = await entry.readVTT();
+    console.log("watchFile");
+    try {
+      logs = await entry.readVTT();
+    } catch (e) {
+      logs = [];
+      console.error(`Cannot get VTT: ${e}`);
+    }
     mp3 = await entry.readMp3AsDataUri();
-    // const audio = document.getElementsByTagName("audio")[0] as HTMLAudioElement;
-    // audio.load();
+    const audio = document.getElementsByTagName("audio")[0] as HTMLAudioElement;
+    audio.load();
   }
 
    function seek(log: Caption) {
