@@ -1,5 +1,6 @@
 <script lang="ts">
     import {Entry} from "./entry.js";
+    import {dialog} from "@tauri-apps/api";
 
     export let entry: Entry;
     export let onDelete: () => void;
@@ -23,7 +24,8 @@
 
     // TODO confirm
     async function deleteItem() {
-        if (confirm("Really?")) {
+        // TODO move to menu bar?
+        if (await dialog.confirm("Do you want to delete this file?")) {
             await entry.remove();
             onDelete();
         }
