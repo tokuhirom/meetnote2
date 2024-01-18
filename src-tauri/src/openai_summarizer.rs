@@ -37,6 +37,8 @@ impl Summarizer for OpenAISummarizer {
             }
         ];
 
+        // TODO cleanup webvtt before post
+        // TODO split into multiple parts if it's too large
         self.openai.chat_completion(&openai::ChatCompletionRequest {
             model: "gpt-4-32k".to_string(),
             messages: chat_messages,

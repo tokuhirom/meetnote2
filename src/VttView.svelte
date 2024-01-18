@@ -8,7 +8,6 @@
   let mp3 : string | undefined = undefined;
   let logs : Caption[] = [];
 
-  let prevFilename = "";
   onMount(async () => {
     console.log("onMount...")
     await watchFile();
@@ -19,14 +18,16 @@
   }
 
   async function watchFile() {
-    logs = await entry.read_vtt();
+    logs = await entry.readVTT();
     mp3 = await entry.readMp3AsDataUri();
+    // const audio = document.getElementsByTagName("audio")[0] as HTMLAudioElement;
+    // audio.load();
   }
 
    function seek(log: Caption) {
     const startSeconds = log.parseStartTimeMillis() / 1000;
 
-    const audio = document.getElementsByTagName("audio")[0];
+    const audio = document.getElementsByTagName("audio")[0] as HTMLAudioElement;
     audio.currentTime = startSeconds;
     audio.play();
   }

@@ -41,7 +41,8 @@
         "all": true
       },
       "dialog": {
-        "confirm": true
+        "confirm": true,
+        "message": true
       }
     },
     "bundle": {

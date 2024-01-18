@@ -14,12 +14,19 @@
 
     async function saveItem() {
         console.log(`Save file: ${entry}`)
-        await entry.save_summary(editingContent!!);
+        await entry.saveSummary(editingContent!!);
         editMode = false;
     }
 
     async function regenerateSummaryItem() {
-        await entry.regenerateSummary();
+        try {
+            await entry.regenerateSummary();
+            await entry.readSummary();
+            entry = entry;
+        } catch (e) {
+            console.log(e);
+            await dialog.message(`${e}`);
+        }
     }
 
     // TODO confirm

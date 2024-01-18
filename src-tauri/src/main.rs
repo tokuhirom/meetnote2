@@ -31,11 +31,6 @@ use crate::data_repo::MdFile;
 use crate::window::WindowInfo;
 
 #[tauri::command]
-fn load_files() -> Vec<MdFile> {
-    data_repo::load_files()
-}
-
-#[tauri::command]
 fn load_config() -> Result<MeetNoteConfig, String>{
     config::load_config()
         .map_err(|e| e.to_string())
@@ -55,8 +50,8 @@ fn get_input_devices() -> Result<Vec<String>, String> {
 }
 
 #[tauri::command]
-fn regenerate_summary(filename: String) -> Result<(), String> {
-    data_repo::regenerate_summary(&filename)
+fn regenerate_summary(vtt_path: String, md_path: String) -> Result<(), String> {
+    data_repo::regenerate_summary(&vtt_path, &md_path)
         .map_err(|e| e.to_string())
 }
 
@@ -76,7 +71,6 @@ fn main() -> anyhow::Result<()> {
         .expect("Cannot get timezone")
         .build();
 
-    eprintln!("HAHA");
     simplelog::CombinedLogger::init(vec![
         simplelog::TermLogger::new(
             simplelog::LevelFilter::Info,
@@ -90,7 +84,6 @@ fn main() -> anyhow::Result<()> {
             File::create(data_repo::get_app_data_dir().unwrap().join("meetnote2.log"))?
         ),
     ])?;
-    eprintln!("HAHA");
 
     let config = match config::load_config() {
         Ok(c) => { c }

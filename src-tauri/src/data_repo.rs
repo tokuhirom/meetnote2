@@ -2,6 +2,7 @@ use std::cmp::Reverse;
 use std::fs;
 use std::io::Read;
 use std::path::PathBuf;
+use std::process::exit;
 use anyhow::anyhow;
 use chrono::Local;
 use serde::{Deserialize, Serialize};
@@ -94,28 +95,7 @@ pub fn load_files() -> Vec<MdFile> {
 }
 
 
-pub(crate) fn save_file(filename: &String, content: &String) -> anyhow::Result<()> {
-    let data_dir = get_app_data_dir()?;
-    let file_path = data_dir.join(filename);
-
-    log::info!("Saving content to {:?}, {:?}", file_path, content);
-
-    match fs::write(&file_path, content) {
-        Ok(_) => {
-            Ok(())
-        }
-        Err(err) => {
-            Err(anyhow!("Cannot write content to {:?}: {:?}", file_path, err))
-        }
-    }
-}
-
-pub(crate) fn regenerate_summary(filename: &String) -> anyhow::Result<()> {
-    let data_dir = get_app_data_dir()?;
-    let file_path = data_dir.join(filename);
-    let md_path = file_path.as_path().to_str().unwrap();
-    let vtt_path = md_path.replace(".md", ".vtt");
-
+pub(crate) fn regenerate_summary(vtt_path: &String, md_path: &String) -> anyhow::Result<()> {
     log::info!("Regenerating summary from {} to {}", vtt_path, md_path);
 
     let config = config::load_config()?;
@@ -123,7 +103,5 @@ pub(crate) fn regenerate_summary(filename: &String) -> anyhow::Result<()> {
     let post_processor = PostProcessor::new(
         summarizer
     );
-    post_processor.summarize(vtt_path.as_str(), md_path)?;
-
-    Ok(())
+    post_processor.summarize(vtt_path.as_str(), md_path)
 }

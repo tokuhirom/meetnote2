@@ -11,10 +11,10 @@ export class Entry {
         this.path = path;
     }
 
-    private async readSummary() {
-        let md_path = this.md_path();
+    async readSummary() {
+        let md_path = this.mdPath();
         if (await fs.exists(md_path)) {
-            this.summary = await fs.readTextFile(this.md_path());
+            this.summary = await fs.readTextFile(this.mdPath());
         }
     }
 
@@ -27,35 +27,35 @@ export class Entry {
         return matches[0];
     }
 
-    build_path(ext: string): string {
+    buildPath(ext: string): string {
         return `${this.path}/${this.basename()}.${ext}`;
     }
 
-    md_path() {
-        return this.build_path("md");
+    mdPath() {
+        return this.buildPath("md");
     }
 
-    mp3_path() {
-        return this.build_path("mp3");
+    mp3Path() {
+        return this.buildPath("mp3");
     }
 
-    vtt_path() {
-        return this.build_path("vtt");
+    vttPath() {
+        return this.buildPath("vtt");
     }
 
-    async read_vtt() {
-        let vtt  = await fs.readTextFile(this.vtt_path());
+    async readVTT() {
+        let vtt  = await fs.readTextFile(this.vttPath());
         return parseWebVTT(vtt);
     }
 
-    async save_summary(summary: string) {
-        let path = this.md_path();
+    async saveSummary(summary: string) {
+        let path = this.mdPath();
         await fs.writeTextFile(path, summary)
         this.summary = summary;
     }
 
     async readMp3AsDataUri(): Promise<string> {
-        const mp3Path = this.mp3_path();
+        const mp3Path = this.mp3Path();
         try {
             const mp3Data = await fs.readBinaryFile(mp3Path);
             const blob = new Blob([mp3Data], {
@@ -95,9 +95,12 @@ export class Entry {
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}(${weekdays[date.getDay()]}) ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
     }
 
-    async regenerateSummary() {
-        console.log(`Regenerate summary: ${this}`)
-        await invoke("regenerate_summary", {path: this.path});
+    async regenerateSummary(): Promise<string> {
+        console.log(`Regenerate summary: ${this.path}`)
+        return await invoke("regenerate_summary", {
+            vttPath: this.vttPath(),
+            mdPath: this.mdPath(),
+        });
     }
 
     async remove() {
