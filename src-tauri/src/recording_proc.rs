@@ -106,7 +106,3 @@ pub fn start_recording_process(config: MeetNoteConfig) {
         sleep(Duration::from_secs(1))
     }
 }
-
-fn start_recording(data_repo: DataRepo) {
-    todo!()
-}

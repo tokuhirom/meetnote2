@@ -27,7 +27,6 @@ use anyhow::anyhow;
 use simplelog::ColorChoice;
 use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowBuilder, SystemTray, SystemTrayMenu, Manager};
 use crate::config::MeetNoteConfig;
-use crate::data_repo::MdFile;
 use crate::window::WindowInfo;
 
 #[tauri::command]
