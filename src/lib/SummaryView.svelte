@@ -30,7 +30,6 @@
         }
     }
 
-    // TODO confirm
     async function deleteItem() {
         // TODO move to menu bar?
         if (await dialog.confirm("Do you want to delete this file?")) {
