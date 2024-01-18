@@ -2,12 +2,10 @@
     import {invoke} from "@tauri-apps/api/tauri";
     import {WebviewWindow} from "@tauri-apps/api/window";
 
+    export let onSelectFile: (file: {filename: string, content: string|null}) => void;
     export let file: {
-        filename: string | null,
+        filename: string,
         content: string | null
-    } = {
-        filename: null,
-        content: null
     };
 
     let editMode = false;
@@ -26,10 +24,7 @@
 
     async function openLog() {
         console.log("open log");
-        const webview = new WebviewWindow('vttlog', {
-            url: "vtt.html?filename=" + file.filename
-        });
-        await webview.emit("filename", file.filename);
+        onSelectFile(file);
     }
 
     async function saveItem() {

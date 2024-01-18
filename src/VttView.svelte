@@ -1,18 +1,25 @@
 <script lang="ts">
-  import {onMount} from "svelte";
+  import {afterUpdate, onMount} from "svelte";
   import {invoke} from "@tauri-apps/api/tauri";
 
-  let filename = "";
+  export let file:  {filename: string, content: string};
   let mp3 = "";
   let logs : {start_time: string, end_time: string, text: string}[] = [];
 
-
+  let prevFilename = "";
   onMount(async () => {
     console.log("onMount...")
-    filename = location.search.replace(/^\?filename=/, '').replace(/\.md$/, '.vtt');
-    logs = await invoke("load_webvtt", {filename: filename});
-    mp3 = await invoke("read_data_tag_mp3", {filename: filename.replace(".vtt", ".mp3")});
+    await watchFile();
   });
+
+  $: if (file) {
+    watchFile()
+  }
+
+  async function watchFile() {
+    logs = await invoke("load_webvtt", {filename: file.filename.replace(".md", ".mp3")});
+    mp3 = await invoke("read_data_tag_mp3", {filename: file.filename.replace(".md", ".mp3")});
+  }
 
   function convertToSeconds(time: string): number {
     const splitTime = time.split(':').map(Number);
@@ -28,7 +35,7 @@
 </script>
 
 <main class="container">
-  <h2>{filename} - log</h2>
+  <h2>{file.filename} - log</h2>
 
   <audio controls>
     <source src="{mp3}">
