@@ -58,8 +58,20 @@ export class Entry {
         const mp3Path = this.mp3_path();
         try {
             const mp3Data = await fs.readBinaryFile(mp3Path);
-            const base64Data = btoa(String.fromCharCode(...new Uint8Array(mp3Data)));
-            return `data:audio/mp3;base64,${base64Data}`;
+            const blob = new Blob([mp3Data], {
+                type: "audio/mp3",
+            });
+            return new Promise(function (res, rej) {
+                const reader = new FileReader();
+                reader.onload = function (evt) {
+                    const dataurl : string = evt.target!!.result as string;
+                    res(dataurl);
+                };
+                reader.onerror = function (err) {
+                    rej(err);
+                };
+                reader.readAsDataURL(blob);
+            });
         } catch (error) {
             console.error(`Failed to read mp3 file at ${mp3Path}:`, error);
             throw new Error(`Could not read mp3 file: ${mp3Path}: ${error}`);

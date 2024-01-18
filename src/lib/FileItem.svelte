@@ -13,13 +13,9 @@
     }
 </script>
 
-<div class="file">
-    <div>
-        <h2 style="float: left;">{entry.title()}</h2>
-        <div style="float: right" class="buttons">
-            <button on:click|preventDefault={openLog}>Log</button>
-        </div>
-    </div>
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class="file" on:click|preventDefault={openLog} role="navigation">
+    <div class="title">{entry.title()}</div>
     <pre style="clear: both">{entry.summary}</pre>
 </div>
 
@@ -27,7 +23,7 @@
     pre {
         word-break: break-all;
     }
-    .file .buttons {
-        font-size: x-small;
+    .title {
+        font-weight: bold;
     }
 </style>
