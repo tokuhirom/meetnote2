@@ -1,10 +1,12 @@
 <script lang="ts">
   import {afterUpdate, onMount} from "svelte";
   import {invoke} from "@tauri-apps/api/tauri";
+  import type {Entry} from "./lib/entry";
+  import type {Caption} from "./lib/webvtt";
 
-  export let file:  {filename: string, content: string};
-  let mp3 = "";
-  let logs : {start_time: string, end_time: string, text: string}[] = [];
+  export let entry:  Entry;
+  let mp3 : string | undefined = undefined;
+  let logs : Caption[] = [];
 
   let prevFilename = "";
   onMount(async () => {
@@ -12,31 +14,25 @@
     await watchFile();
   });
 
-  $: if (file) {
+  $: if (entry) {
     watchFile()
   }
 
   async function watchFile() {
-    logs = await invoke("load_webvtt", {filename: file.filename.replace(".md", ".mp3")});
-    mp3 = await invoke("read_data_tag_mp3", {filename: file.filename.replace(".md", ".mp3")});
+    logs = await entry.read_vtt();
+    mp3 = await entry.readMp3AsDataUri();
   }
 
-  function convertToSeconds(time: string): number {
-    const splitTime = time.split(':').map(Number);
-    return splitTime[0] * 3600 + splitTime[1] * 60 + splitTime[2];
-  }
+   function seek(log: Caption) {
+    const startSeconds = log.parseStartTimeMillis() / 1000;
 
-   function seek(log:{start_time: string, end_time: string, text: string}) {
-    const start = convertToSeconds(log.start_time);
     const audio = document.getElementsByTagName("audio")[0];
-    audio.currentTime = start;
+    audio.currentTime = startSeconds;
     audio.play();
   }
 </script>
 
 <main class="container">
-  <h2>{file.filename} - log</h2>
-
   <audio controls>
     <source src="{mp3}">
     Your browser does not support the audio tag.
@@ -46,7 +42,7 @@
 
   {#each logs as log}
     <tr>
-      <td><a href="#" on:click|preventDefault={() => seek(log)}>[{log.start_time}]</a></td>
+      <td><button on:click|preventDefault={() => seek(log)}>[{log.startTime}]</button></td>
       <td>{log.text}</td>
     </tr>
   {/each}

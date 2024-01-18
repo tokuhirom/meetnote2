@@ -1,52 +1,42 @@
 <script lang="ts">
     import {invoke} from "@tauri-apps/api/tauri";
     import {WebviewWindow} from "@tauri-apps/api/window";
+    import type {Entry} from "./entry";
 
-    export let onSelectFile: (file: {filename: string, content: string|null}) => void;
-    export let file: {
-        filename: string,
-        content: string | null
-    };
+    export let onSelectEntry: (entry: Entry) => void;
+    export let entry: Entry;
 
     let editMode = false;
-    let editingContent : string | null = null;
+    let editingContent : string | undefined = undefined;
 
     async function deleteItem() {
-        console.log(`Delete file: ${file.filename}`)
-        await invoke("delete_file", {filename: file.filename});
-        return true;
+        await entry.remove();
     }
 
     async function enterEditingMode() {
         editMode = true
-        editingContent = file.content
+        editingContent = entry.summary;
     }
 
     async function openLog() {
         console.log("open log");
-        onSelectFile(file);
+        onSelectEntry(entry);
     }
 
     async function saveItem() {
-        console.log(`Save file: ${file.filename}`)
-        await invoke("save_file", {
-            filename: file.filename,
-            content: editingContent
-        });
-        file.content = editingContent
+        console.log(`Save file: ${entry}`)
+        await entry.save_summary(editingContent!!);
         editMode = false;
     }
 
     async function regenerateSummaryItem() {
-        console.log(`Regenerate summary: ${file.filename}`)
-        await invoke("regenerate_summary", {filename: file.filename});
-        return true;
+        await entry.regenerateSummary();
     }
 </script>
 
 <div class="file">
     <div>
-        <h2 style="float: left;">{file.filename}</h2>
+        <h2 style="float: left;">{entry.title()}</h2>
         <div style="float: right" class="buttons">
             <button on:click|preventDefault={enterEditingMode}>Edit</button>
             <button on:click|preventDefault={openLog}>Log</button>
@@ -60,9 +50,8 @@
             <button type="submit">Save</button>
         </form>
     {:else}
-        <pre style="clear: both">{file.content}</pre>
+        <pre style="clear: both">{entry.summary}</pre>
     {/if}
-
 </div>
 
 <style>

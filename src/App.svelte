@@ -1,24 +1,27 @@
 <script lang="ts">
-  import { invoke } from "@tauri-apps/api/tauri"
   import {onMount} from "svelte";
   import FileItem from "./lib/FileItem.svelte";
   import NowRecordingIndicator from "./lib/NowRecordingIndicator.svelte";
   import VttView from "./VttView.svelte";
+  import {DataRepo} from "./lib/data_repo";
+  import type {Entry} from "./lib/entry";
 
-  let selectedFile: {filename: string, content: string|null} | undefined = undefined;
-  let files: {filename: string, content: string}[] = []
+  let selectedEntry: Entry | undefined = undefined;
+  let entries: Entry[] = []
+
+  let data_repo = new DataRepo();
 
   onMount(async () => {
-    files = await invoke("load_files")
+    entries = await data_repo.list_entries();
   });
 
   // todo: better polling logic
   setInterval(async () => {
-    files = await invoke("load_files");
+    entries = await data_repo.list_entries();
   }, 3000);
 
-  function onSelectFile(file: {filename: string, content: string|null}) {
-    selectedFile = file;
+  function onSelectEntry(file: Entry) {
+    selectedEntry = file;
   }
 </script>
 
@@ -27,13 +30,15 @@
 
   <div class="main-container">
     <div class="files">
-      {#each files as file}
-        <FileItem file={file} onSelectFile={onSelectFile}/>
+      {#each entries as entry}
+        <FileItem entry={entry} onSelectEntry={onSelectEntry}/>
       {/each}
     </div>
     <div class="vtt">
-      {#if selectedFile}
-        <VttView file={selectedFile} />
+      {#if selectedEntry}
+        <h2>{selectedEntry.title()}</h2>
+        <pre class="summary">{selectedEntry.summary}</pre>
+        <VttView entry={selectedEntry} />
       {/if}
     </div>
   </div>
@@ -49,5 +54,10 @@
   }
   .vtt {
     flex: 1;
+  }
+
+  .summary {
+    margin-bottom: 10px;
+    border-bottom: #396cd8 1px solid;
   }
 </style>

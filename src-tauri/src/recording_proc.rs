@@ -2,11 +2,12 @@ use std::thread::sleep;
 use std::time::Duration;
 use cpal::traits::DeviceTrait;
 use lazy_static::lazy_static;
-use crate::{mic_audio, data_repo, window};
+use crate::{mic_audio, window};
 use crate::config::{load_config_or_default, MeetNoteConfig};
 use crate::postprocess::PostProcessor;
 use crate::screen_audio::ScreenAudioRecorder;
 use std::sync::RwLock;
+use crate::data_repo::DataRepo;
 
 lazy_static! {
     static ref IS_RECORDING: RwLock<bool> = RwLock::new(false);
@@ -21,6 +22,9 @@ pub fn start_recording_process(config: MeetNoteConfig) {
     let mut screen_audio_recorder: Option<ScreenAudioRecorder> = None;
     let target_device = config.target_device;
 
+    let datarepo = DataRepo::new()
+        .expect("DataRepo::new");
+
     log::info!("Ready to processing...");
 
     loop {
@@ -28,19 +32,19 @@ pub fn start_recording_process(config: MeetNoteConfig) {
             if !(*IS_RECORDING.read().unwrap()) {
                 let input_device = mic_audio::select_input_device_by_name(&target_device);
 
+                // TODO このへん、ちゃんと struct で状態管理したほうがいいかも。。エラー処理が冗長になりすぎ
+
                 log::info!("Starting recording...: window={:?} input_device={:?}", info, input_device.name());
 
-                let output_path = match data_repo::new_mic_wave_file_name() {
-                    Ok(path) => {
-                        path
-                    }
+                let entry = match datarepo.new_entry() {
+                    Ok(entry) => {entry}
                     Err(err) => {
-                        log::error!("Cannot get new wave file name: {}", err);
+                        log::error!("Cannot create entry: {:?}", err);
                         continue;
                     }
                 };
-                let Some(output_file) = output_path.as_path()
-                    .to_str() else {
+                let mic_output_path = entry.mic_wav_path();
+                let Some(output_file) = mic_output_path.as_path().to_str() else {
                     log::error!("Cannot get wave output file name");
                     continue;
                 };
@@ -101,4 +105,8 @@ pub fn start_recording_process(config: MeetNoteConfig) {
 
         sleep(Duration::from_secs(1))
     }
+}
+
+fn start_recording(data_repo: DataRepo) {
+    todo!()
 }

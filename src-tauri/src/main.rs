@@ -10,7 +10,6 @@ mod recording_proc;
 mod config;
 mod screencapture;
 mod data_repo;
-mod postprocess_resumer;
 mod whisper_cpp;
 mod webvtt;
 mod screen_audio;
@@ -21,6 +20,7 @@ mod openai_summarizer;
 mod tf_idf_summarizer;
 mod transcriber;
 mod openai_transcriber;
+mod entry;
 
 use std::fs::File;
 use anyhow::anyhow;
@@ -28,7 +28,6 @@ use simplelog::ColorChoice;
 use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowBuilder, SystemTray, SystemTrayMenu, Manager};
 use crate::config::MeetNoteConfig;
 use crate::data_repo::MdFile;
-use crate::webvtt::Caption;
 use crate::window::WindowInfo;
 
 #[tauri::command]
@@ -56,30 +55,6 @@ fn get_input_devices() -> Result<Vec<String>, String> {
 }
 
 #[tauri::command]
-fn delete_file(filename: String) -> Result<(), String> {
-    data_repo::delete_file(&filename)
-        .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-fn save_file(filename: String, content: String) -> Result<(), String> {
-    data_repo::save_file(&filename, &content)
-        .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-fn load_webvtt(filename: String) -> Result<Vec<Caption>, String> {
-    data_repo::load_webvtt(&filename)
-        .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-fn read_data_tag_mp3(filename: String) -> Result<String, String> {
-    data_repo::read_data_tag_mp3(&filename)
-        .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
 fn regenerate_summary(filename: String) -> Result<(), String> {
     data_repo::regenerate_summary(&filename)
         .map_err(|e| e.to_string())
@@ -101,6 +76,7 @@ fn main() -> anyhow::Result<()> {
         .expect("Cannot get timezone")
         .build();
 
+    eprintln!("HAHA");
     simplelog::CombinedLogger::init(vec![
         simplelog::TermLogger::new(
             simplelog::LevelFilter::Info,
@@ -111,9 +87,10 @@ fn main() -> anyhow::Result<()> {
         simplelog::WriteLogger::new(
             simplelog::LevelFilter::Info,
             config,
-            File::create(data_repo::get_data_dir().unwrap().join("meetnote2.log"))?
+            File::create(data_repo::get_app_data_dir().unwrap().join("meetnote2.log"))?
         ),
     ])?;
+    eprintln!("HAHA");
 
     let config = match config::load_config() {
         Ok(c) => { c }
@@ -142,9 +119,6 @@ fn main() -> anyhow::Result<()> {
 
     std::thread::spawn(move || {
         recording_proc::start_recording_process(config)
-    });
-    std::thread::spawn(move || {
-        postprocess_resumer::resume_postprocess().unwrap();
     });
 
     let misc_menu = Submenu::new("Misc", Menu::new()
@@ -205,11 +179,8 @@ fn main() -> anyhow::Result<()> {
             }
         })
         .invoke_handler(tauri::generate_handler![
-            load_files, delete_file, save_file,
             get_input_devices,
             load_config, save_config,
-            load_webvtt,
-            read_data_tag_mp3,
             regenerate_summary,
             get_windows,
             is_recording,
