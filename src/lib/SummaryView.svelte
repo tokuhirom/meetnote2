@@ -1,6 +1,7 @@
 <script lang="ts">
     import {Entry} from "./entry.js";
     import {dialog} from "@tauri-apps/api";
+    import { open } from '@tauri-apps/api/shell';
 
     export let entry: Entry;
     export let onDelete: () => void;
@@ -40,6 +41,8 @@
 </script>
 
 <div>
+    <div class="path">{entry.path}</div>
+
     <div>
         <button on:click|preventDefault={enterEditingMode}>Edit</button>
         <button on:click|preventDefault={regenerateSummaryItem}>Regenerate Summary</button>
@@ -61,6 +64,12 @@
 </div>
 
 <style>
+    .path {
+        color: darkslategray;
+        font-size: 80%;
+        background: none;
+    }
+
     .summary-wip {
         margin: 8px;
         color: yellowgreen;

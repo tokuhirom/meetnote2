@@ -60,14 +60,20 @@
 <style>
   .main-container {
     display: flex;
+    flex-direction: row;
+    height: 100vh;
   }
   .files {
     flex: 0 0 30%;
     overflow-y: auto;
     padding-right: 9px;
+    overflow-x: hidden;
+    word-break: break-word;
+    white-space: normal;
   }
   .vtt {
     flex: 1;
+    overflow-y: auto;
     padding-left: 9px;
   }
 
