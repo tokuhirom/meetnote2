@@ -25,11 +25,7 @@
     }
 
     async function runPostProcess() {
-        // UI スタックしちゃうから thread::spawn するようにしたほうが良さそう。
-        // とはいえ、どういうモニタリング方式にするかは考えないといけないかもしれない。
-        await invoke("start_postprocess", {
-            micWaveFile: entry.micWavPath()
-        });
+        await invoke("start_postprocess", {dir: entry.path});
         entry = entry; // needs refresh after post process
     }
 </script>

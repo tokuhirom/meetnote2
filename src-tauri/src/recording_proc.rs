@@ -1,10 +1,7 @@
-use std::sync::mpsc::Receiver;
+use std::sync::mpsc::{Receiver, Sender};
 use cpal::traits::DeviceTrait;
 use crate::mic_audio;
-use crate::config::load_config_or_default;
-use crate::postprocess::PostProcessor;
 use crate::screen_audio::ScreenAudioRecorder;
-use std::thread;
 use std::time::Instant;
 use mic_audio::MicAudioRecorder;
 use crate::data_repo::DataRepo;
@@ -93,7 +90,7 @@ impl RecordingProc {
     }
 }
 
-pub fn start_recording_process_ex(recording_rx: Receiver<String>) {
+pub fn start_recording_process_ex(recording_rx: Receiver<String>, postprocess_tx: Sender<Entry>) {
     let datarepo = DataRepo::new()
         .expect("DataRepo::new");
     let mut recording_proc = RecordingProc::new(datarepo);
@@ -116,9 +113,9 @@ pub fn start_recording_process_ex(recording_rx: Receiver<String>) {
                             // usually, under 50milli seconds.
                             log::info!("`stop` took: {:?}", duration);
 
-                            thread::spawn(move || {
-                                start_postprocess(entry.mic_wav_path_string());
-                            });
+                            if let Err(err) = postprocess_tx.send(entry) {
+                                log::error!("Cannot start postprocess: {:?}", err);
+                            }
                         }
                     }
                     _ => {
@@ -129,22 +126,6 @@ pub fn start_recording_process_ex(recording_rx: Receiver<String>) {
             Err(err) => {
                 log::error!("Cannot receive message from the channel: {:?}", err);
             }
-        }
-    }
-}
-
-pub fn start_postprocess(mic_wav_path: String) {
-    let config = load_config_or_default();
-    let summarizer = config.build_summarizer()
-        .unwrap();
-    let post_processor = PostProcessor::new(summarizer);
-
-    match post_processor.postprocess(mic_wav_path.clone(), config) {
-        Ok(_) => {
-            log::info!("Successfully processed: {}", mic_wav_path);
-        }
-        Err(e) => {
-            log::error!("Cannot process {}: {:?}", mic_wav_path, e)
         }
     }
 }

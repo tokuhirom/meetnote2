@@ -23,6 +23,7 @@ mod openai_transcriber;
 mod entry;
 
 use std::fs::File;
+use std::path::PathBuf;
 use std::sync::mpsc;
 use std::sync::mpsc::Sender;
 use std::thread;
@@ -30,10 +31,12 @@ use anyhow::anyhow;
 use simplelog::ColorChoice;
 use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowBuilder, SystemTray, SystemTrayMenu, Manager};
 use crate::config::MeetNoteConfig;
+use crate::entry::Entry;
 use crate::window::WindowInfo;
 
 pub struct MyState {
-    recording_tx: Sender<String>,
+    pub recording_tx: Sender<String>,
+    pub postprocess_tx: Sender<Entry>,
 }
 
 #[tauri::command]
@@ -67,10 +70,10 @@ fn get_windows() -> Vec<WindowInfo> {
 }
 
 #[tauri::command]
-fn start_postprocess(mic_wave_file: String) {
-    thread::spawn(move || {
-        recording_proc::start_postprocess(mic_wave_file);
-    });
+fn start_postprocess(dir: String, state: tauri::State<MyState>) -> Result<(), String> {
+    let entry = Entry::new(PathBuf::from(dir));
+    state.postprocess_tx.send(entry)
+        .map_err(|err| format!("Cannot start postprocess: {:?}", err))
 }
 
 #[tauri::command]
@@ -142,14 +145,22 @@ fn main() -> anyhow::Result<()> {
     let tray = SystemTray::new()
         .with_menu(tray_menu);
 
-    let (recording_tx, recording_rx) = mpsc::channel::<String>();
+    let (postprocess_tx, postprocess_rx) = mpsc::channel::<Entry>();
     thread::spawn(move || {
-        recording_proc::start_recording_process_ex(recording_rx)
+        postprocess::start_postprocess_thread(postprocess_rx)
     });
+    let (recording_tx, recording_rx) = mpsc::channel::<String>();
+    {
+        let postprocess_tx = postprocess_tx.clone();
+        thread::spawn(move || {
+            recording_proc::start_recording_process_ex(recording_rx, postprocess_tx);
+        });
+    }
 
     tauri::Builder::default()
         .manage(MyState {
             recording_tx,
+            postprocess_tx,
         })
         .system_tray(tray)
         .menu(menu)

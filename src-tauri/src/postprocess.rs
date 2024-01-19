@@ -1,15 +1,17 @@
 use std::fs;
 use std::process::Command;
+use std::sync::mpsc::Receiver;
 use crate::mp3;
 use anyhow::{anyhow, Result};
 use lazy_static::lazy_static;
-use crate::config::{MeetNoteConfig, TranscriberType};
+use crate::config::{load_config_or_default, MeetNoteConfig, TranscriberType};
 use crate::openai::OpenAICustomizedClient;
 use crate::openai_transcriber::OpenAITranscriber;
 use crate::summarizer::Summarizer;
 use crate::transcriber::Transcriber;
 use crate::whisper_cpp::WhisperTranscriber;
 use std::sync::RwLock;
+use crate::entry::Entry;
 
 lazy_static! {
     static ref POSTPROCEDSS_STATE : RwLock<String> = RwLock::new("".to_string());
@@ -214,4 +216,30 @@ fn merge_audio_files(mic_wav_file: String) -> anyhow::Result<String> {
     }
 
     Ok(output_wave_file)
+}
+
+pub fn start_postprocess_thread(rx: Receiver<Entry>) {
+    loop {
+        match rx.recv() {
+            Ok(entry) => {
+                let config = load_config_or_default();
+                let summarizer = config.build_summarizer()
+                    .unwrap();
+                let post_processor = PostProcessor::new(summarizer);
+
+                let mic_wav_path = entry.mic_wav_path_string();
+                match post_processor.postprocess(mic_wav_path.clone(), config) {
+                    Ok(_) => {
+                        log::info!("Successfully processed: {}", mic_wav_path);
+                    }
+                    Err(e) => {
+                        log::error!("Cannot process {}: {:?}", mic_wav_path, e)
+                    }
+                }
+            }
+            Err(err) => {
+                log::error!("Cannot receive message: {:?}", err);
+            }
+        }
+    }
 }
