@@ -5,6 +5,7 @@ use crate::config::load_config_or_default;
 use crate::postprocess::PostProcessor;
 use crate::screen_audio::ScreenAudioRecorder;
 use std::thread;
+use std::time::Instant;
 use mic_audio::MicAudioRecorder;
 use crate::data_repo::DataRepo;
 use crate::entry::Entry;
@@ -80,7 +81,7 @@ impl RecordingProc {
             self.mic_recorder.take(); // clear
         }
 
-        // scrren audio recorder
+        // screen audio recorder
         if let Some(screen_audio_recorder) = &self.screen_audio_recorder {
             if let Err(err) = screen_audio_recorder.stop_recording() {
                 log::error!("Cannot stop audio recorder: {:?}", err);
@@ -109,7 +110,12 @@ pub fn start_recording_process_ex(recording_rx: Receiver<String>) {
                         }
                     }
                     "STOP" => {
+                        let start = Instant::now();
                         if let Some(entry) = recording_proc.stop() {
+                            let duration = start.elapsed();
+                            // usually, under 50milli seconds.
+                            log::info!("`stop` took: {:?}", duration);
+
                             thread::spawn(move || {
                                 start_postprocess(entry.mic_wav_path_string());
                             });

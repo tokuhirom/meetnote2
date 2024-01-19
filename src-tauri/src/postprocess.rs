@@ -1,7 +1,7 @@
 use std::fs;
 use std::process::Command;
 use crate::mp3;
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Error, Result};
 use crate::config::{MeetNoteConfig, TranscriberType};
 use crate::openai::OpenAICustomizedClient;
 use crate::openai_transcriber::OpenAITranscriber;
@@ -29,7 +29,27 @@ impl PostProcessor {
 
         // convert to VTT
         let vtt_file = wav_file.replace(".wav", ".vtt");
-        log::info!("Convert {} to {}", mp3_file, vtt_file);
+        self.transcribe(&config, wav_file, vtt_file)?;
+
+        // Summarize VTT
+        let summary_file = wav_file.clone().replace(".wav", ".md");
+        self.summarize(vtt_file.as_str(), summary_file.as_str())?;
+
+        // cleanup files
+        file_remove(wav_file.as_str())?;
+        file_remove(mic_wav_file.clone().as_str())?;
+        let raw_files = glob::glob(&mic_wav_file.replace(".mic.wav", "*.raw"))?;
+        for x in raw_files {
+            let y = x.unwrap();
+            file_remove(y.to_str().unwrap())?;
+        }
+
+        Ok(())
+    }
+
+    pub fn transcribe(&self, config: &MeetNoteConfig, wav_file: String, vtt_file: String) -> anyhow::Result<()> {
+        log::info!("Convert {} to {}", wav_file, vtt_file);
+
         let transcriber: Box<dyn Transcriber> = match config.transcriber_type {
             TranscriberType::WhisperCppTranscriberType => {
                 Box::new(WhisperTranscriber::new(
@@ -37,7 +57,7 @@ impl PostProcessor {
                 ))
             }
             TranscriberType::OpenAITranscriberType => {
-                let token: String = match config.openai_api_token {
+                let token = match &config.openai_api_token {
                     Some(token) => { token }
                     None => {
                         return Err(anyhow!("OpenAI transcriber requires OpenAI token. But it's missing."));
@@ -65,19 +85,6 @@ impl PostProcessor {
             Err(e) => {
                 return Err(anyhow!("Cannot transcribe from wave file: {:?}, {:?}", wav_file, e))
             }
-        }
-
-        // Summarize VTT
-        let summary_file = wav_file.clone().replace(".wav", ".md");
-        self.summarize(vtt_file.as_str(), summary_file.as_str())?;
-
-        // cleanup files
-        file_remove(wav_file.as_str())?;
-        file_remove(mic_wav_file.clone().as_str())?;
-        let raw_files = glob::glob(&mic_wav_file.replace(".mic.wav", "*.raw"))?;
-        for x in raw_files {
-            let y = x.unwrap();
-            file_remove(y.to_str().unwrap())?;
         }
 
         Ok(())
