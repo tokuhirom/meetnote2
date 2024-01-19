@@ -29,7 +29,7 @@ use std::sync::mpsc::Sender;
 use std::thread;
 use anyhow::anyhow;
 use simplelog::ColorChoice;
-use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowBuilder, SystemTray, SystemTrayMenu, Manager};
+use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowBuilder, SystemTray, SystemTrayMenu, Manager, AboutMetadata};
 use crate::config::MeetNoteConfig;
 use crate::entry::Entry;
 use crate::postprocess::PostProcessStatus;
@@ -136,14 +136,28 @@ fn main() -> anyhow::Result<()> {
     let misc_menu = Submenu::new("Misc", Menu::new()
         .add_item(CustomMenuItem::new("configuration", "Configuration")
             .accelerator("Command+,")));
-    let file_menu = Submenu::new("File", Menu::new()
-        .add_item(CustomMenuItem::new("exit", "Exit")));
+    let edit_menu = Menu::new()
+        .add_native_item(MenuItem::Undo)
+        .add_native_item(MenuItem::Redo)
+        .add_native_item(MenuItem::Separator)
+        .add_native_item(MenuItem::Cut)
+        .add_native_item(MenuItem::Copy)
+        .add_native_item(MenuItem::Paste)
+        .add_native_item(MenuItem::SelectAll);
     let window_menu = Submenu::new("Window", Menu::new()
         .add_item(CustomMenuItem::new("window_close", "Close")
             .accelerator("Command+w")));
     let menu = Menu::new()
-        .add_native_item(MenuItem::Copy)
-        .add_submenu(file_menu)
+        .add_submenu(Submenu::new(
+            "MeetNote2",
+            Menu::new()
+                .add_native_item(MenuItem::About(
+                    "MeetNote2".to_string(),
+                    AboutMetadata::default(),
+                ))
+                .add_native_item(MenuItem::Quit)
+        ))
+        .add_submenu(Submenu::new("Edit", edit_menu))
         .add_submenu(window_menu)
         .add_submenu(misc_menu);
 
@@ -183,9 +197,6 @@ fn main() -> anyhow::Result<()> {
         })
         .on_menu_event(|event| {
             match event.menu_item_id() {
-                "exit" => {
-                    std::process::exit(0);
-                }
                 "configuration" => {
                     log::info!("Got configuration event");
                     if let Err(err) = WindowBuilder::new(
