@@ -53,6 +53,7 @@ lindera-analyzer = { version = "0.27.2", features = ["ipadic", "ipadic-filter"] 
 lindera-dictionary = "0.27.2"
 lindera-core = "0.27.2"
 lazy_static = "1.4.0"
+tiktoken-rs = "0.5.8"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
