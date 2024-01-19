@@ -41,59 +41,6 @@ pub fn get_app_data_dir() -> anyhow::Result<PathBuf> {
     Ok(app_data_dir)
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct MdFile {
-    pub filename: String,
-    pub content: String,
-}
-
-impl MdFile {
-    fn new(path: &PathBuf, base_dir: &PathBuf) -> anyhow::Result<MdFile> {
-        let filepath = path.strip_prefix(base_dir)
-            .expect("Failed to get relative path")
-            .to_str().unwrap().to_string();
-        let mut file = fs::File::open(path)?;
-        let mut content = String::new();
-        file.read_to_string(&mut content)?;
-        Ok(MdFile {
-            filename: filepath,
-            content,
-        })
-    }
-}
-
-pub fn load_files() -> Vec<MdFile> {
-    log::debug!("Loading files...");
-
-    let data_dir = match get_app_data_dir() {
-        Ok(d) => { d }
-        Err(err) => {
-            println!("Cannot get data directory: {}", err);
-            return Vec::new();
-        }
-    };
-    let mut results = Vec::new();
-
-    for entry in WalkDir::new(&data_dir).into_iter().filter_map(|e| e.ok()) {
-        if entry.file_type().is_file() && entry.path().extension().unwrap_or_default() == "md" {
-            let path = entry.into_path();
-            match MdFile::new(&path, &data_dir) {
-                Ok(mdfile) => {
-                    results.push(mdfile);
-                }
-                Err(err) => {
-                    println!("Cannot load mdfile: {:?}: {}", path, err)
-                }
-            };
-        }
-    }
-    results.sort_by_key(|res| {
-       Reverse(res.filename.to_string())
-    });
-    results
-}
-
-
 pub(crate) fn regenerate_summary(vtt_path: &String, md_path: &String) -> anyhow::Result<()> {
     log::info!("Regenerating summary from {} to {}", vtt_path, md_path);
 

@@ -1,3 +1,4 @@
+use std::sync::mpsc::{Receiver, RecvError};
 use std::thread::sleep;
 use std::time::Duration;
 use cpal::traits::DeviceTrait;
@@ -13,6 +14,7 @@ use crate::data_repo::DataRepo;
 use crate::entry::Entry;
 
 lazy_static! {
+    // TODO remove this. manage the recording status on the JavaScript side.
     static ref IS_RECORDING: RwLock<bool> = RwLock::new(false);
 }
 
@@ -102,7 +104,7 @@ pub fn is_recording() -> bool {
     *IS_RECORDING.read().unwrap()
 }
 
-pub fn start_recording_process() {
+pub fn start_recording_process_ex(recording_rx: Receiver<String>) {
     let datarepo = DataRepo::new()
         .expect("DataRepo::new");
     let mut recording_proc = RecordingProc::new(datarepo);
@@ -110,31 +112,32 @@ pub fn start_recording_process() {
     log::info!("Ready to processing...");
 
     loop {
-        if let Some(info) = window::is_there_target_windows() {
-            if !(*IS_RECORDING.read().unwrap()) {
-                log::info!("Starting recording: {:?}", info);
-
-                if let Err(err) = recording_proc.start() {
-                    log::error!("Cannot start recording proc: {:?}", err);
-                    sleep(Duration::from_secs(1));
+        match recording_rx.recv() {
+            Ok(got) => {
+                match got.as_str() {
+                    "START" => {
+                        *(IS_RECORDING.write().unwrap()) = true;
+                        if let Err(err) = recording_proc.start() {
+                            log::error!("Cannot start recording proc: {:?}", err);
+                        }
+                    }
+                    "STOP" => {
+                        *(IS_RECORDING.write().unwrap()) = false;
+                        if let Some(entry) = recording_proc.stop() {
+                            thread::spawn(move || {
+                                start_postprocess(entry.mic_wav_path_string());
+                            });
+                        }
+                    }
+                    _ => {
+                        log::error!("Unknown message: {:?}", got);
+                    }
                 }
-
-                *(IS_RECORDING.write().unwrap()) = true;
             }
-        } else if *IS_RECORDING.read().unwrap() {
-            // Window disappears, stop recording
-            *(IS_RECORDING.write().unwrap()) = false;
-
-            log::info!("Stop recording...");
-
-            if let Some(entry) = recording_proc.stop() {
-                thread::spawn(move || {
-                    start_postprocess(entry.mic_wav_path_string());
-                });
+            Err(err) => {
+                log::error!("Cannot receive message from the channel: {:?}", err);
             }
         }
-
-        sleep(Duration::from_secs(1))
     }
 }
 

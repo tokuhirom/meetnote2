@@ -23,12 +23,18 @@ mod openai_transcriber;
 mod entry;
 
 use std::fs::File;
+use std::sync::mpsc;
+use std::sync::mpsc::Sender;
 use std::thread;
 use anyhow::anyhow;
 use simplelog::ColorChoice;
 use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowBuilder, SystemTray, SystemTrayMenu, Manager};
 use crate::config::MeetNoteConfig;
 use crate::window::WindowInfo;
+
+pub struct MyState {
+    recording_tx: Sender<String>,
+}
 
 #[tauri::command]
 fn load_config() -> Result<MeetNoteConfig, String>{
@@ -70,6 +76,12 @@ fn start_postprocess(mic_wave_file: String) {
     thread::spawn(move || {
         recording_proc::start_postprocess(mic_wave_file);
     });
+}
+
+#[tauri::command]
+fn call_recording_process(command: String, state: tauri::State<MyState>) -> Result<(), String> {
+    state.recording_tx.send(command)
+        .map_err(|err| format!("Cannot send message: {:?}", err))
 }
 
 fn main() -> anyhow::Result<()> {
@@ -117,10 +129,6 @@ fn main() -> anyhow::Result<()> {
         log::info!("✅ Permission granted");
     }
 
-    thread::spawn(move || {
-        recording_proc::start_recording_process()
-    });
-
     let misc_menu = Submenu::new("Misc", Menu::new()
         .add_item(CustomMenuItem::new("configuration", "Configuration")
             .accelerator("Command+,")));
@@ -139,7 +147,15 @@ fn main() -> anyhow::Result<()> {
     let tray = SystemTray::new()
         .with_menu(tray_menu);
 
+    let (recording_tx, recording_rx) = mpsc::channel::<String>();
+    thread::spawn(move || {
+        recording_proc::start_recording_process_ex(recording_rx)
+    });
+
     tauri::Builder::default()
+        .manage(MyState {
+            recording_tx,
+        })
         .system_tray(tray)
         .menu(menu)
         .setup(|app| {
@@ -185,6 +201,7 @@ fn main() -> anyhow::Result<()> {
             get_windows,
             is_recording,
             start_postprocess,
+            call_recording_process,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

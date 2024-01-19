@@ -29,7 +29,9 @@
     try {
       mp3 = await entry.readMp3AsDataUri();
       const audio = document.getElementsByTagName("audio")[0] as HTMLAudioElement;
-      audio.load();
+      if (audio) {
+        audio.load();
+      }
     } catch (e) {
       console.error(`MP3: ${e}`);
     }

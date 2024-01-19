@@ -6,6 +6,7 @@
   import {DataRepo} from "./lib/data_repo";
   import type {Entry} from "./lib/entry";
   import SummaryView from "./lib/SummaryView.svelte";
+  import {invoke} from "@tauri-apps/api/tauri";
 
   let selectedEntry: Entry | undefined = undefined;
   let entries: Entry[] = []
@@ -35,6 +36,47 @@
     if (entries.length > 0) {
       selectedEntry = entries[0];
     }
+  }
+
+  interface WindowPattern {
+    bundle_id: string,
+    window_title: string,
+  }
+  interface Configuration {
+    window_patterns: WindowPattern[]
+  }
+  interface WindowInfo {
+    bundle_id: string,
+    window_title: string,
+  }
+
+  let isRecording = false;
+  setInterval(async () => {
+    if (await isThereTargetWindow()) {
+      if (!isRecording) {
+        isRecording = true;
+        await invoke("call_recording_process", {"command": "START"});
+      }
+    } else {
+      if (isRecording) {
+        isRecording = false;
+        await invoke("call_recording_process", {"command": "STOP"});
+      }
+    }
+  }, 1000);
+
+  async function isThereTargetWindow() {
+    let config = await invoke("load_config") as Configuration; // TODO cache
+    let windows = await invoke("get_windows") as WindowInfo[];
+
+    for (let windowPattern of config.window_patterns) {
+      for (let window of windows) {
+        if (window.window_title == windowPattern.window_title && window.bundle_id == windowPattern.bundle_id) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 </script>
 
