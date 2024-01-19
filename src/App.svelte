@@ -19,6 +19,19 @@
     if (entries.length > 0) {
       selectedEntry = entries[0];
     }
+
+    /*
+    // TODO これでいけそう。
+
+    setTimeout(async () => {
+      for (let entry of entries) {
+        if (!await entry.hasMD()) {
+          console.log(`Running postprocess... ${entry.path}`);
+          await invoke("start_postprocess", {dir: entry.path});
+        }
+      }
+    }, 0);
+     */
   });
 
   // todo: better polling logic
