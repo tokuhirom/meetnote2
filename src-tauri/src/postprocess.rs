@@ -40,9 +40,26 @@ impl PostProcessor {
         Box::new(PostProcessor { summarizer })
     }
 
-    // TODO use Entry object
-    pub fn postprocess(&self, entry: Entry, config: MeetNoteConfig) -> Result<()>{
-        let mic_wav_file = entry.mic_wav_path_string();
+    pub fn postprocess(&self, entry: Entry, config: MeetNoteConfig) -> Result<()> {
+        let basename = entry.basename.clone();
+
+        *POSTPROCEDSS_STATE.write().unwrap() = PostProcessStatus {
+            basename: basename.to_string(),
+            message: "Starting postprocess".to_string(),
+        };
+
+        let result = self.do_postprocess(entry, config);
+
+        // clear the status
+        *POSTPROCEDSS_STATE.write().unwrap() = PostProcessStatus {
+            basename: "".to_string(),
+            message: "".to_string(),
+        };
+
+        result
+    }
+
+    fn do_postprocess(&self, entry: Entry, config: MeetNoteConfig) -> Result<()>{
         let basename = entry.basename.clone();
 
         let set_post = |message: &str| {
@@ -53,40 +70,38 @@ impl PostProcessor {
         };
 
         set_post("Merging wave files");
-        let wav_file = merge_audio_files(mic_wav_file.clone())?;
+        let merged_wav_file = merge_audio_files(&entry)?;
 
         // convert to MP3
         set_post("Convert to MP3");
-        let mp3_file = wav_file.replace(".wav", ".mp3");
-        if let Err(e) = mp3::convert_to_mp3(&wav_file, &mp3_file) {
-            return Err(anyhow!("Cannot convert to mp3({} to {}): {:?}", wav_file, mp3_file, e))
+        let mp3_file = entry.mp3_path_string();
+        if let Err(e) = mp3::convert_to_mp3(&merged_wav_file, &mp3_file) {
+            return Err(anyhow!("Cannot convert to mp3({} to {}): {:?}", merged_wav_file, mp3_file, e))
         }
 
         // convert to VTT
         set_post("Transcribing");
-        let vtt_file = wav_file.replace(".wav", ".vtt");
-        self.transcribe(&config, &wav_file, &vtt_file)?;
+        let vtt_file = entry.webvtt_path_string();
+        self.transcribe(&config, &merged_wav_file, &vtt_file)?;
 
         // Summarize VTT
         set_post("Summarizing");
-        let summary_file = wav_file.clone().replace(".wav", ".md");
+        let summary_file = entry.md_path();
         self.summarize(vtt_file.as_str(), summary_file.as_str())?;
 
         // cleanup files
         set_post("Cleanup");
-        file_remove(wav_file.as_str())?;
-        file_remove(mic_wav_file.clone().as_str())?;
-        let raw_files = glob::glob(&mic_wav_file.replace(".mic.wav", "*.raw"))?;
-        for x in raw_files {
-            let y = x.unwrap();
-            file_remove(y.to_str().unwrap())?;
+        self.cleanup(&entry)?;
+
+        Ok(())
+    }
+
+    pub fn cleanup(&self, entry: &Entry) -> anyhow::Result<()> {
+        file_remove(entry.merged_wav_path_string().as_str())?;
+        file_remove(entry.mic_wav_path_string().as_str())?;
+        for path in entry.list_raw_files()? {
+            file_remove(path.unwrap().to_str().unwrap())?;
         }
-
-        *POSTPROCEDSS_STATE.write().unwrap() = PostProcessStatus {
-            basename: "".to_string(),
-            message: "".to_string(),
-        };
-
         Ok(())
     }
 
@@ -170,8 +185,9 @@ fn file_remove(filename: &str) -> anyhow::Result<()> {
     }
 }
 
-fn merge_audio_files(mic_wav_file: String) -> anyhow::Result<String> {
-    let output_wave_file = mic_wav_file.replace(".mic.wav", ".wav");
+fn merge_audio_files(entry: &Entry) -> anyhow::Result<String> {
+    let mic_wav_file = entry.mic_wav_path_string();
+    let output_wave_file = entry.merged_wav_path_string();
 
     // merge raw files to 1 wav file
     let screen_tmp = tempfile::Builder::new()
@@ -180,7 +196,7 @@ fn merge_audio_files(mic_wav_file: String) -> anyhow::Result<String> {
         .tempfile()
         .unwrap();
     {
-        let raw_files = glob::glob(&mic_wav_file.replace(".mic.wav", "*.raw"))?;
+        let raw_files = entry.list_raw_files()?;
         // log::info!("Processing raw files: {:?}", raw_files);
 
         let mut path_count = 0;
