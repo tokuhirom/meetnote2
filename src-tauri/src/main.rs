@@ -67,11 +67,6 @@ fn get_windows() -> Vec<WindowInfo> {
 }
 
 #[tauri::command]
-fn is_recording() -> bool {
-    recording_proc::is_recording()
-}
-
-#[tauri::command]
 fn start_postprocess(mic_wave_file: String) {
     thread::spawn(move || {
         recording_proc::start_postprocess(mic_wave_file);
@@ -199,7 +194,6 @@ fn main() -> anyhow::Result<()> {
             load_config, save_config,
             regenerate_summary,
             get_windows,
-            is_recording,
             start_postprocess,
             call_recording_process,
         ])

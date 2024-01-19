@@ -1,20 +1,14 @@
 use std::sync::mpsc::Receiver;
 use cpal::traits::DeviceTrait;
-use lazy_static::lazy_static;
 use crate::mic_audio;
 use crate::config::load_config_or_default;
 use crate::postprocess::PostProcessor;
 use crate::screen_audio::ScreenAudioRecorder;
-use std::sync::RwLock;
 use std::thread;
 use mic_audio::MicAudioRecorder;
 use crate::data_repo::DataRepo;
 use crate::entry::Entry;
 
-lazy_static! {
-    // TODO remove this. manage the recording status on the JavaScript side.
-    static ref IS_RECORDING: RwLock<bool> = RwLock::new(false);
-}
 
 pub struct RecordingProc {
     mic_recorder: Option<MicAudioRecorder>,
@@ -98,10 +92,6 @@ impl RecordingProc {
     }
 }
 
-pub fn is_recording() -> bool {
-    *IS_RECORDING.read().unwrap()
-}
-
 pub fn start_recording_process_ex(recording_rx: Receiver<String>) {
     let datarepo = DataRepo::new()
         .expect("DataRepo::new");
@@ -114,13 +104,11 @@ pub fn start_recording_process_ex(recording_rx: Receiver<String>) {
             Ok(got) => {
                 match got.as_str() {
                     "START" => {
-                        *(IS_RECORDING.write().unwrap()) = true;
                         if let Err(err) = recording_proc.start() {
                             log::error!("Cannot start recording proc: {:?}", err);
                         }
                     }
                     "STOP" => {
-                        *(IS_RECORDING.write().unwrap()) = false;
                         if let Some(entry) = recording_proc.stop() {
                             thread::spawn(move || {
                                 start_postprocess(entry.mic_wav_path_string());

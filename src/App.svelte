@@ -83,7 +83,7 @@
 <main class="container">
   <div class="main-container">
     <div class="files">
-      <NowRecordingIndicator />
+      <NowRecordingIndicator isRecording={isRecording} />
       {#each entries as entry}
         <FileItem entry={entry} onSelectEntry={onSelectEntry}/>
       {/each}
