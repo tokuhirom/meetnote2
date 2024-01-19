@@ -45,6 +45,8 @@
 <style>
     .indicator span {
         margin: 4px;
+        background-color: #242424;
+        padding: 3px;
     }
 
     .available {

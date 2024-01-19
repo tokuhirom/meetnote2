@@ -46,8 +46,6 @@
 </script>
 
 <div>
-    <div class="path">{entry.path}</div>
-
     <div>
         <button on:click|preventDefault={enterEditingMode}>Edit</button>
         <button on:click|preventDefault={regenerateSummaryItem}>Regenerate Summary</button>
@@ -72,6 +70,8 @@
             <div class="summary-wip">Summary not available...(WIP?)</div>
         {/if}
     {/if}
+
+    <div class="path">{entry.path}</div>
 </div>
 
 <style>
