@@ -1,8 +1,9 @@
 <script lang="ts">
     import {Entry} from "./entry.js";
     import {dialog} from "@tauri-apps/api";
-    import { open } from '@tauri-apps/api/shell';
     import StatusIndicator from "./StatusIndicator.svelte";
+    import {marked} from "marked";
+    import DOMPurify from "dompurify";
 
     export let entry: Entry;
     export let onDelete: () => void;
@@ -38,6 +39,10 @@
             onDelete();
         }
     }
+
+    function markdown(src: string) {
+        return DOMPurify.sanitize(marked.parse(src));
+    }
 </script>
 
 <div>
@@ -62,7 +67,7 @@
         </form>
     {:else}
         {#if entry.summary}
-            <pre style="clear: both">{entry.summary}</pre>
+            <div class="summary">{@html markdown(entry.summary)}</div>
         {:else}
             <div class="summary-wip">Summary not available...(WIP?)</div>
         {/if}

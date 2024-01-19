@@ -23,9 +23,6 @@
 </div>
 
 <style>
-    pre {
-        word-break: break-all;
-    }
     .timestamp {
         color: dimgray;
         font-size: 80%;
