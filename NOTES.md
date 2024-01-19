@@ -23,6 +23,7 @@
   - そうするなら、postprocess 用の worker thread が必要か?
   - postprocess まわり、Entry object も保持したほうが良いかもしれない。
 - [ ] Regenerate summary も遅すぎてUIがスタックする
+- だいぶ見た目が整理されてきた。
 
 後処理
 - convert to MP3

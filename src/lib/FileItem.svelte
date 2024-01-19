@@ -35,4 +35,8 @@
         white-space: nowrap;
         text-overflow: clip;
     }
+    .file {
+        border-bottom: dimgray 1px solid;
+        clear: both;
+    }
 </style>
