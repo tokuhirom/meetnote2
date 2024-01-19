@@ -15,6 +15,15 @@ impl Entry {
         self.path("mic.wav")
     }
 
+    pub fn mic_wav_path_string(&self) -> String {
+        let path = self.mic_wav_path();
+        return path.to_str().unwrap().to_string();
+    }
+
+    pub fn raw_prefix_path_string(&self) -> String {
+        return self.dir.join(&self.basename).to_str().unwrap().to_string();
+    }
+
     pub fn webvtt_path(&self) -> PathBuf {
         self.path("vtt")
     }

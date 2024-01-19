@@ -117,8 +117,8 @@ fn main() -> anyhow::Result<()> {
         log::info!("✅ Permission granted");
     }
 
-    std::thread::spawn(move || {
-        recording_proc::start_recording_process(config)
+    thread::spawn(move || {
+        recording_proc::start_recording_process()
     });
 
     let misc_menu = Submenu::new("Misc", Menu::new()

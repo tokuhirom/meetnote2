@@ -2,7 +2,6 @@ use std::cmp::Reverse;
 use std::fs;
 use std::io::Read;
 use std::path::PathBuf;
-use std::process::exit;
 use anyhow::anyhow;
 use chrono::Local;
 use serde::{Deserialize, Serialize};
