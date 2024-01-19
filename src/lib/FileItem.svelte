@@ -6,7 +6,6 @@
     export let onSelectEntry: (entry: Entry) => void;
     export let entry: Entry;
 
-
     async function openLog() {
         console.log("open log");
         onSelectEntry(entry);
@@ -15,9 +14,9 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="file" on:click|preventDefault={openLog} role="navigation">
-    <div class="title">{entry.title()}</div>
+    <div class="timestamp">{entry.title()}</div>
     {#if entry.summary}
-        <pre>{entry.summary}</pre>
+        <div class="summary">{entry.summary.replace(/#+/g, '')}</div>
     {:else}
         <i>Summary is not available yet.</i>
     {/if}
@@ -27,7 +26,13 @@
     pre {
         word-break: break-all;
     }
-    .title {
-        font-weight: bold;
+    .timestamp {
+        color: dimgray;
+        font-size: 80%;
+    }
+    .summary {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: clip;
     }
 </style>

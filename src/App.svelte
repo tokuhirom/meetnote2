@@ -131,6 +131,7 @@
     flex: 0 0 30%;
     overflow-y: auto;
     padding-right: 9px;
+    padding-left: 4px;
     overflow-x: hidden;
     word-break: break-word;
     white-space: normal;
