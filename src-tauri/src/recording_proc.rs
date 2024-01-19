@@ -1,9 +1,7 @@
-use std::sync::mpsc::{Receiver, RecvError};
-use std::thread::sleep;
-use std::time::Duration;
+use std::sync::mpsc::Receiver;
 use cpal::traits::DeviceTrait;
 use lazy_static::lazy_static;
-use crate::{mic_audio, window};
+use crate::mic_audio;
 use crate::config::load_config_or_default;
 use crate::postprocess::PostProcessor;
 use crate::screen_audio::ScreenAudioRecorder;
