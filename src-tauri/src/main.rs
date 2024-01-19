@@ -10,7 +10,6 @@ mod recording_proc;
 mod config;
 mod screencapture;
 mod data_repo;
-mod postprocess_resumer;
 mod whisper_cpp;
 mod webvtt;
 mod screen_audio;
@@ -21,19 +20,24 @@ mod openai_summarizer;
 mod tf_idf_summarizer;
 mod transcriber;
 mod openai_transcriber;
+mod entry;
 
 use std::fs::File;
+use std::path::PathBuf;
+use std::sync::mpsc;
+use std::sync::mpsc::Sender;
+use std::thread;
 use anyhow::anyhow;
 use simplelog::ColorChoice;
-use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowBuilder, SystemTray, SystemTrayMenu, Manager};
+use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowBuilder, SystemTray, SystemTrayMenu, Manager, AboutMetadata};
 use crate::config::MeetNoteConfig;
-use crate::data_repo::MdFile;
-use crate::webvtt::Caption;
+use crate::entry::Entry;
+use crate::postprocess::PostProcessStatus;
 use crate::window::WindowInfo;
 
-#[tauri::command]
-fn load_files() -> Vec<MdFile> {
-    data_repo::load_files()
+pub struct MyState {
+    pub recording_tx: Sender<String>,
+    pub postprocess_tx: Sender<Entry>,
 }
 
 #[tauri::command]
@@ -56,32 +60,8 @@ fn get_input_devices() -> Result<Vec<String>, String> {
 }
 
 #[tauri::command]
-fn delete_file(filename: String) -> Result<(), String> {
-    data_repo::delete_file(&filename)
-        .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-fn save_file(filename: String, content: String) -> Result<(), String> {
-    data_repo::save_file(&filename, &content)
-        .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-fn load_webvtt(filename: String) -> Result<Vec<Caption>, String> {
-    data_repo::load_webvtt(&filename)
-        .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-fn read_data_tag_mp3(filename: String) -> Result<String, String> {
-    data_repo::read_data_tag_mp3(&filename)
-        .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-fn regenerate_summary(filename: String) -> Result<(), String> {
-    data_repo::regenerate_summary(&filename)
+fn regenerate_summary(vtt_path: String, md_path: String) -> Result<(), String> {
+    data_repo::regenerate_summary(&vtt_path, &md_path)
         .map_err(|e| e.to_string())
 }
 
@@ -91,8 +71,21 @@ fn get_windows() -> Vec<WindowInfo> {
 }
 
 #[tauri::command]
-fn is_recording() -> bool {
-    recording_proc::is_recording()
+fn start_postprocess(dir: String, state: tauri::State<MyState>) -> Result<(), String> {
+    let entry = Entry::new(PathBuf::from(dir));
+    state.postprocess_tx.send(entry)
+        .map_err(|err| format!("Cannot start postprocess: {:?}", err))
+}
+
+#[tauri::command]
+fn call_recording_process(command: String, state: tauri::State<MyState>) -> Result<(), String> {
+    state.recording_tx.send(command)
+        .map_err(|err| format!("Cannot send message: {:?}", err))
+}
+
+#[tauri::command]
+fn postprocess_status() -> PostProcessStatus {
+    postprocess::postprocess_status()
 }
 
 fn main() -> anyhow::Result<()> {
@@ -111,11 +104,11 @@ fn main() -> anyhow::Result<()> {
         simplelog::WriteLogger::new(
             simplelog::LevelFilter::Info,
             config,
-            File::create(data_repo::get_data_dir().unwrap().join("meetnote2.log"))?
+            File::create(data_repo::get_app_data_dir().unwrap().join("meetnote2.log"))?
         ),
     ])?;
 
-    let config = match config::load_config() {
+    let _config = match config::load_config() {
         Ok(c) => { c }
         Err(err) => {
             // TODO: show dialog?
@@ -140,24 +133,31 @@ fn main() -> anyhow::Result<()> {
         log::info!("✅ Permission granted");
     }
 
-    std::thread::spawn(move || {
-        recording_proc::start_recording_process(config)
-    });
-    std::thread::spawn(move || {
-        postprocess_resumer::resume_postprocess().unwrap();
-    });
-
     let misc_menu = Submenu::new("Misc", Menu::new()
         .add_item(CustomMenuItem::new("configuration", "Configuration")
             .accelerator("Command+,")));
-    let file_menu = Submenu::new("File", Menu::new()
-        .add_item(CustomMenuItem::new("exit", "Exit")));
+    let edit_menu = Menu::new()
+        .add_native_item(MenuItem::Undo)
+        .add_native_item(MenuItem::Redo)
+        .add_native_item(MenuItem::Separator)
+        .add_native_item(MenuItem::Cut)
+        .add_native_item(MenuItem::Copy)
+        .add_native_item(MenuItem::Paste)
+        .add_native_item(MenuItem::SelectAll);
     let window_menu = Submenu::new("Window", Menu::new()
         .add_item(CustomMenuItem::new("window_close", "Close")
             .accelerator("Command+w")));
     let menu = Menu::new()
-        .add_native_item(MenuItem::Copy)
-        .add_submenu(file_menu)
+        .add_submenu(Submenu::new(
+            "MeetNote2",
+            Menu::new()
+                .add_native_item(MenuItem::About(
+                    "MeetNote2".to_string(),
+                    AboutMetadata::default(),
+                ))
+                .add_native_item(MenuItem::Quit)
+        ))
+        .add_submenu(Submenu::new("Edit", edit_menu))
         .add_submenu(window_menu)
         .add_submenu(misc_menu);
 
@@ -165,7 +165,23 @@ fn main() -> anyhow::Result<()> {
     let tray = SystemTray::new()
         .with_menu(tray_menu);
 
+    let (postprocess_tx, postprocess_rx) = mpsc::channel::<Entry>();
+    thread::spawn(move || {
+        postprocess::start_postprocess_thread(postprocess_rx)
+    });
+    let (recording_tx, recording_rx) = mpsc::channel::<String>();
+    {
+        let postprocess_tx = postprocess_tx.clone();
+        thread::spawn(move || {
+            recording_proc::start_recording_process_ex(recording_rx, postprocess_tx);
+        });
+    }
+
     tauri::Builder::default()
+        .manage(MyState {
+            recording_tx,
+            postprocess_tx,
+        })
         .system_tray(tray)
         .menu(menu)
         .setup(|app| {
@@ -181,9 +197,6 @@ fn main() -> anyhow::Result<()> {
         })
         .on_menu_event(|event| {
             match event.menu_item_id() {
-                "exit" => {
-                    std::process::exit(0);
-                }
                 "configuration" => {
                     log::info!("Got configuration event");
                     if let Err(err) = WindowBuilder::new(
@@ -205,14 +218,13 @@ fn main() -> anyhow::Result<()> {
             }
         })
         .invoke_handler(tauri::generate_handler![
-            load_files, delete_file, save_file,
             get_input_devices,
             load_config, save_config,
-            load_webvtt,
-            read_data_tag_mp3,
             regenerate_summary,
             get_windows,
-            is_recording,
+            start_postprocess,
+            call_recording_process,
+            postprocess_status,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

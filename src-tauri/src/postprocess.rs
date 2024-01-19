@@ -1,13 +1,35 @@
 use std::fs;
 use std::process::Command;
+use std::sync::mpsc::Receiver;
 use crate::mp3;
 use anyhow::{anyhow, Result};
-use crate::config::{MeetNoteConfig, TranscriberType};
+use lazy_static::lazy_static;
+use crate::config::{load_config_or_default, MeetNoteConfig, TranscriberType};
 use crate::openai::OpenAICustomizedClient;
 use crate::openai_transcriber::OpenAITranscriber;
 use crate::summarizer::Summarizer;
 use crate::transcriber::Transcriber;
 use crate::whisper_cpp::WhisperTranscriber;
+use std::sync::RwLock;
+use serde::{Deserialize, Serialize};
+use crate::entry::Entry;
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct PostProcessStatus {
+    basename: String,
+    message: String,
+}
+
+lazy_static! {
+    static ref POSTPROCEDSS_STATE : RwLock<PostProcessStatus> = RwLock::new(PostProcessStatus {
+        basename: "".to_string(),
+        message: "".to_string(),
+    });
+}
+
+pub fn postprocess_status() -> PostProcessStatus {
+    POSTPROCEDSS_STATE.read().unwrap().clone()
+}
 
 pub struct PostProcessor {
     summarizer: Box<dyn Summarizer>,
@@ -18,18 +40,74 @@ impl PostProcessor {
         Box::new(PostProcessor { summarizer })
     }
 
-    pub fn postprocess(&self, mic_wav_file: String, config: MeetNoteConfig) -> Result<()>{
-        let wav_file = merge_audio_files(mic_wav_file.clone())?;
+    pub fn postprocess(&self, entry: Entry, config: MeetNoteConfig) -> Result<()> {
+        let basename = entry.basename.clone();
+
+        *POSTPROCEDSS_STATE.write().unwrap() = PostProcessStatus {
+            basename: basename.to_string(),
+            message: "Starting postprocess".to_string(),
+        };
+
+        let result = self.do_postprocess(entry, config);
+
+        // clear the status
+        *POSTPROCEDSS_STATE.write().unwrap() = PostProcessStatus {
+            basename: "".to_string(),
+            message: "".to_string(),
+        };
+
+        result
+    }
+
+    fn do_postprocess(&self, entry: Entry, config: MeetNoteConfig) -> Result<()>{
+        let basename = entry.basename.clone();
+
+        let set_post = |message: &str| {
+            *POSTPROCEDSS_STATE.write().unwrap() = PostProcessStatus {
+                basename: basename.to_string(),
+                message: message.to_string(),
+            };
+        };
+
+        set_post("Merging wave files");
+        let merged_wav_file = merge_audio_files(&entry)?;
 
         // convert to MP3
-        let mp3_file = wav_file.replace(".wav", ".mp3");
-        if let Err(e) = mp3::convert_to_mp3(&wav_file, &mp3_file) {
-            return Err(anyhow!("Cannot convert to mp3({} to {}): {:?}", wav_file, mp3_file, e))
+        set_post("Convert to MP3");
+        let mp3_file = entry.mp3_path_string();
+        if let Err(e) = mp3::convert_to_mp3(&merged_wav_file, &mp3_file) {
+            return Err(anyhow!("Cannot convert to mp3({} to {}): {:?}", merged_wav_file, mp3_file, e))
         }
 
         // convert to VTT
-        let vtt_file = wav_file.replace(".wav", ".vtt");
-        log::info!("Convert {} to {}", mp3_file, vtt_file);
+        set_post("Transcribing");
+        let vtt_file = entry.webvtt_path_string();
+        self.transcribe(&config, &merged_wav_file, &vtt_file)?;
+
+        // Summarize VTT
+        set_post("Summarizing");
+        let summary_file = entry.md_path();
+        self.summarize(vtt_file.as_str(), summary_file.as_str())?;
+
+        // cleanup files
+        set_post("Cleanup");
+        self.cleanup(&entry)?;
+
+        Ok(())
+    }
+
+    pub fn cleanup(&self, entry: &Entry) -> anyhow::Result<()> {
+        file_remove(entry.merged_wav_path_string().as_str())?;
+        file_remove(entry.mic_wav_path_string().as_str())?;
+        for path in entry.list_raw_files()? {
+            file_remove(path.unwrap().to_str().unwrap())?;
+        }
+        Ok(())
+    }
+
+    pub fn transcribe(&self, config: &MeetNoteConfig, wav_file: &String, vtt_file: &String) -> anyhow::Result<()> {
+        log::info!("Convert {} to {}", wav_file, vtt_file);
+
         let transcriber: Box<dyn Transcriber> = match config.transcriber_type {
             TranscriberType::WhisperCppTranscriberType => {
                 Box::new(WhisperTranscriber::new(
@@ -37,7 +115,7 @@ impl PostProcessor {
                 ))
             }
             TranscriberType::OpenAITranscriberType => {
-                let token: String = match config.openai_api_token {
+                let token = match &config.openai_api_token {
                     Some(token) => { token }
                     None => {
                         return Err(anyhow!("OpenAI transcriber requires OpenAI token. But it's missing."));
@@ -58,26 +136,13 @@ impl PostProcessor {
                 ))
             }
         };
-        match transcriber.transcribe(&wav_file, &vtt_file) {
+        match transcriber.transcribe(wav_file, vtt_file) {
             Ok(_) => {
                 log::info!("Wrote transcript to \"{}\"", vtt_file);
             }
             Err(e) => {
                 return Err(anyhow!("Cannot transcribe from wave file: {:?}, {:?}", wav_file, e))
             }
-        }
-
-        // Summarize VTT
-        let summary_file = wav_file.clone().replace(".wav", ".md");
-        self.summarize(vtt_file.as_str(), summary_file.as_str())?;
-
-        // cleanup files
-        file_remove(wav_file.as_str())?;
-        file_remove(mic_wav_file.clone().as_str())?;
-        let raw_files = glob::glob(&mic_wav_file.replace(".mic.wav", "*.raw"))?;
-        for x in raw_files {
-            let y = x.unwrap();
-            file_remove(y.to_str().unwrap())?;
         }
 
         Ok(())
@@ -101,7 +166,7 @@ impl PostProcessor {
                     summary_file, e))
         }
 
-        log::info!("Finished summarization: \"{}\"", vtt_file);
+        log::info!("Finished summarization: \"{}\" to \"{}\"", vtt_file, summary_file);
 
         Ok(())
     }
@@ -120,8 +185,9 @@ fn file_remove(filename: &str) -> anyhow::Result<()> {
     }
 }
 
-fn merge_audio_files(mic_wav_file: String) -> anyhow::Result<String> {
-    let output_wave_file = mic_wav_file.replace(".mic.wav", ".wav");
+fn merge_audio_files(entry: &Entry) -> anyhow::Result<String> {
+    let mic_wav_file = entry.mic_wav_path_string();
+    let output_wave_file = entry.merged_wav_path_string();
 
     // merge raw files to 1 wav file
     let screen_tmp = tempfile::Builder::new()
@@ -130,7 +196,7 @@ fn merge_audio_files(mic_wav_file: String) -> anyhow::Result<String> {
         .tempfile()
         .unwrap();
     {
-        let raw_files = glob::glob(&mic_wav_file.replace(".mic.wav", "*.raw"))?;
+        let raw_files = entry.list_raw_files()?;
         // log::info!("Processing raw files: {:?}", raw_files);
 
         let mut path_count = 0;
@@ -196,4 +262,30 @@ fn merge_audio_files(mic_wav_file: String) -> anyhow::Result<String> {
     }
 
     Ok(output_wave_file)
+}
+
+pub fn start_postprocess_thread(rx: Receiver<Entry>) {
+    loop {
+        match rx.recv() {
+            Ok(entry) => {
+                let config = load_config_or_default();
+                let summarizer = config.build_summarizer()
+                    .unwrap();
+                let post_processor = PostProcessor::new(summarizer);
+
+                let path = entry.dir.to_str().unwrap().to_string();
+                match post_processor.postprocess(entry, config) {
+                    Ok(_) => {
+                        log::info!("Successfully processed: {}", path);
+                    }
+                    Err(e) => {
+                        log::error!("Cannot process {}: {:?}", path, e)
+                    }
+                }
+            }
+            Err(err) => {
+                log::error!("Cannot receive message: {:?}", err);
+            }
+        }
+    }
 }

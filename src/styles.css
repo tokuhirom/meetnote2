@@ -13,6 +13,9 @@
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
 }
+body {
+  margin: 0;
+}
 
 .container {
   margin: 0;
@@ -45,10 +48,6 @@ a {
 
 a:hover {
   color: #535bf2;
-}
-
-h1 {
-  text-align: center;
 }
 
 input,
@@ -106,7 +105,13 @@ button {
   }
 }
 
-.file {
-  border-bottom: #535bf2 3px solid;
-  clear: both;
+.summary h1 {
+  margin-block-start: 0;
+  margin-block-end: 0;
+  font-size: 1.2em;
+}
+.summary h2 {
+  margin-block-start: 0;
+  margin-block-end: 0;
+  font-size: 1.0em;
 }

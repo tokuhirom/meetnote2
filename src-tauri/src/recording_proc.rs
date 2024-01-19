@@ -1,104 +1,131 @@
-use std::thread::sleep;
-use std::time::Duration;
+use std::sync::mpsc::{Receiver, Sender};
 use cpal::traits::DeviceTrait;
-use lazy_static::lazy_static;
-use crate::{mic_audio, data_repo, window};
-use crate::config::{load_config_or_default, MeetNoteConfig};
-use crate::postprocess::PostProcessor;
+use crate::mic_audio;
 use crate::screen_audio::ScreenAudioRecorder;
-use std::sync::RwLock;
+use std::time::Instant;
+use mic_audio::MicAudioRecorder;
+use crate::data_repo::DataRepo;
+use crate::entry::Entry;
 
-lazy_static! {
-    static ref IS_RECORDING: RwLock<bool> = RwLock::new(false);
+
+pub struct RecordingProc {
+    mic_recorder: Option<MicAudioRecorder>,
+    screen_audio_recorder: Option<ScreenAudioRecorder>,
+    entry: Option<Entry>,
+    data_repo: DataRepo,
 }
 
-pub fn is_recording() -> bool {
-    *IS_RECORDING.read().unwrap()
+impl RecordingProc {
+    pub fn new(data_repo: DataRepo) -> Self {
+        RecordingProc {
+            mic_recorder: None,
+            screen_audio_recorder: None,
+            entry: None,
+            data_repo,
+        }
+    }
+
+    // 設定ファイルの再読み込みについて考えるのが面倒なので毎回読み込む。
+    // ローカルファイルを読み込んで JSON を deserialize することは音声処理に比べれば誤差。
+    // 富豪的プログラミングで処理する。
+    fn get_target_device() -> Option<String> {
+        let config = match crate::config::load_config() {
+            Ok(c) => { c }
+            Err(err) => {
+                // TODO: show dialog?
+                log::error!("Cannot load configuration: {:?}", err);
+                crate::config::default_config()
+            }
+        };
+        config.target_device
+    }
+
+    pub fn start(&mut self) -> anyhow::Result<()> {
+        self.stop();
+
+        let target_device = Self::get_target_device();
+        let input_device = mic_audio::select_input_device_by_name(&target_device);
+
+        log::info!("Starting recording...: input_device={:?}", input_device.name());
+
+        let entry = self.data_repo.new_entry()?;
+        let mic_wav_path = entry.mic_wav_path_string();
+
+        // mic recording
+        let mut mic_recorder = MicAudioRecorder::new(
+            mic_wav_path.as_str(), &input_device
+        )?;
+        mic_recorder.start_recording();
+        self.mic_recorder = Some(mic_recorder);
+
+        // screen audio recorder
+        let screen_audio_recorder = ScreenAudioRecorder::new(
+            entry.raw_prefix_path_string()
+        )?;
+        if let Err(err) = screen_audio_recorder.start_recording() {
+            log::error!("cannot start recording: {:?}", err);
+        };
+        self.screen_audio_recorder = Some(screen_audio_recorder);
+
+        self.entry = Some(entry);
+
+        Ok(())
+    }
+
+    pub fn stop(&mut self) -> Option<Entry> {
+        if let Some(recorder) = &mut self.mic_recorder {
+            recorder.stop_recording();
+            self.mic_recorder.take(); // clear
+        }
+
+        // screen audio recorder
+        if let Some(screen_audio_recorder) = &self.screen_audio_recorder {
+            if let Err(err) = screen_audio_recorder.stop_recording() {
+                log::error!("Cannot stop audio recorder: {:?}", err);
+            }
+            self.screen_audio_recorder.take(); // clear
+        }
+
+        self.entry.take()
+    }
 }
 
-pub fn start_recording_process(config: MeetNoteConfig) {
-    let mut mic_recorder: Option<mic_audio::MicAudioRecorder> = None;
-    let mut screen_audio_recorder: Option<ScreenAudioRecorder> = None;
-    let target_device = config.target_device;
+pub fn start_recording_process_ex(recording_rx: Receiver<String>, postprocess_tx: Sender<Entry>) {
+    let datarepo = DataRepo::new()
+        .expect("DataRepo::new");
+    let mut recording_proc = RecordingProc::new(datarepo);
 
     log::info!("Ready to processing...");
 
     loop {
-        if let Some(info) = window::is_there_target_windows() {
-            if !(*IS_RECORDING.read().unwrap()) {
-                let input_device = mic_audio::select_input_device_by_name(&target_device);
-
-                log::info!("Starting recording...: window={:?} input_device={:?}", info, input_device.name());
-
-                let output_path = match data_repo::new_mic_wave_file_name() {
-                    Ok(path) => {
-                        path
+        match recording_rx.recv() {
+            Ok(got) => {
+                match got.as_str() {
+                    "START" => {
+                        if let Err(err) = recording_proc.start() {
+                            log::error!("Cannot start recording proc: {:?}", err);
+                        }
                     }
-                    Err(err) => {
-                        log::error!("Cannot get new wave file name: {}", err);
-                        continue;
-                    }
-                };
-                let Some(output_file) = output_path.as_path()
-                    .to_str() else {
-                    log::error!("Cannot get wave output file name");
-                    continue;
-                };
+                    "STOP" => {
+                        let start = Instant::now();
+                        if let Some(entry) = recording_proc.stop() {
+                            let duration = start.elapsed();
+                            // usually, under 50milli seconds.
+                            log::info!("`stop` took: {:?}", duration);
 
-                match mic_audio::MicAudioRecorder::new(output_file, &input_device) {
-                    Ok(mut recorder) => {
-                        recorder.start_recording();
-                        mic_recorder = Some(recorder)
+                            if let Err(err) = postprocess_tx.send(entry) {
+                                log::error!("Cannot start postprocess: {:?}", err);
+                            }
+                        }
                     }
-                    Err(err) => {
-                        log::error!("Cannot start mic recording: {:?}", err);
-                        sleep(Duration::from_secs(1));
-                        continue;
-                    }
-                };
-                screen_audio_recorder = Some(ScreenAudioRecorder::new(output_file.replace(".mic.wav", ""))
-                    .unwrap());
-                if let Err(err) = screen_audio_recorder.as_mut().unwrap().start_recording() {
-                    log::error!("cannot start recording: {:?}", err);
-                }
-                *(IS_RECORDING.write().unwrap()) = true;
-            }
-        } else if *IS_RECORDING.read().unwrap() {
-            // Window disappears, stop recording
-            *(IS_RECORDING.write().unwrap()) = false;
-            if let Some(recorder) = &mut mic_recorder {
-                recorder.stop_recording();
-            }
-            let mic_wave_file = mic_recorder.as_ref()
-                .expect("Expected wave_file to be Some; recording should stop when window disappears.")
-                .output_file
-                .clone();  // Clone the file path for the new thread
-            mic_recorder.take();  // Release the recorder if necessary
-            if let Err(err) = screen_audio_recorder.as_mut().unwrap()
-                .stop_recording() {
-                log::error!("Cannot stop audio recorder: {:?}", err)
-            }
-
-            log::info!("Stop recording...");
-
-            // let openai_api_key_clone = openai_api_key.clone();
-            std::thread::spawn(move || {
-                let config = load_config_or_default();
-                let summarizer = config.build_summarizer()
-                    .unwrap();
-                let post_processor = PostProcessor::new(summarizer);
-
-                match post_processor.postprocess(mic_wave_file.clone(), config) {
-                    Ok(_) => {
-                        log::info!("Successfully processed: {}", mic_wave_file);
-                    }
-                    Err(e) => {
-                        log::error!("Cannot process {}: {:?}", mic_wave_file, e)
+                    _ => {
+                        log::error!("Unknown message: {:?}", got);
                     }
                 }
-            });
+            }
+            Err(err) => {
+                log::error!("Cannot receive message from the channel: {:?}", err);
+            }
         }
-
-        sleep(Duration::from_secs(1))
     }
 }

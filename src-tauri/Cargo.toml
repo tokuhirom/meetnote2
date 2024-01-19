@@ -13,7 +13,7 @@ edition = "2021"
 tauri-build = { version = "1.5", features = [] }
 
 [dependencies]
-tauri = { version = "1.5", features = [ "system-tray", "window-create", "window-close", "notification-all", "shell-open"] }
+tauri = { version = "1.5", features = [ "dialog-message", "dialog-confirm", "path-all", "fs-all", "system-tray", "window-create", "window-close", "notification-all", "shell-open"] }
 
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.111"
@@ -53,6 +53,7 @@ lindera-analyzer = { version = "0.27.2", features = ["ipadic", "ipadic-filter"] 
 lindera-dictionary = "0.27.2"
 lindera-core = "0.27.2"
 lazy_static = "1.4.0"
+tiktoken-rs = "0.5.8"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

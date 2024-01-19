@@ -1,15 +1,9 @@
-<script>
-    import {invoke} from "@tauri-apps/api/tauri";
-
-    let now_recording = false;
-
-    setInterval(async () => {
-        now_recording = await invoke("is_recording");
-    }, 1000);
+<script lang="ts">
+    export let isRecording: boolean;
 </script>
 
 <div>
-    {#if now_recording}
+    {#if isRecording}
         <div class="now-recording">
             Now recording...
         </div>

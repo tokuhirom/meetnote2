@@ -1,53 +1,78 @@
 <script lang="ts">
-  import {onMount} from "svelte";
+  import {afterUpdate, onMount} from "svelte";
   import {invoke} from "@tauri-apps/api/tauri";
+  import type {Entry} from "./lib/entry";
+  import type {Caption} from "./lib/webvtt";
 
-  let filename = "";
-  let mp3 = "";
-  let logs : {start_time: string, end_time: string, text: string}[] = [];
-
+  export let entry:  Entry;
+  let mp3 : string | undefined = undefined;
+  let logs : Caption[] = [];
 
   onMount(async () => {
     console.log("onMount...")
-    filename = location.search.replace(/^\?filename=/, '').replace(/\.md$/, '.vtt');
-    logs = await invoke("load_webvtt", {filename: filename});
-    mp3 = await invoke("read_data_tag_mp3", {filename: filename.replace(".vtt", ".mp3")});
+    await watchFile();
   });
 
-  function convertToSeconds(time: string): number {
-    const splitTime = time.split(':').map(Number);
-    return splitTime[0] * 3600 + splitTime[1] * 60 + splitTime[2];
+  $: if (entry) {
+    watchFile()
   }
 
-   function seek(log:{start_time: string, end_time: string, text: string}) {
-    const start = convertToSeconds(log.start_time);
-    const audio = document.getElementsByTagName("audio")[0];
-    audio.currentTime = start;
+  async function watchFile() {
+    console.log("watchFile");
+    try {
+      logs = await entry.readVTT();
+    } catch (e) {
+      logs = [];
+      console.error(`Cannot get VTT: ${e}`);
+    }
+
+    try {
+      mp3 = await entry.readMp3AsDataUri();
+      const audio = document.getElementsByTagName("audio")[0] as HTMLAudioElement;
+      if (audio) {
+        audio.load();
+      }
+    } catch (e) {
+      console.error(`MP3: ${e}`);
+    }
+  }
+
+   function seek(log: Caption) {
+    const startSeconds = log.parseStartTimeMillis() / 1000;
+
+    const audio = document.getElementsByTagName("audio")[0] as HTMLAudioElement;
+    audio.currentTime = startSeconds;
     audio.play();
   }
 </script>
 
 <main class="container">
-  <h2>{filename} - log</h2>
-
+  {#if mp3}
   <audio controls>
     <source src="{mp3}">
     Your browser does not support the audio tag.
   </audio>
+  {/if}
 
-  <table>
-
-  {#each logs as log}
-    <tr>
-      <td><a href="#" on:click|preventDefault={() => seek(log)}>[{log.start_time}]</a></td>
-      <td>{log.text}</td>
-    </tr>
-  {/each}
-  </table>
+  {#if logs}
+    <table>
+    {#each logs as log}
+      <tr>
+        <td><button on:click|preventDefault={() => seek(log)}>[{log.startTime.replace(/\.\d{3}$/, '')}]</button></td>
+        <td>{log.text}</td>
+      </tr>
+    {/each}
+    </table>
+  {:else}
+    VTT log is not available yet.
+  {/if}
 </main>
 
 <style>
   td {
     vertical-align: top;
+  }
+  button {
+    padding: 4px;
   }
 </style>
