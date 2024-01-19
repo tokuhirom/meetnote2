@@ -1,13 +1,19 @@
 use std::fs;
 use std::process::Command;
 use crate::mp3;
-use anyhow::{anyhow, Error, Result};
+use anyhow::{anyhow, Result};
+use lazy_static::lazy_static;
 use crate::config::{MeetNoteConfig, TranscriberType};
 use crate::openai::OpenAICustomizedClient;
 use crate::openai_transcriber::OpenAITranscriber;
 use crate::summarizer::Summarizer;
 use crate::transcriber::Transcriber;
 use crate::whisper_cpp::WhisperTranscriber;
+use std::sync::RwLock;
+
+lazy_static! {
+    static ref POSTPROCEDSS_STATE : RwLock<String> = RwLock::new("".to_string());
+}
 
 pub struct PostProcessor {
     summarizer: Box<dyn Summarizer>,
@@ -19,23 +25,28 @@ impl PostProcessor {
     }
 
     pub fn postprocess(&self, mic_wav_file: String, config: MeetNoteConfig) -> Result<()>{
+        *POSTPROCEDSS_STATE.write().unwrap() = "Merging wave files".to_string();
         let wav_file = merge_audio_files(mic_wav_file.clone())?;
 
         // convert to MP3
+        *POSTPROCEDSS_STATE.write().unwrap() = "Convert to MP3".to_string();
         let mp3_file = wav_file.replace(".wav", ".mp3");
         if let Err(e) = mp3::convert_to_mp3(&wav_file, &mp3_file) {
             return Err(anyhow!("Cannot convert to mp3({} to {}): {:?}", wav_file, mp3_file, e))
         }
 
         // convert to VTT
+        *POSTPROCEDSS_STATE.write().unwrap() = "Transcribing".to_string();
         let vtt_file = wav_file.replace(".wav", ".vtt");
-        self.transcribe(&config, wav_file, vtt_file)?;
+        self.transcribe(&config, &wav_file, &vtt_file)?;
 
         // Summarize VTT
+        *POSTPROCEDSS_STATE.write().unwrap() = "Summarizing".to_string();
         let summary_file = wav_file.clone().replace(".wav", ".md");
         self.summarize(vtt_file.as_str(), summary_file.as_str())?;
 
         // cleanup files
+        *POSTPROCEDSS_STATE.write().unwrap() = "Cleanup".to_string();
         file_remove(wav_file.as_str())?;
         file_remove(mic_wav_file.clone().as_str())?;
         let raw_files = glob::glob(&mic_wav_file.replace(".mic.wav", "*.raw"))?;
@@ -47,7 +58,7 @@ impl PostProcessor {
         Ok(())
     }
 
-    pub fn transcribe(&self, config: &MeetNoteConfig, wav_file: String, vtt_file: String) -> anyhow::Result<()> {
+    pub fn transcribe(&self, config: &MeetNoteConfig, wav_file: &String, vtt_file: &String) -> anyhow::Result<()> {
         log::info!("Convert {} to {}", wav_file, vtt_file);
 
         let transcriber: Box<dyn Transcriber> = match config.transcriber_type {
