@@ -87,22 +87,26 @@ pub fn start_recording_process(config: MeetNoteConfig) {
 
             // let openai_api_key_clone = openai_api_key.clone();
             std::thread::spawn(move || {
-                let config = load_config_or_default();
-                let summarizer = config.build_summarizer()
-                    .unwrap();
-                let post_processor = PostProcessor::new(summarizer);
-
-                match post_processor.postprocess(mic_wave_file.clone(), config) {
-                    Ok(_) => {
-                        log::info!("Successfully processed: {}", mic_wave_file);
-                    }
-                    Err(e) => {
-                        log::error!("Cannot process {}: {:?}", mic_wave_file, e)
-                    }
-                }
+                start_postprocess(mic_wave_file);
             });
         }
 
         sleep(Duration::from_secs(1))
+    }
+}
+
+pub fn start_postprocess(mic_wave_file: String) {
+    let config = load_config_or_default();
+    let summarizer = config.build_summarizer()
+        .unwrap();
+    let post_processor = PostProcessor::new(summarizer);
+
+    match post_processor.postprocess(mic_wave_file.clone(), config) {
+        Ok(_) => {
+            log::info!("Successfully processed: {}", mic_wave_file);
+        }
+        Err(e) => {
+            log::error!("Cannot process {}: {:?}", mic_wave_file, e)
+        }
     }
 }

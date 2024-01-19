@@ -49,7 +49,11 @@
         <button on:click|preventDefault={deleteItem}>Delete</button>
     </div>
 
+    <hr/>
+
     <StatusIndicator entry={entry} />
+
+    <hr/>
 
     {#if editMode}
         <form on:submit|preventDefault={saveItem}>

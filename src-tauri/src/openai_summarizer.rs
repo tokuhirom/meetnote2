@@ -28,8 +28,8 @@ impl Summarizer for OpenAISummarizer {
                 by the content in bullet point format. The purpose is to make
                 the content easily comprehensible for later review.
                 Output text must be in Japanese.
-                If the content doesn't contain any meaningful discussion, just output `NO_CONTENT`.
             ".trim().to_string(),
+                // If the content doesn't contain any meaningful discussion, just output `NO_CONTENT`.
             },
             openai::Message {
                 role: "user".to_string(),

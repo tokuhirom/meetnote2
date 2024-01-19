@@ -1,6 +1,7 @@
 <script lang="ts">
     import type {Entry} from "./entry";
     import {onMount} from "svelte";
+    import {invoke} from "@tauri-apps/api/tauri";
 
     export let entry: Entry;
     let micWavAvailable: boolean = false;
@@ -22,6 +23,15 @@
         vttAvailable = await entry.hasVTT();
         mdAvailable = await entry.hasMD();
     }
+
+    async function runPostProcess() {
+        // UI スタックしちゃうから thread::spawn するようにしたほうが良さそう。
+        // とはいえ、どういうモニタリング方式にするかは考えないといけないかもしれない。
+        await invoke("start_postprocess", {
+            micWaveFile: entry.micWavPath()
+        });
+        entry = entry; // needs refresh after post process
+    }
 </script>
 
 <div>
@@ -30,6 +40,9 @@
         <span class="mp3" class:available={mp3Available} class:unavailable={!mp3Available}>MP3</span>
         <span class="md" class:available={mdAvailable} class:unavailable={!mdAvailable}>Summary</span>
         <span class="vtt" class:available={vttAvailable} class:unavailable={!vttAvailable}>VTT</span>
+        {#if micWavAvailable}
+            <button on:click={runPostProcess}>Run postprocess</button>
+        {/if}
     </div>
 </div>
 

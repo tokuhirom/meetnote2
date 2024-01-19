@@ -23,6 +23,7 @@ mod openai_transcriber;
 mod entry;
 
 use std::fs::File;
+use std::thread;
 use anyhow::anyhow;
 use simplelog::ColorChoice;
 use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowBuilder, SystemTray, SystemTrayMenu, Manager};
@@ -62,6 +63,13 @@ fn get_windows() -> Vec<WindowInfo> {
 #[tauri::command]
 fn is_recording() -> bool {
     recording_proc::is_recording()
+}
+
+#[tauri::command]
+fn start_postprocess(mic_wave_file: String) {
+    thread::spawn(move || {
+        recording_proc::start_postprocess(mic_wave_file);
+    });
 }
 
 fn main() -> anyhow::Result<()> {
@@ -176,6 +184,7 @@ fn main() -> anyhow::Result<()> {
             regenerate_summary,
             get_windows,
             is_recording,
+            start_postprocess,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
