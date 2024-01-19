@@ -91,7 +91,7 @@ impl PostProcessor {
                 ))
             }
         };
-        match transcriber.transcribe(&wav_file, &vtt_file) {
+        match transcriber.transcribe(wav_file, vtt_file) {
             Ok(_) => {
                 log::info!("Wrote transcript to \"{}\"", vtt_file);
             }
@@ -116,7 +116,7 @@ impl PostProcessor {
         let summary = self.summarizer.summarize(vtt_content.as_str())
             .map_err(|err| { anyhow!("Cannot postprocess summarization process {:?}: {:?}", vtt_file, err)})?;
 
-        if let Err(e) = fs::write(summary_file, &summary) {
+        if let Err(e) = fs::write(summary_file, summary) {
             return Err(anyhow!("Cannot write to file({}): {:?}",
                     summary_file, e))
         }

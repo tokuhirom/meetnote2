@@ -37,7 +37,7 @@ impl RecordingProc {
                 crate::config::default_config()
             }
         };
-        return config.target_device;
+        config.target_device
     }
 
     pub fn start(&mut self) -> anyhow::Result<()> {
@@ -86,7 +86,7 @@ impl RecordingProc {
             self.screen_audio_recorder.take(); // clear
         }
 
-        return self.entry.take();
+        self.entry.take()
     }
 }
 

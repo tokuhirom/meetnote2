@@ -102,7 +102,7 @@ fn main() -> anyhow::Result<()> {
         ),
     ])?;
 
-    let config = match config::load_config() {
+    let _config = match config::load_config() {
         Ok(c) => { c }
         Err(err) => {
             // TODO: show dialog?

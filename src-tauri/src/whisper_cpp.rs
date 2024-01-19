@@ -20,7 +20,7 @@ impl WhisperTranscriber {
 
 impl Transcriber for WhisperTranscriber {
     fn transcribe(&self, in_file: &str, out_file: &str) -> anyhow::Result<()> {
-        run_whisper(&*self.version, &*self.model, &*self.language, in_file, out_file)
+        run_whisper(&self.version, &self.model, &self.language, in_file, out_file)
     }
 }
 
