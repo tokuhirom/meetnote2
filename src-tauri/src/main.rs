@@ -32,6 +32,7 @@ use simplelog::ColorChoice;
 use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowBuilder, SystemTray, SystemTrayMenu, Manager};
 use crate::config::MeetNoteConfig;
 use crate::entry::Entry;
+use crate::postprocess::PostProcessStatus;
 use crate::window::WindowInfo;
 
 pub struct MyState {
@@ -80,6 +81,11 @@ fn start_postprocess(dir: String, state: tauri::State<MyState>) -> Result<(), St
 fn call_recording_process(command: String, state: tauri::State<MyState>) -> Result<(), String> {
     state.recording_tx.send(command)
         .map_err(|err| format!("Cannot send message: {:?}", err))
+}
+
+#[tauri::command]
+fn postprocess_status() -> PostProcessStatus {
+    postprocess::postprocess_status()
 }
 
 fn main() -> anyhow::Result<()> {
@@ -207,6 +213,7 @@ fn main() -> anyhow::Result<()> {
             get_windows,
             start_postprocess,
             call_recording_process,
+            postprocess_status,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

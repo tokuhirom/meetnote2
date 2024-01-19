@@ -11,10 +11,24 @@ use crate::summarizer::Summarizer;
 use crate::transcriber::Transcriber;
 use crate::whisper_cpp::WhisperTranscriber;
 use std::sync::RwLock;
+use serde::{Deserialize, Serialize};
 use crate::entry::Entry;
 
+#[derive(Clone, Serialize, Deserialize)]
+pub struct PostProcessStatus {
+    basename: String,
+    message: String,
+}
+
 lazy_static! {
-    static ref POSTPROCEDSS_STATE : RwLock<String> = RwLock::new("".to_string());
+    static ref POSTPROCEDSS_STATE : RwLock<PostProcessStatus> = RwLock::new(PostProcessStatus {
+        basename: "".to_string(),
+        message: "".to_string(),
+    });
+}
+
+pub fn postprocess_status() -> PostProcessStatus {
+    POSTPROCEDSS_STATE.read().unwrap().clone()
 }
 
 pub struct PostProcessor {
@@ -26,29 +40,40 @@ impl PostProcessor {
         Box::new(PostProcessor { summarizer })
     }
 
-    pub fn postprocess(&self, mic_wav_file: String, config: MeetNoteConfig) -> Result<()>{
-        *POSTPROCEDSS_STATE.write().unwrap() = "Merging wave files".to_string();
+    // TODO use Entry object
+    pub fn postprocess(&self, entry: Entry, config: MeetNoteConfig) -> Result<()>{
+        let mic_wav_file = entry.mic_wav_path_string();
+        let basename = entry.basename.clone();
+
+        let set_post = |message: &str| {
+            *POSTPROCEDSS_STATE.write().unwrap() = PostProcessStatus {
+                basename: basename.to_string(),
+                message: message.to_string(),
+            };
+        };
+
+        set_post("Merging wave files");
         let wav_file = merge_audio_files(mic_wav_file.clone())?;
 
         // convert to MP3
-        *POSTPROCEDSS_STATE.write().unwrap() = "Convert to MP3".to_string();
+        set_post("Convert to MP3");
         let mp3_file = wav_file.replace(".wav", ".mp3");
         if let Err(e) = mp3::convert_to_mp3(&wav_file, &mp3_file) {
             return Err(anyhow!("Cannot convert to mp3({} to {}): {:?}", wav_file, mp3_file, e))
         }
 
         // convert to VTT
-        *POSTPROCEDSS_STATE.write().unwrap() = "Transcribing".to_string();
+        set_post("Transcribing");
         let vtt_file = wav_file.replace(".wav", ".vtt");
         self.transcribe(&config, &wav_file, &vtt_file)?;
 
         // Summarize VTT
-        *POSTPROCEDSS_STATE.write().unwrap() = "Summarizing".to_string();
+        set_post("Summarizing");
         let summary_file = wav_file.clone().replace(".wav", ".md");
         self.summarize(vtt_file.as_str(), summary_file.as_str())?;
 
         // cleanup files
-        *POSTPROCEDSS_STATE.write().unwrap() = "Cleanup".to_string();
+        set_post("Cleanup");
         file_remove(wav_file.as_str())?;
         file_remove(mic_wav_file.clone().as_str())?;
         let raw_files = glob::glob(&mic_wav_file.replace(".mic.wav", "*.raw"))?;
@@ -56,6 +81,11 @@ impl PostProcessor {
             let y = x.unwrap();
             file_remove(y.to_str().unwrap())?;
         }
+
+        *POSTPROCEDSS_STATE.write().unwrap() = PostProcessStatus {
+            basename: "".to_string(),
+            message: "".to_string(),
+        };
 
         Ok(())
     }
@@ -227,13 +257,13 @@ pub fn start_postprocess_thread(rx: Receiver<Entry>) {
                     .unwrap();
                 let post_processor = PostProcessor::new(summarizer);
 
-                let mic_wav_path = entry.mic_wav_path_string();
-                match post_processor.postprocess(mic_wav_path.clone(), config) {
+                let path = entry.dir.to_str().unwrap().to_string();
+                match post_processor.postprocess(entry, config) {
                     Ok(_) => {
-                        log::info!("Successfully processed: {}", mic_wav_path);
+                        log::info!("Successfully processed: {}", path);
                     }
                     Err(e) => {
-                        log::error!("Cannot process {}: {:?}", mic_wav_path, e)
+                        log::error!("Cannot process {}: {:?}", path, e)
                     }
                 }
             }

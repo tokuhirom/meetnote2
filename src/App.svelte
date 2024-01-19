@@ -7,11 +7,15 @@
   import type {Entry} from "./lib/entry";
   import SummaryView from "./lib/SummaryView.svelte";
   import {invoke} from "@tauri-apps/api/tauri";
+  import PostProcessingIndicator from "./lib/PostProcessingIndicator.svelte";
+  import type {PostProcessStatus} from "./lib/postprocess";
 
   let selectedEntry: Entry | undefined = undefined;
   let entries: Entry[] = []
 
   let data_repo = new DataRepo();
+
+  let postProcessingStatus: PostProcessStatus | undefined = undefined;
 
   onMount(async () => {
     entries = await data_repo.list_entries();
@@ -19,9 +23,6 @@
     if (entries.length > 0) {
       selectedEntry = entries[0];
     }
-
-    /*
-    // TODO これでいけそう。
 
     setTimeout(async () => {
       for (let entry of entries) {
@@ -31,13 +32,16 @@
         }
       }
     }, 0);
-     */
   });
 
   // todo: better polling logic
   setInterval(async () => {
     entries = await data_repo.list_entries();
   }, 3000);
+
+  setInterval(async () => {
+    postProcessingStatus = await invoke("postprocess_status");
+  }, 1000);
 
   function onSelectEntry(file: Entry) {
     selectedEntry = file;
@@ -97,6 +101,11 @@
   <div class="main-container">
     <div class="files">
       <NowRecordingIndicator isRecording={isRecording} />
+
+      {#if postProcessingStatus && postProcessingStatus.message !== ""}
+      <PostProcessingIndicator status={postProcessingStatus} />
+      {/if}
+
       {#each entries as entry}
         <FileItem entry={entry} onSelectEntry={onSelectEntry}/>
       {/each}
