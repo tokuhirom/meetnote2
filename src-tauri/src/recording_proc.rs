@@ -1,27 +1,30 @@
+use std::path::PathBuf;
 use std::sync::mpsc::{Receiver, Sender};
 use cpal::traits::DeviceTrait;
 use crate::mic_audio;
 use crate::screen_audio::ScreenAudioRecorder;
 use std::time::Instant;
 use mic_audio::MicAudioRecorder;
-use crate::data_repo::DataRepo;
 use crate::entry::Entry;
 
+#[derive(Debug)]
+pub struct RecordingEvent {
+    pub command: String,
+    pub path: Option<String>,
+}
 
 pub struct RecordingProc {
     mic_recorder: Option<MicAudioRecorder>,
     screen_audio_recorder: Option<ScreenAudioRecorder>,
     entry: Option<Entry>,
-    data_repo: DataRepo,
 }
 
 impl RecordingProc {
-    pub fn new(data_repo: DataRepo) -> Self {
+    pub fn new() -> Self {
         RecordingProc {
             mic_recorder: None,
             screen_audio_recorder: None,
             entry: None,
-            data_repo,
         }
     }
 
@@ -40,15 +43,15 @@ impl RecordingProc {
         config.target_device
     }
 
-    pub fn start(&mut self) -> anyhow::Result<()> {
+    pub fn start(&mut self, path: String) -> anyhow::Result<()> {
         self.stop();
 
         let target_device = Self::get_target_device();
         let input_device = mic_audio::select_input_device_by_name(&target_device);
 
-        log::info!("Starting recording...: input_device={:?}", input_device.name());
+        log::info!("Starting recording...: input_device={:?} path={:?}", input_device.name(), path);
 
-        let entry = self.data_repo.new_entry()?;
+        let entry = Entry::new(PathBuf::from(path));
         let mic_wav_path = entry.mic_wav_path_string();
 
         // mic recording
@@ -90,19 +93,17 @@ impl RecordingProc {
     }
 }
 
-pub fn start_recording_process_ex(recording_rx: Receiver<String>, postprocess_tx: Sender<Entry>) {
-    let datarepo = DataRepo::new()
-        .expect("DataRepo::new");
-    let mut recording_proc = RecordingProc::new(datarepo);
+pub fn start_recording_process_ex(recording_rx: Receiver<RecordingEvent>, postprocess_tx: Sender<Entry>) {
+    let mut recording_proc = RecordingProc::new();
 
     log::info!("Ready to processing...");
 
     loop {
         match recording_rx.recv() {
-            Ok(got) => {
-                match got.as_str() {
+            Ok(event) => {
+                match event.command.as_str() {
                     "START" => {
-                        if let Err(err) = recording_proc.start() {
+                        if let Err(err) = recording_proc.start(event.path.unwrap()) {
                             log::error!("Cannot start recording proc: {:?}", err);
                         }
                     }
@@ -119,7 +120,7 @@ pub fn start_recording_process_ex(recording_rx: Receiver<String>, postprocess_tx
                         }
                     }
                     _ => {
-                        log::error!("Unknown message: {:?}", got);
+                        log::error!("Unknown message: {:?}", event);
                     }
                 }
             }

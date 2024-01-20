@@ -7,6 +7,7 @@
     import {listen} from "@tauri-apps/api/event";
 
     export let entry: Entry;
+    export let recordingEntry: Entry | undefined;
     export let onDelete: () => void;
 
     let editingContent : string | undefined = undefined;
@@ -72,10 +73,18 @@
             <button type="submit">Save</button>
         </form>
     {:else}
-        {#if entry.summary}
+        {#if recordingEntry && recordingEntry.path === entry.path}
+            <div class="now-recording">Now recording this entry...</div>
+        {:else if entry.summary}
             <div class="summary">{@html markdown(entry.summary)}</div>
         {:else}
-            <div class="summary-wip">Summary not available...(WIP?)</div>
+            <div class="summary-wip">Summary not available...(WIP?)
+                <!--{#if await entry.hasMicWav()}-->
+<!--                    TODO: implement run postprocess button.-->
+<!--                {:else}-->
+<!--                    TODO: implement run postprocess button.-->
+<!--                {/if}-->
+            </div>
         {/if}
     {/if}
 
@@ -92,5 +101,9 @@
     .summary-wip {
         margin: 8px;
         color: yellowgreen;
+    }
+
+    .now-recording {
+        color: red;
     }
 </style>

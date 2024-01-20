@@ -68,16 +68,19 @@
   }
 
   let isRecording = false;
+  let recordingEntry : undefined| Entry = undefined;
   setInterval(async () => {
     if (await isThereTargetWindow()) {
       if (!isRecording) {
         isRecording = true;
-        await invoke("call_recording_process", {"command": "START"});
+        recordingEntry = await data_repo.new_entry();
+        await invoke("call_recording_process", {"command": "START", path: recordingEntry.path});
       }
     } else {
       if (isRecording) {
+        recordingEntry = undefined;
         isRecording = false;
-        await invoke("call_recording_process", {"command": "STOP"});
+        await invoke("call_recording_process", {"command": "STOP", path: null});
       }
     }
   }, 1000);
@@ -107,12 +110,12 @@
       {/if}
 
       {#each entries as entry}
-        <FileItem entry={entry} onSelectEntry={onSelectEntry}/>
+        <FileItem entry={entry} onSelectEntry={onSelectEntry} recordingEntry={recordingEntry} />
       {/each}
     </div>
     <div class="vtt">
       {#if selectedEntry}
-        <SummaryView entry="{selectedEntry}" onDelete={onDelete} />
+        <SummaryView entry="{selectedEntry}" onDelete={onDelete} recordingEntry={recordingEntry} />
       {/if}
     </div>
   </div>

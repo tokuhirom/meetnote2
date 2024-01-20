@@ -1,8 +1,14 @@
 import {BaseDirectory, createDir, exists, readDir} from "@tauri-apps/api/fs";
 import {Entry} from "./entry";
+import {invoke} from "@tauri-apps/api/tauri";
 
 export class DataRepo {
     constructor() {
+    }
+
+    async new_entry() : Promise<Entry> {
+        let path : string = await invoke('new_entry_path');
+        return new Entry(path)
     }
 
     async list_entries(): Promise<Entry[]> {

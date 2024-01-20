@@ -24,7 +24,6 @@ mod entry;
 
 use std::fs::File;
 use std::path::PathBuf;
-use std::ptr::null;
 use std::sync::mpsc;
 use std::sync::mpsc::Sender;
 use std::thread;
@@ -32,13 +31,16 @@ use anyhow::anyhow;
 use simplelog::ColorChoice;
 use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowBuilder, SystemTray, SystemTrayMenu, Manager, AboutMetadata};
 use crate::config::MeetNoteConfig;
+use crate::data_repo::DataRepo;
 use crate::entry::Entry;
 use crate::postprocess::PostProcessStatus;
+use crate::recording_proc::RecordingEvent;
 use crate::window::WindowInfo;
 
 pub struct MyState {
-    pub recording_tx: Sender<String>,
+    pub recording_tx: Sender<RecordingEvent>,
     pub postprocess_tx: Sender<Entry>,
+    pub data_repo: DataRepo,
 }
 
 #[tauri::command]
@@ -79,9 +81,18 @@ fn start_postprocess(dir: String, state: tauri::State<MyState>) -> Result<(), St
 }
 
 #[tauri::command]
-fn call_recording_process(command: String, state: tauri::State<MyState>) -> Result<(), String> {
-    state.recording_tx.send(command)
+fn call_recording_process(command: String, path: Option<String>, state: tauri::State<MyState>) -> Result<(), String> {
+    state.recording_tx.send(RecordingEvent {
+        command, path
+    })
         .map_err(|err| format!("Cannot send message: {:?}", err))
+}
+
+#[tauri::command]
+fn new_entry_path(state: tauri::State<MyState>) -> Result<String, String> {
+    state.data_repo.new_entry()
+        .map_err(|err| format!("Cannot create new entry: {:?}", err))
+        .map(|it| it.dir.to_str().unwrap().to_string())
 }
 
 #[tauri::command]
@@ -178,7 +189,7 @@ fn main() -> anyhow::Result<()> {
     thread::spawn(move || {
         postprocess::start_postprocess_thread(postprocess_rx)
     });
-    let (recording_tx, recording_rx) = mpsc::channel::<String>();
+    let (recording_tx, recording_rx) = mpsc::channel::<RecordingEvent>();
     {
         let postprocess_tx = postprocess_tx.clone();
         thread::spawn(move || {
@@ -186,10 +197,12 @@ fn main() -> anyhow::Result<()> {
         });
     }
 
+    let data_repo = DataRepo::new()?;
     tauri::Builder::default()
         .manage(MyState {
             recording_tx,
             postprocess_tx,
+            data_repo,
         })
         .system_tray(tray)
         .menu(menu)
@@ -246,6 +259,7 @@ fn main() -> anyhow::Result<()> {
             start_postprocess,
             call_recording_process,
             postprocess_status,
+            new_entry_path,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -3,6 +3,7 @@
     import {WebviewWindow} from "@tauri-apps/api/window";
     import type {Entry} from "./entry";
 
+    export let recordingEntry: Entry | undefined;
     export let onSelectEntry: (entry: Entry) => void;
     export let entry: Entry;
 
@@ -15,7 +16,9 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="file" on:click|preventDefault={openLog} role="navigation">
     <div class="timestamp">{entry.title()}</div>
-    {#if entry.summary}
+    {#if recordingEntry && recordingEntry.path === entry.path}
+        <div class="now-recording">Now recording this entry...</div>
+    {:else if entry.summary}
         <div class="summary">{entry.summary.replace(/#+/g, '')}</div>
     {:else}
         <i>Summary is not available yet.</i>
@@ -35,5 +38,9 @@
     .file {
         border-bottom: dimgray 1px solid;
         clear: both;
+    }
+
+    .now-recording {
+        color: red;
     }
 </style>

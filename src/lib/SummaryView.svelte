@@ -3,6 +3,7 @@
     import {Entry} from "./entry";
     import VttView from "../VttView.svelte";
 
+    export let recordingEntry: Entry | undefined;
     export let onDelete: () => void;
 
     export let entry: Entry;
@@ -25,7 +26,7 @@
 
     <div class="tab-content">
         {#if pane==="summary"}
-            <SummaryBody entry={entry} onDelete={onDelete} />
+            <SummaryBody entry={entry} onDelete={onDelete} recordingEntry={recordingEntry} />
         {:else if pane === "script"}
             <VttView entry={entry} />
         {:else}
