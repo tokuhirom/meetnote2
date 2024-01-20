@@ -24,6 +24,7 @@ mod entry;
 
 use std::fs::File;
 use std::path::PathBuf;
+use std::ptr::null;
 use std::sync::mpsc;
 use std::sync::mpsc::Sender;
 use std::thread;
@@ -136,6 +137,13 @@ fn main() -> anyhow::Result<()> {
     let misc_menu = Submenu::new("Misc", Menu::new()
         .add_item(CustomMenuItem::new("configuration", "Configuration")
             .accelerator("Command+,")));
+    let file_menu = Submenu::new(
+        "File",
+        Menu::new()
+            .add_item(CustomMenuItem::new("delete_entry", "Delete entry"))
+            .add_item(CustomMenuItem::new("edit_summary", "Edit summary")
+                .accelerator("Command+e"))
+    );
     let edit_menu = Menu::new()
         .add_native_item(MenuItem::Undo)
         .add_native_item(MenuItem::Redo)
@@ -157,6 +165,7 @@ fn main() -> anyhow::Result<()> {
                 ))
                 .add_native_item(MenuItem::Quit)
         ))
+        .add_submenu(file_menu)
         .add_submenu(Submenu::new("Edit", edit_menu))
         .add_submenu(window_menu)
         .add_submenu(misc_menu);
@@ -197,6 +206,18 @@ fn main() -> anyhow::Result<()> {
         })
         .on_menu_event(|event| {
             match event.menu_item_id() {
+                "edit_summary" => {
+                    log::info!("Start editing summary");
+                    if let Err(err) = event.window().emit("do_edit_summary", "DUMMY".to_string()) {
+                        log::error!("Cannot emit message: {:?}", err);
+                    }
+                }
+                "delete_entry" => {
+                    log::info!("Start deleting entry");
+                    if let Err(err) = event.window().emit("do_delete_entry", "DUMMY".to_string()) {
+                        log::error!("Cannot emit message: {:?}", err);
+                    }
+                }
                 "configuration" => {
                     log::info!("Got configuration event");
                     if let Err(err) = WindowBuilder::new(

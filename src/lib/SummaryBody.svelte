@@ -4,12 +4,22 @@
     import DOMPurify from "dompurify";
     import StatusIndicator from "./StatusIndicator.svelte";
     import {dialog} from "@tauri-apps/api";
+    import {listen} from "@tauri-apps/api/event";
 
     export let entry: Entry;
     export let onDelete: () => void;
 
     let editingContent : string | undefined = undefined;
     let editMode = false;
+
+    listen("do_edit_summary", () => {
+        console.log("Called do_edit_summary");
+        enterEditingMode();
+    });
+    listen("do_delete_entry", () => {
+        console.log("Called do_delete_entry");
+        deleteItem();
+    });
 
     async function regenerateSummaryItem() {
         try {
@@ -23,9 +33,9 @@
     }
 
     async function deleteItem() {
-        // TODO move to menu bar?
-        if (await dialog.confirm("Do you want to delete this file?")) {
+        if (await dialog.confirm(`Do you want to delete this file?'\n\n${entry.summary?.replace(/([*#])+/, '').slice(0, 30)}`)) {
             await entry.remove();
+            console.log("deleted file");
             onDelete();
         }
     }
@@ -48,7 +58,6 @@
 <div>
     <div>
         <button on:click|preventDefault={regenerateSummaryItem}>Regenerate Summary</button>
-        <button on:click|preventDefault={deleteItem}>Delete</button>
     </div>
 
     <hr/>
@@ -56,8 +65,6 @@
     <StatusIndicator entry={entry} />
 
     <hr/>
-
-    <button on:click|preventDefault={enterEditingMode}>Edit</button>
 
     {#if editMode}
         <form on:submit|preventDefault={saveItem}>
