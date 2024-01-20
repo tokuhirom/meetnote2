@@ -25,8 +25,8 @@
     }
 
     async function runPostProcess() {
-        await invoke("start_postprocess", {dir: entry.path});
-        entry = entry; // needs refresh after post process
+        await invoke("start_postprocess", {dir: entry.path, command: "ALL"});
+        entry = entry; // TODO needs refresh after post process... so, when is the best timing to do it?
     }
 </script>
 

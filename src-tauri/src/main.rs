@@ -33,13 +33,13 @@ use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowBuilder, SystemTray, 
 use crate::config::MeetNoteConfig;
 use crate::data_repo::DataRepo;
 use crate::entry::Entry;
-use crate::postprocess::PostProcessStatus;
+use crate::postprocess::{PostProcessEvent, PostProcessStatus};
 use crate::recording_proc::RecordingEvent;
 use crate::window::WindowInfo;
 
 pub struct MyState {
     pub recording_tx: Sender<RecordingEvent>,
-    pub postprocess_tx: Sender<Entry>,
+    pub postprocess_tx: Sender<PostProcessEvent>,
     pub data_repo: DataRepo,
 }
 
@@ -63,20 +63,17 @@ fn get_input_devices() -> Result<Vec<String>, String> {
 }
 
 #[tauri::command]
-fn regenerate_summary(vtt_path: String, md_path: String) -> Result<(), String> {
-    data_repo::regenerate_summary(&vtt_path, &md_path)
-        .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
 fn get_windows() -> Vec<WindowInfo> {
     window::get_windows()
 }
 
 #[tauri::command]
-fn start_postprocess(dir: String, state: tauri::State<MyState>) -> Result<(), String> {
+fn start_postprocess(command: String, dir: String, state: tauri::State<MyState>) -> Result<(), String> {
     let entry = Entry::new(PathBuf::from(dir));
-    state.postprocess_tx.send(entry)
+    state.postprocess_tx.send(PostProcessEvent {
+        command,
+        entry,
+    })
         .map_err(|err| format!("Cannot start postprocess: {:?}", err))
 }
 
@@ -185,7 +182,7 @@ fn main() -> anyhow::Result<()> {
     let tray = SystemTray::new()
         .with_menu(tray_menu);
 
-    let (postprocess_tx, postprocess_rx) = mpsc::channel::<Entry>();
+    let (postprocess_tx, postprocess_rx) = mpsc::channel::<PostProcessEvent>();
     thread::spawn(move || {
         postprocess::start_postprocess_thread(postprocess_rx)
     });
@@ -254,7 +251,6 @@ fn main() -> anyhow::Result<()> {
         .invoke_handler(tauri::generate_handler![
             get_input_devices,
             load_config, save_config,
-            regenerate_summary,
             get_windows,
             start_postprocess,
             call_recording_process,

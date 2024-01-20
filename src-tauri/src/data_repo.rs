@@ -2,8 +2,6 @@ use std::fs;
 use std::path::PathBuf;
 use anyhow::anyhow;
 use chrono::Local;
-use crate::postprocess::PostProcessor;
-use crate::config;
 use crate::entry::Entry;
 
 pub struct DataRepo {
@@ -35,15 +33,4 @@ pub fn get_app_data_dir() -> anyhow::Result<PathBuf> {
         .join("com.github.tokuhirom.meetnote2");
     fs::create_dir_all(&app_data_dir)?;
     Ok(app_data_dir)
-}
-
-pub(crate) fn regenerate_summary(vtt_path: &String, md_path: &String) -> anyhow::Result<()> {
-    log::info!("Regenerating summary from {} to {}", vtt_path, md_path);
-
-    let config = config::load_config()?;
-    let summarizer = config.build_summarizer()?;
-    let post_processor = PostProcessor::new(
-        summarizer
-    );
-    post_processor.summarize(vtt_path.as_str(), md_path)
 }

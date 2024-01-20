@@ -5,6 +5,7 @@
     import StatusIndicator from "./StatusIndicator.svelte";
     import {dialog} from "@tauri-apps/api";
     import {listen} from "@tauri-apps/api/event";
+    import {invoke} from "@tauri-apps/api/tauri";
 
     export let entry: Entry;
     export let recordingEntry: Entry | undefined;
@@ -24,8 +25,8 @@
 
     async function regenerateSummaryItem() {
         try {
-            await entry.regenerateSummary();
-            await entry.readSummary();
+            // TODO: これは非同期に実際の処理を実施する。つまり、処理が終わった後で emit するのが良い。と思う。
+            await invoke("start_postprocess", {dir: entry.path, command: "REGENERATE_SUMMARY"});
             entry = entry;
         } catch (e) {
             console.log(e);
@@ -63,10 +64,6 @@
 
     <hr/>
 
-    <StatusIndicator entry={entry} />
-
-    <hr/>
-
     {#if editMode}
         <form on:submit|preventDefault={saveItem}>
             <textarea cols="80" rows="40" bind:value={editingContent}></textarea>
@@ -79,11 +76,7 @@
             <div class="summary">{@html markdown(entry.summary)}</div>
         {:else}
             <div class="summary-wip">Summary not available...(WIP?)
-                <!--{#if await entry.hasMicWav()}-->
-<!--                    TODO: implement run postprocess button.-->
-<!--                {:else}-->
-<!--                    TODO: implement run postprocess button.-->
-<!--                {/if}-->
+                <StatusIndicator entry={entry} />
             </div>
         {/if}
     {/if}

@@ -6,6 +6,7 @@ use crate::screen_audio::ScreenAudioRecorder;
 use std::time::Instant;
 use mic_audio::MicAudioRecorder;
 use crate::entry::Entry;
+use crate::postprocess::PostProcessEvent;
 
 #[derive(Debug)]
 pub struct RecordingEvent {
@@ -93,7 +94,7 @@ impl RecordingProc {
     }
 }
 
-pub fn start_recording_process_ex(recording_rx: Receiver<RecordingEvent>, postprocess_tx: Sender<Entry>) {
+pub fn start_recording_process_ex(recording_rx: Receiver<RecordingEvent>, postprocess_tx: Sender<PostProcessEvent>) {
     let mut recording_proc = RecordingProc::new();
 
     log::info!("Ready to processing...");
@@ -114,7 +115,10 @@ pub fn start_recording_process_ex(recording_rx: Receiver<RecordingEvent>, postpr
                             // usually, under 50milli seconds.
                             log::info!("`stop` took: {:?}", duration);
 
-                            if let Err(err) = postprocess_tx.send(entry) {
+                            if let Err(err) = postprocess_tx.send(PostProcessEvent {
+                                command: "ALL".to_string(),
+                                entry
+                            }) {
                                 log::error!("Cannot start postprocess: {:?}", err);
                             }
                         }

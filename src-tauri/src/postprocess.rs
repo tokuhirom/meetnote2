@@ -14,6 +14,12 @@ use std::sync::RwLock;
 use serde::{Deserialize, Serialize};
 use crate::entry::Entry;
 
+#[derive(Debug)]
+pub struct PostProcessEvent {
+    pub command: String,
+    pub entry: Entry,
+}
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct PostProcessStatus {
     path: String,
@@ -40,14 +46,31 @@ impl PostProcessor {
         Box::new(PostProcessor { summarizer })
     }
 
-    pub fn postprocess(&self, entry: Entry, config: MeetNoteConfig) -> Result<()> {
-        let result = self.do_postprocess(entry, config);
-
+    fn clear_state(&self) {
         // clear the status
         *POSTPROCEDSS_STATE.write().unwrap() = PostProcessStatus {
             path: "".to_string(),
             message: "".to_string(),
         };
+    }
+
+    pub fn postprocess(&self, entry: Entry, config: MeetNoteConfig) -> Result<()> {
+        let result = self.do_postprocess(entry, config);
+        self.clear_state();
+        result
+    }
+
+    pub fn regenerate_summary(&self, entry: Entry) -> Result<()> {
+        let path = entry.dir.to_str().unwrap();
+        *POSTPROCEDSS_STATE.write().unwrap() = PostProcessStatus {
+            path: path.to_string(),
+            message: "Summarizing again".to_string(),
+        };
+        let summary_file = entry.md_path();
+        let vtt_file = entry.webvtt_path_string();
+        let result = self.summarize(vtt_file.as_str(), summary_file.as_str());
+
+        self.clear_state();
 
         result
     }
@@ -149,7 +172,8 @@ impl PostProcessor {
                 vtt_result
             ))
         };
-        log::info!("Requesting summarization: \"{}\"", vtt_file);
+        log::info!("Requesting summarization: vtt_file=\"{}\" summary_file=\"{}\"",
+            vtt_file, summary_file);
 
         let summary = self.summarizer.summarize(vtt_content.as_str())
             .map_err(|err| { anyhow!("Cannot postprocess summarization process {:?}: {:?}", vtt_file, err)})?;
@@ -257,22 +281,43 @@ fn merge_audio_files(entry: &Entry) -> anyhow::Result<String> {
     Ok(output_wave_file)
 }
 
-pub fn start_postprocess_thread(rx: Receiver<Entry>) {
+pub fn start_postprocess_thread(rx: Receiver<PostProcessEvent>) {
     loop {
         match rx.recv() {
-            Ok(entry) => {
+            Ok(event) => {
+                let command = event.command.as_str();
+                let entry = event.entry;
                 let config = load_config_or_default();
                 let summarizer = config.build_summarizer()
                     .unwrap();
                 let post_processor = PostProcessor::new(summarizer);
 
                 let path = entry.dir.to_str().unwrap().to_string();
-                match post_processor.postprocess(entry, config) {
-                    Ok(_) => {
-                        log::info!("Successfully processed: {}", path);
+                match command {
+                    "ALL" => {
+                        // run all postprocess for normal processing.
+                        match post_processor.postprocess(entry, config) {
+                            Ok(_) => {
+                                log::info!("Successfully processed: {}", path);
+                            }
+                            Err(e) => {
+                                log::error!("Cannot process {}: {:?}", path, e)
+                            }
+                        }
                     }
-                    Err(e) => {
-                        log::error!("Cannot process {}: {:?}", path, e)
+                    "REGENERATE_SUMMARY" => {
+                        // run all postprocess for normal processing.
+                        match post_processor.regenerate_summary(entry) {
+                            Ok(_) => {
+                                log::info!("Successfully processed: {}", path);
+                            }
+                            Err(e) => {
+                                log::error!("Cannot process {}: {:?}", path, e)
+                            }
+                        }
+                    }
+                    _ => {
+                        log::error!("Unknown command '{:?}' for path '{:?}'", command, path);
                     }
                 }
             }

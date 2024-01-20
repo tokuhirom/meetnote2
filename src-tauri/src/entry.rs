@@ -2,6 +2,7 @@ use std::path::PathBuf;
 use anyhow::anyhow;
 use glob::Paths;
 
+#[derive(Debug)]
 pub struct Entry {
     pub dir: PathBuf,
     pub basename: String,
