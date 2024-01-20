@@ -1,13 +1,10 @@
 <script lang="ts">
   import {onMount} from "svelte";
   import FileItem from "./lib/FileItem.svelte";
-  import NowRecordingIndicator from "./lib/NowRecordingIndicator.svelte";
-  import VttView from "./VttView.svelte";
   import {DataRepo} from "./lib/data_repo";
   import type {Entry} from "./lib/entry";
   import SummaryView from "./lib/SummaryView.svelte";
   import {invoke} from "@tauri-apps/api/tauri";
-  import PostProcessingIndicator from "./lib/PostProcessingIndicator.svelte";
   import type {PostProcessStatus} from "./lib/postprocess";
 
   let selectedEntry: Entry | undefined = undefined;
@@ -103,14 +100,9 @@
 <main class="container">
   <div class="main-container">
     <div class="files">
-      <NowRecordingIndicator isRecording={isRecording} />
-
-      {#if postProcessingStatus && postProcessingStatus.message !== ""}
-      <PostProcessingIndicator status={postProcessingStatus} />
-      {/if}
-
       {#each entries as entry}
-        <FileItem entry={entry} onSelectEntry={onSelectEntry} recordingEntry={recordingEntry} />
+        <FileItem entry={entry} onSelectEntry={onSelectEntry} recordingEntry={recordingEntry}
+                  postProcessingStatus={postProcessingStatus} />
       {/each}
     </div>
     <div class="vtt">
@@ -140,10 +132,5 @@
     flex: 1;
     overflow-y: auto;
     padding-left: 9px;
-  }
-
-  .separator {
-    margin-bottom: 10px;
-    /*border-bottom:#396cd8 1px solid;*/
   }
 </style>

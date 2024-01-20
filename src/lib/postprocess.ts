@@ -1,4 +1,4 @@
 export interface PostProcessStatus {
-    basename: string,
+    path: string,
     message: string,
 }

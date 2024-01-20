@@ -16,13 +16,13 @@ use crate::entry::Entry;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct PostProcessStatus {
-    basename: String,
+    path: String,
     message: String,
 }
 
 lazy_static! {
     static ref POSTPROCEDSS_STATE : RwLock<PostProcessStatus> = RwLock::new(PostProcessStatus {
-        basename: "".to_string(),
+        path: "".to_string(),
         message: "".to_string(),
     });
 }
@@ -41,18 +41,11 @@ impl PostProcessor {
     }
 
     pub fn postprocess(&self, entry: Entry, config: MeetNoteConfig) -> Result<()> {
-        let basename = entry.basename.clone();
-
-        *POSTPROCEDSS_STATE.write().unwrap() = PostProcessStatus {
-            basename: basename.to_string(),
-            message: "Starting postprocess".to_string(),
-        };
-
         let result = self.do_postprocess(entry, config);
 
         // clear the status
         *POSTPROCEDSS_STATE.write().unwrap() = PostProcessStatus {
-            basename: "".to_string(),
+            path: "".to_string(),
             message: "".to_string(),
         };
 
@@ -60,11 +53,11 @@ impl PostProcessor {
     }
 
     fn do_postprocess(&self, entry: Entry, config: MeetNoteConfig) -> Result<()>{
-        let basename = entry.basename.clone();
+        let path = entry.dir.to_str().unwrap();
 
         let set_post = |message: &str| {
             *POSTPROCEDSS_STATE.write().unwrap() = PostProcessStatus {
-                basename: basename.to_string(),
+                path: path.to_string(),
                 message: message.to_string(),
             };
         };
