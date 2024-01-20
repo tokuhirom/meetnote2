@@ -1,47 +1,68 @@
 <script lang="ts">
-    import {dialog} from "@tauri-apps/api";
-    import StatusIndicator from "./StatusIndicator.svelte";
     import SummaryBody from "./SummaryBody.svelte";
     import {Entry} from "./entry";
+    import VttView from "../VttView.svelte";
 
     export let onDelete: () => void;
 
     export let entry: Entry;
+    let pane = "summary";
 
-    async function regenerateSummaryItem() {
-        try {
-            await entry.regenerateSummary();
-            await entry.readSummary();
-            entry = entry;
-        } catch (e) {
-            console.log(e);
-            await dialog.message(`${e}`);
-        }
-    }
-
-    async function deleteItem() {
-        // TODO move to menu bar?
-        if (await dialog.confirm("Do you want to delete this file?")) {
-            await entry.remove();
-            onDelete();
-        }
+    function showPane(p) {
+        pane = p;
     }
 </script>
 
 <div>
-    <div>
-        <button on:click|preventDefault={regenerateSummaryItem}>Regenerate Summary</button>
-        <button on:click|preventDefault={deleteItem}>Delete</button>
+    <h2>{entry.title()}</h2>
+
+    <menu>
+        <li><button class:selected="{pane === 'summary'}"
+                    on:click={() => showPane("summary")}>Summary</button></li>
+        <li><button class:selected="{pane === 'script'}"
+                    on:click={() => showPane("script")}>Script</button></li>
+    </menu>
+
+    <div class="tab-content">
+        {#if pane==="summary"}
+            <SummaryBody entry={entry} onDelete={onDelete} />
+        {:else if pane === "script"}
+            <VttView entry={entry} />
+        {:else}
+            UNKNOWN PANE: {pane}
+        {/if}
     </div>
-
-    <hr/>
-
-    <StatusIndicator entry={entry} />
-
-    <hr/>
-
-    <SummaryBody entry={entry} />
 </div>
 
 <style>
+    button {
+        margin: 4px;
+        width: 180px;
+    }
+    menu {
+        display: flex;
+        flex-direction: row;
+        padding: 0;
+        margin: 0;
+    }
+    menu li {
+        list-style-type: none;
+        margin-right: 2px;
+        background-color: #a9a9a9;
+    }
+    menu button {
+        margin: 0;
+        border-radius: 2px 2px 0 0;
+        border-style: none;
+        border-top-width: 0;
+    }
+    menu button.selected {
+        background-color: #0f0f2f;
+    }
+    .tab-content {
+        background-color: #0f0f2f;
+        padding: 8px;
+        border-bottom-left-radius: 2px;
+        border-bottom-right-radius: 2px;
+    }
 </style>

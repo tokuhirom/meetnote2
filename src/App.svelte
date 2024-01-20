@@ -112,10 +112,7 @@
     </div>
     <div class="vtt">
       {#if selectedEntry}
-        <h2>{selectedEntry.title()}</h2>
         <SummaryView entry="{selectedEntry}" onDelete={onDelete} />
-        <hr class="separator" />
-        <VttView entry={selectedEntry} />
       {/if}
     </div>
   </div>

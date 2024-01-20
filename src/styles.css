@@ -13,32 +13,6 @@
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
 }
-body {
-  margin: 0;
-}
-
-.container {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: 0.75s;
-}
-
-.logo.tauri:hover {
-  filter: drop-shadow(0 0 2em #24c8db);
-}
-
-.row {
-  display: flex;
-  justify-content: center;
-}
 
 a {
   font-weight: 500;
@@ -81,10 +55,6 @@ button {
   outline: none;
 }
 
-#greet-input {
-  margin-right: 5px;
-}
-
 @media (prefers-color-scheme: dark) {
   :root {
     color: #f6f6f6;
@@ -103,15 +73,4 @@ button {
   button:active {
     background-color: #0f0f0f69;
   }
-}
-
-.summary h1 {
-  margin-block-start: 0;
-  margin-block-end: 0;
-  font-size: 1.2em;
-}
-.summary h2 {
-  margin-block-start: 0;
-  margin-block-end: 0;
-  font-size: 1.0em;
 }
