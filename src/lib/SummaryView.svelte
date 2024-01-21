@@ -3,7 +3,9 @@
     import {Entry} from "./entry";
     import VttView from "../VttView.svelte";
     import {listen} from "@tauri-apps/api/event";
+    import type {PostProcessStatus} from "./postprocess";
 
+    export let postProcessingStatus: PostProcessStatus | undefined;
     export let recordingEntry: Entry | undefined;
 
     export let entry: Entry;
@@ -34,7 +36,8 @@
 
     <div class="tab-content">
         {#if pane==="summary"}
-            <SummaryBody entry={entry} recordingEntry={recordingEntry} />
+            <SummaryBody entry={entry} recordingEntry={recordingEntry}
+                         postProcessingStatus={postProcessingStatus} />
         {:else if pane === "script"}
             <VttView entry={entry} />
         {:else}

@@ -6,9 +6,11 @@
     import {dialog} from "@tauri-apps/api";
     import {emit, listen} from "@tauri-apps/api/event";
     import {invoke} from "@tauri-apps/api/tauri";
+    import type {PostProcessStatus} from "./postprocess";
 
     export let entry: Entry;
     export let recordingEntry: Entry | undefined;
+    export let postProcessingStatus: PostProcessStatus | undefined;
 
     let editingContent : string | undefined = undefined;
     let editMode = false;
@@ -28,7 +30,6 @@
 
     async function regenerateSummaryItem() {
         try {
-            // TODO: これは非同期に実際の処理を実施する。つまり、処理が終わった後で emit するのが良い。と思う。
             await invoke("start_postprocess", {dir: entry.path, command: "REGENERATE_SUMMARY"});
             entry = entry;
         } catch (e) {
@@ -73,6 +74,9 @@
             <div class="summary">{@html markdown(entry.summary)}</div>
         {:else}
             <div class="summary-wip">Summary not available...(WIP?)
+                {#if postProcessingStatus && postProcessingStatus.path === entry.path}
+                    <div class="now-postprocessing">{postProcessingStatus.message}</div>
+                {/if}
                 <StatusIndicator entry={entry} />
             </div>
         {/if}
@@ -95,5 +99,8 @@
 
     .now-recording {
         color: red;
+    }
+    .now-postprocessing {
+        color: #396cd8;
     }
 </style>

@@ -136,7 +136,8 @@
     </div>
     <div class="vtt">
       {#if selectedEntry}
-        <SummaryView entry="{selectedEntry}" recordingEntry={recordingEntry} />
+        <SummaryView entry="{selectedEntry}" recordingEntry={recordingEntry}
+                     postProcessingStatus={postProcessingStatus} />
       {/if}
     </div>
   </div>
