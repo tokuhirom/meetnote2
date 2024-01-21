@@ -27,8 +27,10 @@
           console.log(`Running postprocess... ${entry.path}`);
           if (await entry.hasVTT()) {
             await invoke("start_postprocess", {dir: entry.path, command: "REGENERATE_SUMMARY"});
-          } else {
+          } else if (await entry.hasMicWav()) {
             await invoke("start_postprocess", {dir: entry.path, command: "ALL"});
+          } else {
+            console.error(`There's no .mic.wav or .vtt, retired post processing... ${entry.path}`);
           }
         }
       }
