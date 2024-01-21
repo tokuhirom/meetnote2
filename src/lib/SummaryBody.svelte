@@ -4,12 +4,11 @@
     import DOMPurify from "dompurify";
     import StatusIndicator from "./StatusIndicator.svelte";
     import {dialog} from "@tauri-apps/api";
-    import {listen} from "@tauri-apps/api/event";
+    import {emit, listen} from "@tauri-apps/api/event";
     import {invoke} from "@tauri-apps/api/tauri";
 
     export let entry: Entry;
     export let recordingEntry: Entry | undefined;
-    export let onDelete: () => void;
 
     let editingContent : string | undefined = undefined;
     let editMode = false;
@@ -42,7 +41,7 @@
         if (await dialog.confirm(`Do you want to delete this file?'\n\n${entry.summary?.replace(/([*#])+/, '').slice(0, 30)}`)) {
             await entry.remove();
             console.log("deleted file");
-            onDelete();
+            await emit("deleted_entry", entry.path);
         }
     }
     async function enterEditingMode() {

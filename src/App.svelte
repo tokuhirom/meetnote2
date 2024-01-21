@@ -6,6 +6,8 @@
   import SummaryView from "./lib/SummaryView.svelte";
   import {invoke} from "@tauri-apps/api/tauri";
   import type {PostProcessStatus} from "./lib/postprocess";
+  import {listen} from "@tauri-apps/api/event";
+  import type {Event} from "@tauri-apps/api/helpers/event";
 
   let selectedEntry: Entry | undefined = undefined;
   let entries: Entry[] = []
@@ -38,9 +40,13 @@
   });
 
   // todo: better polling logic
-  setInterval(async () => {
-    entries = await data_repo.list_entries();
-  }, 3000);
+  // list_entries の処理を変更する。ここは除去する。
+  // 削除時には、entries から一つのエントリーを除外するようにする。
+  // delete eventが必要。
+  // 録音開始時には、普通に entries の先頭に足せばOK
+  // setInterval(async () => {
+  //   entries = await data_repo.list_entries();
+  // }, 3000);
 
   setInterval(async () => {
     postProcessingStatus = await invoke("postprocess_status");
@@ -50,13 +56,18 @@
     selectedEntry = file;
   }
 
-  async function onDelete() {
-    entries = await data_repo.list_entries();
+  listen("deleted_entry", async (event: Event<String>) => {
+    let path = event.payload;
+    console.log(`deleted_entry: ${path}`)
+    entries = entries.filter((entry) => {
+      console.log(`deleted_entry: ${path} != ${entry.path}`)
+      return entry.path != path;
+    });
 
     if (entries.length > 0) {
       selectedEntry = entries[0];
     }
-  }
+  })
 
   interface WindowPattern {
     bundle_id: string,
@@ -113,7 +124,7 @@
     </div>
     <div class="vtt">
       {#if selectedEntry}
-        <SummaryView entry="{selectedEntry}" onDelete={onDelete} recordingEntry={recordingEntry} />
+        <SummaryView entry="{selectedEntry}" recordingEntry={recordingEntry} />
       {/if}
     </div>
   </div>
