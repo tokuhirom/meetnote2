@@ -25,7 +25,7 @@
 
     <div class="tab-content">
         {#if pane==="summary"}
-            <SummaryBody entry={entry} frecordingEntry={recordingEntry} />
+            <SummaryBody entry={entry} recordingEntry={recordingEntry} />
         {:else if pane === "script"}
             <VttView entry={entry} />
         {:else}
