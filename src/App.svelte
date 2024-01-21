@@ -25,7 +25,11 @@
       for (let entry of entries) {
         if (!await entry.hasMD()) {
           console.log(`Running postprocess... ${entry.path}`);
-          await invoke("start_postprocess", {dir: entry.path});
+          if (await entry.hasVTT()) {
+            await invoke("start_postprocess", {dir: entry.path, command: "REGENERATE_SUMMARY"});
+          } else {
+            await invoke("start_postprocess", {dir: entry.path, command: "ALL"});
+          }
         }
       }
     }, 0);
