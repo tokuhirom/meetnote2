@@ -1,8 +1,8 @@
 <script lang="ts">
-  import {afterUpdate, onMount} from "svelte";
-  import {invoke} from "@tauri-apps/api/tauri";
+  import {onMount} from "svelte";
   import type {Entry} from "./lib/entry";
   import type {Caption} from "./lib/webvtt";
+  import {listen} from "@tauri-apps/api/event";
 
   export let entry:  Entry;
   let mp3 : string | undefined = undefined;
@@ -16,6 +16,13 @@
   $: if (entry) {
     watchFile()
   }
+
+  listen("postprocessed_entry", (event) => {
+    let path = event.payload;
+    if (entry.path === path) {
+      entry = entry;
+    }
+  });
 
   async function watchFile() {
     console.log("watchFile");

@@ -6,7 +6,7 @@
   import SummaryView from "./lib/SummaryView.svelte";
   import {invoke} from "@tauri-apps/api/tauri";
   import type {PostProcessStatus} from "./lib/postprocess";
-  import {listen} from "@tauri-apps/api/event";
+  import {emit, listen} from "@tauri-apps/api/event";
   import type {Event} from "@tauri-apps/api/helpers/event";
 
   let selectedEntry: Entry | undefined = undefined;
@@ -39,17 +39,26 @@
     }, 0);
   });
 
-  // todo: better polling logic
-  // list_entries の処理を変更する。ここは除去する。
-  // 削除時には、entries から一つのエントリーを除外するようにする。
-  // delete eventが必要。
-  // 録音開始時には、普通に entries の先頭に足せばOK
-  // setInterval(async () => {
-  //   entries = await data_repo.list_entries();
-  // }, 3000);
-
   setInterval(async () => {
     postProcessingStatus = await invoke("postprocess_status");
+    console.log(`postProcessingStatus: ${JSON.stringify(postProcessingStatus)}`);
+
+    if (postProcessingStatus) {
+      if (postProcessingStatus.processed_paths.length > 0) {
+        for (let entry of entries) {
+          if (postProcessingStatus!!.processed_paths.includes(entry.path)) {
+            console.log(`post processed: ${entry.path}`);
+            await entry.readSummary(); // reload summary
+          }
+        }
+
+        for (let path of postProcessingStatus.processed_paths) {
+          // notice to VTT view, etc.
+          await emit("postprocessed_entry", path);
+        }
+      }
+    }
+    entries = entries; // notice to svelte.
   }, 1000);
 
   function onSelectEntry(file: Entry) {
@@ -89,6 +98,9 @@
         isRecording = true;
         recordingEntry = await data_repo.new_entry();
         await invoke("call_recording_process", {"command": "START", path: recordingEntry.path});
+        entries.unshift(recordingEntry);
+
+        entries = entries; // notice to svelte
       }
     } else {
       if (isRecording) {

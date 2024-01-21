@@ -2,11 +2,20 @@
     import SummaryBody from "./SummaryBody.svelte";
     import {Entry} from "./entry";
     import VttView from "../VttView.svelte";
+    import {listen} from "@tauri-apps/api/event";
 
     export let recordingEntry: Entry | undefined;
 
     export let entry: Entry;
     let pane = "summary";
+
+    listen("postprocessed_entry", (event) => {
+        let path = event.payload;
+        if (entry.path === path) {
+            entry.readSummary(); // reload
+            entry = entry;
+        }
+    });
 
     function showPane(p) {
         pane = p;

@@ -22,19 +22,26 @@ pub struct PostProcessEvent {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct PostProcessStatus {
+    // now processing path
     path: String,
+    // current status of the 'path' processing
     message: String,
+    // proceeded paths. once it's proceeded, it's cleared.
+    processed_paths: Vec<String>,
 }
 
 lazy_static! {
     static ref POSTPROCEDSS_STATE : RwLock<PostProcessStatus> = RwLock::new(PostProcessStatus {
         path: "".to_string(),
         message: "".to_string(),
+        processed_paths: Vec::new(),
     });
 }
 
 pub fn postprocess_status() -> PostProcessStatus {
-    POSTPROCEDSS_STATE.read().unwrap().clone()
+    let result = POSTPROCEDSS_STATE.read().unwrap().clone();
+    POSTPROCEDSS_STATE.write().unwrap().processed_paths.clear();
+    return result;
 }
 
 pub struct PostProcessor {
@@ -48,65 +55,74 @@ impl PostProcessor {
 
     fn clear_state(&self) {
         // clear the status
-        *POSTPROCEDSS_STATE.write().unwrap() = PostProcessStatus {
-            path: "".to_string(),
-            message: "".to_string(),
-        };
+        let mut state = POSTPROCEDSS_STATE.write().unwrap();
+        state.message = "".to_string();
+        state.path = "".to_string();
+    }
+
+    fn set_state_path(&self, path: String) {
+        let mut state = POSTPROCEDSS_STATE.write().unwrap();
+        state.path = path;
+    }
+
+    fn set_state_message(&self, message: &str) {
+        let mut state = POSTPROCEDSS_STATE.write().unwrap();
+        state.message = message.to_string();
+    }
+
+    fn push_postprocesssed_entries(&self, entry: &Entry) {
+        let mut state = POSTPROCEDSS_STATE.write().unwrap();
+        state.processed_paths.push(entry.dir.to_str().unwrap().to_string());
     }
 
     pub fn postprocess(&self, entry: Entry, config: MeetNoteConfig) -> Result<()> {
-        let result = self.do_postprocess(entry, config);
+        let path = entry.dir.to_str().unwrap();
+        self.set_state_path(path.to_string());
+
+        let result = self.do_postprocess(&entry, config);
         self.clear_state();
+        self.push_postprocesssed_entries(&entry);
         result
     }
 
     pub fn regenerate_summary(&self, entry: Entry) -> Result<()> {
         let path = entry.dir.to_str().unwrap();
-        *POSTPROCEDSS_STATE.write().unwrap() = PostProcessStatus {
-            path: path.to_string(),
-            message: "Summarizing again".to_string(),
-        };
+        self.set_state_path(path.to_string());
+        self.set_state_message("Summarizing again");
+
         let summary_file = entry.md_path();
         let vtt_file = entry.webvtt_path_string();
         let result = self.summarize(vtt_file.as_str(), summary_file.as_str());
 
         self.clear_state();
+        self.push_postprocesssed_entries(&entry);
 
         result
     }
 
-    fn do_postprocess(&self, entry: Entry, config: MeetNoteConfig) -> Result<()>{
-        let path = entry.dir.to_str().unwrap();
-
-        let set_post = |message: &str| {
-            *POSTPROCEDSS_STATE.write().unwrap() = PostProcessStatus {
-                path: path.to_string(),
-                message: message.to_string(),
-            };
-        };
-
-        set_post("Merging wave files");
+    fn do_postprocess(&self, entry: &Entry, config: MeetNoteConfig) -> Result<()>{
+        self.set_state_message("Merging wave files");
         let merged_wav_file = merge_audio_files(&entry)?;
 
         // convert to MP3
-        set_post("Convert to MP3");
+        self.set_state_message("Convert to MP3");
         let mp3_file = entry.mp3_path_string();
         if let Err(e) = mp3::convert_to_mp3(&merged_wav_file, &mp3_file) {
             return Err(anyhow!("Cannot convert to mp3({} to {}): {:?}", merged_wav_file, mp3_file, e))
         }
 
         // convert to VTT
-        set_post("Transcribing");
+        self.set_state_message("Transcribing");
         let vtt_file = entry.webvtt_path_string();
         self.transcribe(&config, &merged_wav_file, &vtt_file)?;
 
         // Summarize VTT
-        set_post("Summarizing");
+        self.set_state_message("Summarizing");
         let summary_file = entry.md_path();
         self.summarize(vtt_file.as_str(), summary_file.as_str())?;
 
         // cleanup files
-        set_post("Cleanup");
+        self.set_state_message("Cleanup");
         self.cleanup(&entry)?;
 
         Ok(())
