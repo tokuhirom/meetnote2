@@ -22,6 +22,10 @@
         console.log("Called do_delete_entry");
         deleteItem();
     });
+    listen("do_regenerate_summary", async () => {
+        console.log("Received regenerate_summary");
+        await regenerateSummaryItem();
+    })
 
     async function regenerateSummaryItem() {
         try {
@@ -58,12 +62,6 @@
 </script>
 
 <div>
-    <div>
-        <button on:click|preventDefault={regenerateSummaryItem}>Regenerate Summary</button>
-    </div>
-
-    <hr/>
-
     {#if editMode}
         <form on:submit|preventDefault={saveItem}>
             <textarea cols="80" rows="40" bind:value={editingContent}></textarea>

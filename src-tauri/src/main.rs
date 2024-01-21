@@ -148,9 +148,10 @@ fn main() -> anyhow::Result<()> {
     let file_menu = Submenu::new(
         "File",
         Menu::new()
-            .add_item(CustomMenuItem::new("delete_entry", "Delete entry"))
             .add_item(CustomMenuItem::new("edit_summary", "Edit summary")
                 .accelerator("Command+e"))
+            .add_item(CustomMenuItem::new("regenerate_summary", "Regenerate summary"))
+            .add_item(CustomMenuItem::new("delete_entry", "Delete entry"))
     );
     let edit_menu = Menu::new()
         .add_native_item(MenuItem::Undo)
@@ -219,6 +220,11 @@ fn main() -> anyhow::Result<()> {
                 "edit_summary" => {
                     log::info!("Start editing summary");
                     if let Err(err) = event.window().emit("do_edit_summary", "DUMMY".to_string()) {
+                        log::error!("Cannot emit message: {:?}", err);
+                    }
+                }
+                "regenerate_summary" => {
+                    if let Err(err) = event.window().emit("do_regenerate_summary", "DUMMY".to_string()) {
                         log::error!("Cannot emit message: {:?}", err);
                     }
                 }
