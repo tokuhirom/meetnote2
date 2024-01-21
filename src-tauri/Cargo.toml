@@ -45,7 +45,7 @@ config = "0.13.4"
 time = "0.3.31"
 tempfile = { version = "3.9.0", features = [] }
 uuid = { version = "1.7.0", features = ["v4"] }
-regex = "1.10.2"
+regex = "1.10.3"
 base64 = "0.21.7"
 
 lindera-tokenizer = { version = "0.27.2", features = ["ipadic"] }
