@@ -1,7 +1,7 @@
 <script lang="ts">
   import {onMount} from "svelte";
-  import type {Entry} from "./lib/entry";
-  import type {Caption} from "./lib/webvtt";
+  import type {Entry} from "./entry";
+  import type {Caption} from "./webvtt";
   import {listen} from "@tauri-apps/api/event";
 
   export let entry:  Entry;

@@ -1,7 +1,7 @@
 <script lang="ts">
     import SummaryBody from "./SummaryBody.svelte";
     import {Entry} from "./entry";
-    import VttView from "../VttView.svelte";
+    import VttView from "./VttView.svelte";
     import {listen} from "@tauri-apps/api/event";
     import type {PostProcessStatus} from "./postprocess";
 
