@@ -26,7 +26,11 @@
 - だいぶ見た目が整理されてきた。
 - [ ] 編集がそのままできるようにしたい。
   - CodeMirror とか?
+  - milkdown?
 - [ ] 録音時点からミックスすることに挑戦してもいいかも。。ただし、別にそれで使い勝手が向上するわけではない。
+- [ ] Zoom を全画面にしたときに zoom ディテクションが動いてない
+  - ウィンドウタイトルが変わってしまうため
+  - `kAudioDevicePropertyDeviceIsRunningSomewhere` を確認する必要あり。
 
 後処理
 - convert to MP3

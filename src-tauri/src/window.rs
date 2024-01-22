@@ -20,9 +20,16 @@ pub fn get_windows() -> Vec<WindowInfo> {
     let current = SCShareableContent::current();
     let mut result = Vec::new();
     for window in current.windows {
-        if !window.is_active {
-            continue
-        }
+        // When a window is displayed on a different screen, the is_active flag becomes false.
+        // Therefore, you should not filter using this flag. This is because, during meetings,
+        // there is a possibility that windows from applications like Zoom are being displayed
+        // on a separate screen.
+        // https://developer.apple.com/documentation/screencapturekit/scwindow/4110525-active?language=objc
+        //
+        // if !window.is_active {
+        //     continue
+        // }
+
         if let Some(title) = window.title {
             if let Some(app) = window.owning_application {
                 if let Some(bundle_id) = app.bundle_identifier {
