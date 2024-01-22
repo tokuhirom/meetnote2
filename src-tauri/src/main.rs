@@ -151,7 +151,8 @@ fn main() -> anyhow::Result<()> {
             .add_item(CustomMenuItem::new("edit_summary", "Edit summary")
                 .accelerator("Command+e"))
             .add_item(CustomMenuItem::new("regenerate_summary", "Regenerate summary"))
-            .add_item(CustomMenuItem::new("delete_entry", "Delete entry"))
+            .add_item(CustomMenuItem::new("delete_entry", "Delete entry")
+                .accelerator("Command+d"))
     );
     let edit_menu = Menu::new()
         .add_native_item(MenuItem::Undo)
