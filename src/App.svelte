@@ -41,7 +41,7 @@
 
   setInterval(async () => {
     postProcessingStatus = await invoke("postprocess_status");
-    console.log(`postProcessingStatus: ${JSON.stringify(postProcessingStatus)}`);
+    // console.log(`postProcessingStatus: ${JSON.stringify(postProcessingStatus)}`);
 
     if (postProcessingStatus) {
       if (postProcessingStatus.processed_paths.length > 0) {
@@ -69,7 +69,6 @@
     let path = event.payload;
     console.log(`deleted_entry: ${path}`)
     entries = entries.filter((entry) => {
-      console.log(`deleted_entry: ${path} != ${entry.path}`)
       return entry.path != path;
     });
 
