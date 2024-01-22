@@ -56,7 +56,7 @@
 <main class="container">
   {#if mp3}
   <audio controls>
-    <source src="{mp3}">
+    <source src="{mp3}" type="audio/mp3">
     Your browser does not support the audio tag.
   </audio>
   {/if}
