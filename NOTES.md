@@ -17,12 +17,12 @@
 - [x] 後処理やりなおすくん、JS側に実装しなおす
   - これはやったほうがいいな。
   - でもこれ、実際のところ、token 長すぎるやつが結構違う気はする
-- [ ] 長すぎる場合は summarize を分離する。
+- [x] 長すぎる場合は summarize を分離する。
   - tiktoken?
 - postprocess の状態を UI で表現したい
   - そうするなら、postprocess 用の worker thread が必要か?
   - postprocess まわり、Entry object も保持したほうが良いかもしれない。
-- [ ] Regenerate summary も遅すぎてUIがスタックする
+- [x] Regenerate summary も遅すぎてUIがスタックする
 - だいぶ見た目が整理されてきた。
 
 後処理
