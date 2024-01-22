@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {onMount} from "svelte";
+  import {onDestroy, onMount} from "svelte";
   import FileItem from "./lib/FileItem.svelte";
   import {DataRepo} from "./lib/data_repo";
   import type {Entry} from "./lib/entry";
@@ -7,7 +7,8 @@
   import {invoke} from "@tauri-apps/api/tauri";
   import type {PostProcessStatus} from "./lib/postprocess";
   import {emit, listen} from "@tauri-apps/api/event";
-  import type {Event} from "@tauri-apps/api/helpers/event";
+  import type {Event, UnlistenFn} from "@tauri-apps/api/helpers/event";
+  import {dialog} from "@tauri-apps/api";
 
   let selectedEntry: Entry | undefined = undefined;
   let entries: Entry[] = []
@@ -122,6 +123,30 @@
       }
     }
     return false;
+  }
+
+  let deleteListener: UnlistenFn | undefined = undefined;
+  onMount(async () => {
+    deleteListener = await listen("do_delete_entry", () => {
+      console.log("Called do_delete_entry");
+      deleteItem();
+    });
+  });
+  onDestroy(() => {
+    if (deleteListener) {
+      deleteListener();
+    }
+  })
+
+  async function deleteItem() {
+    if (selectedEntry) {
+      let entry = selectedEntry;
+      if (await dialog.confirm(`Do you want to delete this file?'\n\n${entry.summary?.replace(/([*#])+/, '').slice(0, 30)}`)) {
+        await entry.remove();
+        console.log("deleted file");
+        await emit("deleted_entry", entry.path);
+      }
+    }
   }
 </script>
 

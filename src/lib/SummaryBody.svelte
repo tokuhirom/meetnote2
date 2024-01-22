@@ -19,10 +19,6 @@
         console.log("Called do_edit_summary");
         enterEditingMode();
     });
-    listen("do_delete_entry", () => {
-        console.log("Called do_delete_entry");
-        deleteItem();
-    });
     listen("do_regenerate_summary", async () => {
         console.log("Received regenerate_summary");
         await regenerateSummaryItem();
@@ -38,13 +34,6 @@
         }
     }
 
-    async function deleteItem() {
-        if (await dialog.confirm(`Do you want to delete this file?'\n\n${entry.summary?.replace(/([*#])+/, '').slice(0, 30)}`)) {
-            await entry.remove();
-            console.log("deleted file");
-            await emit("deleted_entry", entry.path);
-        }
-    }
     async function enterEditingMode() {
         editMode = true
         editingContent = entry.summary;
