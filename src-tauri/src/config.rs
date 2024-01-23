@@ -1,4 +1,3 @@
-use std::env;
 use std::path::PathBuf;
 use std::fs::{File, rename, write};
 use std::io::Read;
@@ -104,14 +103,9 @@ impl Default for MeetNoteConfig {
     }
 }
 
-fn config_dir() -> Option<PathBuf> {
-    // TODO use dirs::config_dir
-    env::var_os("XDG_CONFIG_HOME").and_then(dirs_sys::is_absolute_path)
-        .or_else(|| dirs::home_dir().map(|h| h.join(".config")))
-}
-
 pub fn get_config_path() -> anyhow::Result<PathBuf> {
-    let config_dir = config_dir().ok_or(
+    let config_dir = dirs::config_dir()
+        .ok_or(
         anyhow!("Cannot get configuration directory")
     )?;
     Ok(config_dir.join("meetnote2/config.json"))
@@ -158,7 +152,7 @@ pub fn save_config(config: &MeetNoteConfig) -> anyhow::Result<()> {
     let config_path = get_config_path()?;
     let tmp_path = config_path.with_extension("tmp");
 
-    log::info!("Saving configuration: {:?}", config);
+    log::info!("Saving configuration: {:?} to {:?}", config, config_path);
 
     // Convert the config data to JSON
     let config_data = serde_json::to_string_pretty(config)?;
