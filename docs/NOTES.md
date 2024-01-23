@@ -1,5 +1,15 @@
 # NOTES
 
+This is a successor of the [MeetNote](https://github.com/tokuhirom/meetnote).
+Fully rewritten by Rust.
+
+This application is built top of `Tauri + Svelte + Typescript`.
+
+How do I build this?
+
+    bun install
+    bun run tauri dev
+
 - サンプルがある
 - ディレクトリ構造変えたい
 - `~/Library/Application Support/meetnote2/%Y%m%d/%Y%m%d%H%M%S/` にファイルを配置する

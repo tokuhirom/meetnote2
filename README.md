@@ -1,9 +1,43 @@
 # MeetNote2
+Certainly! Here's the English version of the revised README focusing on the application's user-friendly features:
 
-This is a successor of the [MeetNote](https://github.com/tokuhirom/meetnote).
-Fully rewritten by Rust.
+---
 
-This application is built top of `Tauri + Svelte + Typescript`.
+# Zoom Auto-Recording & Transcription App
+
+This application is a powerful tool for automatically recording Zoom meetings and simplifying the documentation and organization of important meeting content. Recorded content is saved as MP3 files, and AI technology is utilized for transcription and summarization. This automation significantly saves time and effort in creating meeting minutes.
+
+## Key Features
+
+- **Automatic Recording**: Automatically starts recording when a Zoom meeting begins.
+- **MP3 File Saving**: Recorded audio is saved in the user-friendly MP3 format.
+- **AI-Powered Transcription**: Choose between `whisper.cpp` or `OpenAI API` for converting recorded content into text.
+- **AI-Powered Summarization**: Offers a summarization feature using either `TF-IDF algorithm` or `OpenAI API`.
+
+## How It Works
+
+- The recording starts automatically with the commencement of a Zoom meeting.
+- Once the recording ends, an MP3 file is generated, and the selected AI technology transcribes and summarizes the content.
+
+## Usage Scenarios
+
+- **Meeting Minutes Creation**: Automates detailed record-keeping of meetings with recording and transcription capabilities.
+- **Summary Creation**: Useful for busy professionals, providing quick access to the key points of meetings through summarization.
+
+This application aims to enhance meeting efficiency and ease the management of records. In business environments with frequent Zoom meetings, this app proves to be an invaluable tool.
+
+## Usage guide
+
+### Installation
+
+Download the dmg file from github releases(TODO: add link here) 
+
+### Permissions
+
+This application uses ScreenCaptureKit API to detect window names.
+It requires accessibility permission. Please allow it.
+
+TODO: add image here.
 
 ## Required Environment
 
@@ -16,33 +50,7 @@ This application is built top of `Tauri + Svelte + Typescript`.
  * `xcode` CLI is required to build `whisper.cpp`
    * `xcode-select --install`
 
-## Permissions
-
-This application uses ScreenCaptureKit API to detect window names.
-It requires accessibility permission. Please allow it.
-
-## Features
-
- * Detect window names to start the recording.
- * Record audio to wave file.
-   * Convert it to mp3 file automatically.
-   * Transcribe it to the text using whisper.cpp.
-   * Summarize it with OpenAI's API
- * Edit summary file
- * Show VTT file
- * Play mp3 file
- * use ScreenCaptureKit API
- * Summarize it in the local machine.
-
-## Future plan
-
- * Reduce external dependencies
-   * ffmpeg, etc.
-
-## How do I build this?
-
-    bun install
-    bun run tauri dev
+(Yes. This is too difficult for non-engineers. I want to bundle these in the future release...)
 
 ## LICENSE
 
