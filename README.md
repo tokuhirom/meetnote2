@@ -1,9 +1,4 @@
-# MeetNote2
-Certainly! Here's the English version of the revised README focusing on the application's user-friendly features:
-
----
-
-# Zoom Auto-Recording & Transcription App
+# MeetNote2 - Zoom Auto-Recording & Transcription App
 
 This application is a powerful tool for automatically recording Zoom meetings and simplifying the documentation and organization of important meeting content. Recorded content is saved as MP3 files, and AI technology is utilized for transcription and summarization. This automation significantly saves time and effort in creating meeting minutes.
 
