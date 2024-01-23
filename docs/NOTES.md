@@ -28,9 +28,11 @@
   - CodeMirror とか?
   - milkdown?
 - [ ] 録音時点からミックスすることに挑戦してもいいかも。。ただし、別にそれで使い勝手が向上するわけではない。
-- [ ] Zoom を全画面にしたときに zoom ディテクションが動いてない
+- [x] Zoom を全画面にしたときに zoom ディテクションが動いてない
   - ウィンドウタイトルが変わってしまうため
   - `kAudioDevicePropertyDeviceIsRunningSomewhere` を確認する必要あり。
+  - active じゃない window になってただけだった
+- [ ] 設定画面で、summarizer, transcriber を選べるようにしたい
 
 後処理
 - convert to MP3
