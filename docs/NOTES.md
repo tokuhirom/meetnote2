@@ -40,4 +40,3 @@
 - convert to VTT
 - Summarize VTT
 - cleanup files
-  

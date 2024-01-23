@@ -1,7 +1,7 @@
 <script lang="ts">
   import {onMount} from "svelte";
   import type {Entry} from "./entry";
-  import type {Caption} from "./webvtt";
+  import {type Caption, compactWebVtt} from "./webvtt";
   import {listen} from "@tauri-apps/api/event";
 
   export let entry:  Entry;
@@ -27,7 +27,7 @@
   async function watchFile() {
     console.log("watchFile");
     try {
-      logs = await entry.readVTT();
+      logs = compactWebVtt(await entry.readVTT());
     } catch (e) {
       logs = [];
       console.error(`Cannot get VTT: ${e}`);

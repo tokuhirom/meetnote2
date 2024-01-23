@@ -47,3 +47,21 @@ export function parseWebVTT(webvtt: string): Caption[] {
 
     return captions;
 }
+
+export function compactWebVtt(captions: Caption[]): Caption[] {
+    const compactedCaptions: Caption[] = [];
+    let previousCaption: Caption | null = null;
+
+    for (const caption of captions) {
+        if (previousCaption && caption.text === previousCaption.text) {
+            // Update only the end time if the text is the same
+            previousCaption.endTime = caption.endTime;
+        } else {
+            // Add a new caption if the text is different
+            previousCaption = new Caption(caption.startTime, caption.endTime, caption.text);
+            compactedCaptions.push(previousCaption);
+        }
+    }
+
+    return compactedCaptions;
+}
