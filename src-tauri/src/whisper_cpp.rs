@@ -51,7 +51,7 @@ fn run_whisper(version_tag: &str, model: &str, language: &str, in_file: &str, ou
             .arg(whisper_dir.as_os_str())
             .output()?;
         if !output.status.success() {
-            return Err(anyhow!("Cannot download model: {}", String::from_utf8_lossy(&output.stderr)));
+            return Err(anyhow!("Cannot clone repository: {}", String::from_utf8_lossy(&output.stderr)));
         }
     } else {
         {

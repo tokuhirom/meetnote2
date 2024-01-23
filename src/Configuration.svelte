@@ -20,11 +20,19 @@
   let config : {
     openai_api_token: string | undefined,
     target_device: string | undefined,
-    window_patterns: {bundle_id: string, window_title: string}[]
+    whisper_model: string,
+    window_patterns: {bundle_id: string, window_title: string}[],
+    transcriber_type: "WhisperCppTranscriberType" | "OpenAITranscriberType",
+    summarizer_type: "TFIDFSummarizerType" | "OpenAISummarizerType",
+    language: string,
   } = {
     openai_api_token: undefined,
     target_device: undefined,
-    window_patterns: []
+    whisper_model: "medium",
+    window_patterns: [],
+    transcriber_type: "WhisperCppTranscriberType",
+    summarizer_type: "TFIDFSummarizerType",
+    language: "ja",
   };
   let devices:  string[] = [];
   let windows: WindowInfo[] = [];
@@ -77,7 +85,7 @@
         <input type="text" bind:value={config.openai_api_token}>
       </div>
       <div>
-        Target device:
+        Target input device:
         <select bind:value={config.target_device}>
           {#each devices as device}
             <option value={device}>{device}</option>
@@ -128,6 +136,47 @@
         </tr>
       {/each}
       </table>
+    </div>
+    <div class="pane">
+      <h3>Transcriber</h3>
+      <select bind:value={config.transcriber_type}>
+        <option value="WhisperCppTranscriberType">whisper.cpp(Local) (Recommended)</option>
+        <option value="OpenAITranscriberType">OpenAI API</option>
+      </select>
+
+      {#if config.transcriber_type==="WhisperCppTranscriberType"}
+      <table>
+        <tr>
+          <th>
+            Whisper's model type
+          </th>
+          <td>
+            <select bind:value={config.whisper_model}>
+              {#each ["tiny", "base", "small", "medium", "large-v3"] as model}
+                <option value={model}>{model}</option>
+              {/each}
+            </select>
+          </td>
+        </tr>
+      </table>
+      {/if}
+
+      <p>whisper.cpp is recommended. Since OpenAI API is not available to use for large audio file.</p>
+    </div>
+    <div class="pane">
+      <h3>Summarizer</h3>
+      <select bind:value={config.summarizer_type}>
+        <option value="TFIDFSummarizerType">TF-IDF(Local)</option>
+        <option value="OpenAISummarizerType">OpenAI API</option>
+      </select>
+    </div>
+    <div class="pane">
+      <h3>Language</h3>
+      <select bind:value={config.language}>
+        <option value="auto">auto</option>
+        <option value="ja">ja</option>
+        <option value="en">en</option>
+      </select>
     </div>
     <button type="submit">Save</button>
   </form>

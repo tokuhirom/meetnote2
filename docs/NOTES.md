@@ -33,6 +33,7 @@
   - `kAudioDevicePropertyDeviceIsRunningSomewhere` を確認する必要あり。
   - active じゃない window になってただけだった
 - [ ] 設定画面で、summarizer, transcriber を選べるようにしたい
+- [ ] use dirs::config_dir
 
 後処理
 - convert to MP3
