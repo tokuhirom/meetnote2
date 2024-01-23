@@ -3920,18 +3920,18 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
 name = "screencapturekit"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e1b1b66f079b93a10b00387b63a38ffe0d6f60f9835cc22debd3ac6f6a73125"
+checksum = "d94d97394f2d3c8af5fe04ec1c38527bcc323bb2286a74fa5d90b83268a54c61"
 dependencies = [
  "screencapturekit-sys",
 ]
 
 [[package]]
 name = "screencapturekit-sys"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e9eb8259fe214f39141070cd7380e28ded03253b8ff2d62db382d9c2967a547"
+checksum = "a3610fd202acc566df570649361c384cf14c4b642148db00ac9398ef97facfff"
 dependencies = [
  "block",
  "dispatch",
