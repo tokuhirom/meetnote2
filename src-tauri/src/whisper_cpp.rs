@@ -137,7 +137,8 @@ fn run_whisper(version_tag: &str, model: &str, language: &str, in_file: &str, ou
         ));
     }
 
-    log::info!("[whisper.cpp] Start transcribing... {} to {}", in_file, out_file);
+    log::info!("[whisper.cpp] Start transcribing... {} to {}(model={}, version={})",
+        in_file, out_file, model, version_tag);
     let start = Instant::now();
     let output = match Command::new("./main")
         .args([

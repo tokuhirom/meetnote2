@@ -143,7 +143,8 @@ impl PostProcessor {
         let transcriber: Box<dyn Transcriber> = match config.transcriber_type {
             TranscriberType::WhisperCppTranscriberType => {
                 Box::new(WhisperTranscriber::new(
-                    "v1.5.4".to_string(), config.whisper_model.to_string(), config.language.to_string(),
+                    // 1.5.2 to 1.5.4 are not works.
+                    "v1.5.1".to_string(), config.whisper_model.to_string(), config.language.to_string(),
                 ))
             }
             TranscriberType::OpenAITranscriberType => {
