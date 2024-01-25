@@ -29,7 +29,7 @@ use std::sync::mpsc::Sender;
 use std::thread;
 use anyhow::anyhow;
 use simplelog::ColorChoice;
-use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowBuilder, SystemTray, SystemTrayMenu, Manager, AboutMetadata};
+use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowBuilder, Manager, AboutMetadata};
 use crate::config::MeetNoteConfig;
 use crate::data_repo::DataRepo;
 use crate::entry::Entry;
@@ -180,10 +180,6 @@ fn main() -> anyhow::Result<()> {
         .add_submenu(window_menu)
         .add_submenu(misc_menu);
 
-    let tray_menu = SystemTrayMenu::new();
-    let tray = SystemTray::new()
-        .with_menu(tray_menu);
-
     let (postprocess_tx, postprocess_rx) = mpsc::channel::<PostProcessEvent>();
     thread::spawn(move || {
         postprocess::start_postprocess_thread(postprocess_rx)
@@ -203,7 +199,6 @@ fn main() -> anyhow::Result<()> {
             postprocess_tx,
             data_repo,
         })
-        .system_tray(tray)
         .menu(menu)
         .setup(|app| {
             let window = WindowBuilder::new(
