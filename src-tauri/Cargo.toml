@@ -30,7 +30,7 @@ anyhow = { version = "1.0.79", features = [] }
 
 reqwest = { version = "0.11.23", features = ["blocking", "multipart", "json"] }
 
-chrono = { version = "0.4.32", features = [] }
+chrono = { version = "0.4.33", features = [] }
 
 # sound
 cpal = "0.15.2"
