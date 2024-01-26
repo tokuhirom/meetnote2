@@ -16,7 +16,7 @@ tauri-build = { version = "1.5", features = [] }
 tauri = { version = "1.5", features = [ "dialog-message", "dialog-confirm", "path-all", "fs-all", "system-tray", "window-create", "window-close", "notification-all", "shell-open"] }
 
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0.111"
+serde_json = "1.0.112"
 
 dirs = "5.0.1"
 dirs-sys = "0.4.1"
