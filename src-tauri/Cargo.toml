@@ -43,7 +43,7 @@ core-graphics = "0.23.1"
 screencapturekit = "0.2.5"
 config = "0.14.0"
 time = "0.3.34"
-tempfile = { version = "3.9.0", features = [] }
+tempfile = { version = "3.10.0", features = [] }
 uuid = { version = "1.7.0", features = ["v4"] }
 regex = "1.10.3"
 base64 = "0.21.7"
