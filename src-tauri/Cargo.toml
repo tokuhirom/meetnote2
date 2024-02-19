@@ -26,7 +26,7 @@ walkdir = "2.4.0"
 log = { version = "0.4.20", features = [] }
 simplelog = "0.12.1"
 
-anyhow = { version = "1.0.79", features = [] }
+anyhow = { version = "1.0.80", features = [] }
 
 reqwest = { version = "0.11.24", features = ["blocking", "multipart", "json"] }
 
