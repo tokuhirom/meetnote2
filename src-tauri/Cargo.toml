@@ -49,7 +49,7 @@ regex = "1.10.3"
 base64 = "0.21.7"
 
 lindera-tokenizer = { version = "0.27.2", features = ["ipadic"] }
-lindera-analyzer = { version = "0.27.2", features = ["ipadic", "ipadic-filter"] }
+lindera-analyzer = { version = "0.28.0", features = ["ipadic", "ipadic-filter"] }
 lindera-dictionary = "0.27.2"
 lindera-core = "0.27.2"
 lazy_static = "1.4.0"
