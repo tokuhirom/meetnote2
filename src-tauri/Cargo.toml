@@ -21,7 +21,7 @@ serde_json = "1.0.114"
 dirs = "5.0.1"
 dirs-sys = "0.4.1"
 
-walkdir = "2.4.0"
+walkdir = "2.5.0"
 
 log = { version = "0.4.21", features = [] }
 simplelog = "0.12.1"
