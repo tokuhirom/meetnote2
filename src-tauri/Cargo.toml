@@ -46,7 +46,7 @@ time = "0.3.34"
 tempfile = { version = "3.10.1", features = [] }
 uuid = { version = "1.7.0", features = ["v4"] }
 regex = "1.10.3"
-base64 = "0.21.7"
+base64 = "0.22.0"
 
 lindera-tokenizer = { version = "0.28.0", features = ["ipadic"] }
 lindera-analyzer = { version = "0.28.0", features = ["ipadic", "ipadic-filter"] }
