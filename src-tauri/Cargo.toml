@@ -24,7 +24,7 @@ dirs-sys = "0.4.1"
 walkdir = "2.5.0"
 
 log = { version = "0.4.21", features = [] }
-simplelog = "0.12.1"
+simplelog = "0.12.2"
 
 anyhow = { version = "1.0.80", features = [] }
 
