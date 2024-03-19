@@ -44,7 +44,7 @@ screencapturekit = "0.2.6"
 config = "0.14.0"
 time = "0.3.34"
 tempfile = { version = "3.10.1", features = [] }
-uuid = { version = "1.7.0", features = ["v4"] }
+uuid = { version = "1.8.0", features = ["v4"] }
 regex = "1.10.3"
 base64 = "0.22.0"
 
