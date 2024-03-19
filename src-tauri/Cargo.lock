@@ -2423,13 +2423,13 @@ dependencies = [
  "byteorder",
  "encoding",
  "kanaria",
- "lindera-cc-cedict-builder 0.29.0",
- "lindera-core 0.29.0",
- "lindera-dictionary 0.29.0",
- "lindera-ipadic-builder 0.29.0",
- "lindera-ko-dic-builder 0.29.0",
+ "lindera-cc-cedict-builder",
+ "lindera-core",
+ "lindera-dictionary",
+ "lindera-ipadic-builder",
+ "lindera-ko-dic-builder",
  "lindera-tokenizer",
- "lindera-unidic-builder 0.29.0",
+ "lindera-unidic-builder",
  "once_cell",
  "regex",
  "serde",
@@ -2438,25 +2438,6 @@ dependencies = [
  "unicode-blocks",
  "unicode-normalization",
  "unicode-segmentation",
- "yada",
-]
-
-[[package]]
-name = "lindera-cc-cedict-builder"
-version = "0.28.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ca21f2ee3ca40e7f3ebbd568d041be1531c2c28dbf540e737aeba934ab53f330"
-dependencies = [
- "anyhow",
- "bincode",
- "byteorder",
- "csv",
- "encoding",
- "env_logger",
- "glob",
- "lindera-core 0.28.0",
- "lindera-decompress 0.28.0",
- "log",
  "yada",
 ]
 
@@ -2473,26 +2454,9 @@ dependencies = [
  "encoding",
  "env_logger",
  "glob",
- "lindera-core 0.29.0",
- "lindera-decompress 0.29.0",
+ "lindera-core",
+ "lindera-decompress",
  "log",
- "yada",
-]
-
-[[package]]
-name = "lindera-core"
-version = "0.28.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09d4b717a8a31b73a3cbd3552e0abda14e0c85d97dc8b911035342533defdbad"
-dependencies = [
- "anyhow",
- "bincode",
- "byteorder",
- "encoding_rs",
- "log",
- "once_cell",
- "serde",
- "thiserror",
  "yada",
 ]
 
@@ -2515,41 +2479,12 @@ dependencies = [
 
 [[package]]
 name = "lindera-decompress"
-version = "0.28.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "98f4476c99cb4ffa54fbfc42953adf69ada7276cfbb594bce9829547de012058"
-dependencies = [
- "anyhow",
- "flate2",
- "serde",
-]
-
-[[package]]
-name = "lindera-decompress"
 version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b3dfc054b2f3f3eb21a24ce062a3d5f969339ddf50652038ea33993b1b97d4ba"
 dependencies = [
  "anyhow",
  "flate2",
- "serde",
-]
-
-[[package]]
-name = "lindera-dictionary"
-version = "0.28.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a45b92f0ce331c2202c6cec3135e4bfce29525ab3bb97a613c27c8e0a29fa967"
-dependencies = [
- "anyhow",
- "bincode",
- "byteorder",
- "lindera-cc-cedict-builder 0.28.0",
- "lindera-core 0.28.0",
- "lindera-ipadic-builder 0.28.0",
- "lindera-ipadic-neologd-builder 0.28.0",
- "lindera-ko-dic-builder 0.28.0",
- "lindera-unidic-builder 0.28.0",
  "serde",
 ]
 
@@ -2562,13 +2497,13 @@ dependencies = [
  "anyhow",
  "bincode",
  "byteorder",
- "lindera-cc-cedict-builder 0.29.0",
- "lindera-core 0.29.0",
+ "lindera-cc-cedict-builder",
+ "lindera-core",
  "lindera-ipadic",
- "lindera-ipadic-builder 0.29.0",
- "lindera-ipadic-neologd-builder 0.29.0",
- "lindera-ko-dic-builder 0.29.0",
- "lindera-unidic-builder 0.29.0",
+ "lindera-ipadic-builder",
+ "lindera-ipadic-neologd-builder",
+ "lindera-ko-dic-builder",
+ "lindera-unidic-builder",
  "serde",
 ]
 
@@ -2582,32 +2517,11 @@ dependencies = [
  "byteorder",
  "encoding",
  "flate2",
- "lindera-core 0.29.0",
- "lindera-ipadic-builder 0.29.0",
+ "lindera-core",
+ "lindera-ipadic-builder",
  "once_cell",
  "tar",
  "ureq",
-]
-
-[[package]]
-name = "lindera-ipadic-builder"
-version = "0.28.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "642dee52201852df209cb43423ff1ca4d161a329f5cdba049a7b5820118345f2"
-dependencies = [
- "anyhow",
- "bincode",
- "byteorder",
- "csv",
- "encoding_rs",
- "encoding_rs_io",
- "env_logger",
- "glob",
- "lindera-core 0.28.0",
- "lindera-decompress 0.28.0",
- "log",
- "serde",
- "yada",
 ]
 
 [[package]]
@@ -2624,29 +2538,8 @@ dependencies = [
  "encoding_rs_io",
  "env_logger",
  "glob",
- "lindera-core 0.29.0",
- "lindera-decompress 0.29.0",
- "log",
- "serde",
- "yada",
-]
-
-[[package]]
-name = "lindera-ipadic-neologd-builder"
-version = "0.28.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "325144b154e68159373e944d1cd7f67c6ff9965a2af41240a8e41732b3fdb3af"
-dependencies = [
- "anyhow",
- "bincode",
- "byteorder",
- "csv",
- "encoding_rs",
- "encoding_rs_io",
- "env_logger",
- "glob",
- "lindera-core 0.28.0",
- "lindera-decompress 0.28.0",
+ "lindera-core",
+ "lindera-decompress",
  "log",
  "serde",
  "yada",
@@ -2666,29 +2559,10 @@ dependencies = [
  "encoding_rs_io",
  "env_logger",
  "glob",
- "lindera-core 0.29.0",
- "lindera-decompress 0.29.0",
+ "lindera-core",
+ "lindera-decompress",
  "log",
  "serde",
- "yada",
-]
-
-[[package]]
-name = "lindera-ko-dic-builder"
-version = "0.28.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9413d4d9bf7af921f5ac64414a290c7ba81695e8ba08dd2f6c950b57c281a69"
-dependencies = [
- "anyhow",
- "bincode",
- "byteorder",
- "csv",
- "encoding",
- "env_logger",
- "glob",
- "lindera-core 0.28.0",
- "lindera-decompress 0.28.0",
- "log",
  "yada",
 ]
 
@@ -2705,8 +2579,8 @@ dependencies = [
  "encoding",
  "env_logger",
  "glob",
- "lindera-core 0.29.0",
- "lindera-decompress 0.29.0",
+ "lindera-core",
+ "lindera-decompress",
  "log",
  "yada",
 ]
@@ -2718,30 +2592,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cca45cbc1af512ce2aa9dea9a1d694430480a53bb53e37165ba143e27e81f7dd"
 dependencies = [
  "bincode",
- "lindera-core 0.29.0",
- "lindera-dictionary 0.29.0",
+ "lindera-core",
+ "lindera-dictionary",
  "once_cell",
  "serde",
  "serde_json",
-]
-
-[[package]]
-name = "lindera-unidic-builder"
-version = "0.28.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "601ec33b5174141396a7a4ca066278863840221fec32d0be19091e7fae91ed94"
-dependencies = [
- "anyhow",
- "bincode",
- "byteorder",
- "csv",
- "encoding",
- "env_logger",
- "glob",
- "lindera-core 0.28.0",
- "lindera-decompress 0.28.0",
- "log",
- "yada",
 ]
 
 [[package]]
@@ -2757,8 +2612,8 @@ dependencies = [
  "encoding",
  "env_logger",
  "glob",
- "lindera-core 0.29.0",
- "lindera-decompress 0.29.0",
+ "lindera-core",
+ "lindera-decompress",
  "log",
  "yada",
 ]
@@ -2917,8 +2772,8 @@ dependencies = [
  "hound",
  "lazy_static",
  "lindera-analyzer",
- "lindera-core 0.29.0",
- "lindera-dictionary 0.28.0",
+ "lindera-core",
+ "lindera-dictionary",
  "lindera-tokenizer",
  "log",
  "regex",
@@ -5421,9 +5276,9 @@ checksum = "711b9620af191e0cdc7468a8d14e709c3dcdb115b36f838e601583af800a370a"
 
 [[package]]
 name = "uuid"
-version = "1.7.0"
+version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f00cc9702ca12d3c81455259621e676d0f7251cec66a21e98fe2e9a37db93b2a"
+checksum = "a183cf7feeba97b4dd1c0d46788634f6221d87fa961b305bed08c851829efcc0"
 dependencies = [
  "getrandom 0.2.11",
 ]
