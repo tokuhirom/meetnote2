@@ -42,7 +42,7 @@ glob = "0.3.1"
 core-graphics = "0.23.2"
 screencapturekit = "0.2.7"
 config = "0.14.0"
-time = "0.3.35"
+time = "0.3.36"
 tempfile = { version = "3.10.1", features = [] }
 uuid = { version = "1.8.0", features = ["v4"] }
 regex = "1.10.4"
