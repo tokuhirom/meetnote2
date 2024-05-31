@@ -33,8 +33,7 @@ jobs:
         run: |
           VERSION=${{ github.event.release.tag_name }}
           echo $VERSION
-          perl -i -pe 's/"version": ".*"/"version": "'$VERSION'"/' src-tauri/tauri.config.json
-
+          perl -i -pe 's/"version": ".*"/"version": "'$VERSION'"/' src-tauri/tauri.conf.json
 
       - uses: tauri-apps/tauri-action@v0
         env:
