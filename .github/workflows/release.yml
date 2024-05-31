@@ -29,6 +29,13 @@ jobs:
       - name: install frontend dependencies
         run: yarn install # change this to npm or pnpm depending on which one you use
 
+      - name: update tauri.config.json version
+        run: |
+          VERSION=${{ github.event.release.tag_name }}
+          echo $VERSION
+          perl -i -pe 's/"version": ".*"/"version": "'$VERSION'"/' src-tauri/tauri.config.json
+
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
