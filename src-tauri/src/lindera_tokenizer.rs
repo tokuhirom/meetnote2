@@ -1,6 +1,5 @@
-use lindera_analyzer::analyzer::Analyzer;
-
-use serde_json::json;
+use lindera_analyzer::analyzer::{Analyzer, AnalyzerConfig};
+use regex::Regex;
 
 pub  struct LinderaTokenizer {
     analyzer: Analyzer,
@@ -8,7 +7,8 @@ pub  struct LinderaTokenizer {
 
 impl LinderaTokenizer {
     pub(crate) fn new() -> anyhow::Result<LinderaTokenizer> {
-        let analyzer = Analyzer::from_value(&json!({
+        let json5_str = r#"
+{
   "character_filters": [
     {
       "kind": "unicode_normalize",
@@ -66,9 +66,9 @@ impl LinderaTokenizer {
           "動詞,非自立", // ください
           "感動詞", // "はい"
           "接頭詞,名詞接続", //
-            "副詞,一般", // "どうか"
-            "動詞,自立", // "し"
-            "名詞,代名詞,一般", // "あれ"
+          "副詞,一般", // "どうか"
+          "動詞,自立", // "し"
+          "名詞,代名詞,一般" // "あれ"
         ]
       }
     },
@@ -79,7 +79,12 @@ impl LinderaTokenizer {
       }
     }
   ]
-        })).unwrap();
+}        "#;
+        let re = Regex::new(r"//.*").unwrap();
+        let json_str = re.replace_all(json5_str, "");
+        let json = json_str.as_bytes();
+        let analyzer_config = AnalyzerConfig::from_slice(json).unwrap();
+        let analyzer = Analyzer::from_config(&analyzer_config).unwrap();
 
         Ok(LinderaTokenizer { analyzer })
     }
