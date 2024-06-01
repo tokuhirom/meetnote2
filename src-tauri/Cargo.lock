@@ -2539,23 +2539,6 @@ dependencies = [
 
 [[package]]
 name = "lindera-core"
-version = "0.30.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9a0e858753a02b1a3524fae4fbb11ca4b3a947128fd7854b797386562678be8"
-dependencies = [
- "anyhow",
- "bincode",
- "byteorder",
- "encoding_rs",
- "log",
- "once_cell",
- "serde",
- "thiserror",
- "yada",
-]
-
-[[package]]
-name = "lindera-core"
 version = "0.31.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f09810ab98ce2a084d788ac38fbb7b31697f34bc47c61de0d880320a674bd15"
@@ -2984,7 +2967,7 @@ dependencies = [
  "hound",
  "lazy_static",
  "lindera-analyzer",
- "lindera-core 0.30.0",
+ "lindera-core 0.31.0",
  "lindera-dictionary 0.31.0",
  "lindera-tokenizer 0.31.0",
  "log",
