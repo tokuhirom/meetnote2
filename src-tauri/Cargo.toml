@@ -50,7 +50,7 @@ base64 = "0.22.1"
 
 lindera-tokenizer = { version = "0.32.0", features = ["ipadic"] }
 lindera-analyzer = { version = "0.32.0", features = ["ipadic", "filter"] }
-lindera-dictionary = "0.35.0"
+lindera-dictionary = "0.36.0"
 lindera-core = "0.33.0"
 lazy_static = "1.4.0"
 tiktoken-rs = "0.6.0"
