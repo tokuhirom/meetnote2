@@ -2552,9 +2552,9 @@ dependencies = [
 
 [[package]]
 name = "lindera-dictionary"
-version = "0.37.0"
+version = "0.38.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ddd7397e1a8ade5185d61c47051db18c83356dee60e18568a7b95e4381133b0"
+checksum = "1bc3fbf42ddaccebe1e0d2c2ea44e9e8965ae36e927d01b9a6e473f539cd3052"
 dependencies = [
  "anyhow",
  "bincode",
@@ -2823,7 +2823,7 @@ dependencies = [
  "lazy_static",
  "lindera-analyzer",
  "lindera-core 0.33.0",
- "lindera-dictionary 0.37.0",
+ "lindera-dictionary 0.38.0",
  "lindera-tokenizer",
  "log",
  "regex",
