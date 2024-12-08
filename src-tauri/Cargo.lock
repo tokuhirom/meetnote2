@@ -401,6 +401,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "block2"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2c132eebf10f5cad5289222520a4a058514204aed6d791f1cf4fe8088b82d15f"
+dependencies = [
+ "objc2",
+]
+
+[[package]]
 name = "blocking"
 version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -572,6 +581,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fd16c4719339c4530435d38e511904438d07cce7950afa3718a84ac36c10e89e"
 
 [[package]]
+name = "cgl"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ced0551234e87afee12411d535648dd89d2e7f34c78b753395567aff3d447ff"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "chrono"
 version = "0.4.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -707,6 +725,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "core-audio-types-rs"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5a62fc145ce3a951620a30cc6833127a867b44763005ed362d1ab1aa08c18fb2"
+dependencies = [
+ "core-foundation 0.10.0",
+]
+
+[[package]]
 name = "core-foundation"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -778,6 +805,42 @@ dependencies = [
  "bitflags 2.5.0",
  "core-foundation 0.10.0",
  "libc",
+]
+
+[[package]]
+name = "core-media-rs"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d780377c44cb629b1be7aafc5bb182dc3e0088de0f8e4136063d1289023959d"
+dependencies = [
+ "core-audio-types-rs",
+ "core-foundation 0.10.0",
+ "core-utils-rs",
+ "core-video-rs",
+ "thiserror 2.0.3",
+]
+
+[[package]]
+name = "core-utils-rs"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7593ba507d0775ff3056d4551e2256045c55b6e31551cf389e7420794ffad841"
+dependencies = [
+ "core-foundation 0.10.0",
+ "four-char-code",
+]
+
+[[package]]
+name = "core-video-rs"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fa7fe64fd809edd3590aba48c3f51b2ba590442b59463796b5be77f41dbed9f6"
+dependencies = [
+ "core-foundation 0.10.0",
+ "core-graphics 0.24.0",
+ "core-utils-rs",
+ "io-surface",
+ "thiserror 2.0.3",
 ]
 
 [[package]]
@@ -1448,6 +1511,12 @@ checksum = "e13624c2627564efccf4934284bdd98cbaa14e79b0b5a141218e507b3a823456"
 dependencies = [
  "percent-encoding",
 ]
+
+[[package]]
+name = "four-char-code"
+version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c661315fd366b2a1f970df7b7cb1a28d2678d49ef4872f7dcc19b4a83150f20b"
 
 [[package]]
 name = "futf"
@@ -2196,6 +2265,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "io-surface"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8283575d5f0b2e7447ec0840363879d71c0fa325d4c699d5b45208ea4a51f45e"
+dependencies = [
+ "cgl",
+ "core-foundation 0.10.0",
+ "core-foundation-sys",
+ "leaky-cow",
+ "libc",
+]
+
+[[package]]
 name = "ipnet"
 version = "2.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2368,6 +2450,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 
 [[package]]
+name = "leak"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bd100e01f1154f2908dfa7d02219aeab25d0b9c7fa955164192e3245255a0c73"
+
+[[package]]
+name = "leaky-cow"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "40a8225d44241fd324a8af2806ba635fc7c8a7e9a7de4d5cf3ef54e71f5926fc"
+dependencies = [
+ "leak",
+]
+
+[[package]]
 name = "libappindicator"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2414,7 +2511,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c2a198fb6b0eada2a8df47933734e6d35d350665a33a3593d7164fa52c75c19"
 dependencies = [
  "cfg-if",
- "windows-targets 0.48.5",
+ "windows-targets 0.52.6",
 ]
 
 [[package]]
@@ -3168,6 +3265,28 @@ dependencies = [
  "objc",
  "objc_id",
 ]
+
+[[package]]
+name = "objc-sys"
+version = "0.3.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cdb91bdd390c7ce1a8607f35f3ca7151b65afc0ff5ff3b34fa350f7d7c7e4310"
+
+[[package]]
+name = "objc2"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "46a785d4eeff09c14c487497c162e92766fbb3e4059a71840cecc03d9a50b804"
+dependencies = [
+ "objc-sys",
+ "objc2-encode",
+]
+
+[[package]]
+name = "objc2-encode"
+version = "4.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7891e71393cd1f227313c9379a26a584ff3d7e6e7159e988851f0934c993f0f8"
 
 [[package]]
 name = "objc_exception"
@@ -4139,25 +4258,18 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
 name = "screencapturekit"
-version = "0.2.8"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a5eeeb57ac94960cfe5ff4c402be6585ae4c8d29a2cf41b276048c2e849d64e"
+checksum = "229f68958d8e299b6f56d361f25a8ecbdd4f2610c30d6efe105f26a8644c3045"
 dependencies = [
- "screencapturekit-sys",
-]
-
-[[package]]
-name = "screencapturekit-sys"
-version = "0.2.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22411b57f7d49e7fe08025198813ee6fd65e1ee5eff4ebc7880c12c82bde4c60"
-dependencies = [
- "block",
+ "block2",
+ "core-foundation 0.10.0",
+ "core-graphics 0.24.0",
+ "core-media-rs",
+ "core-utils-rs",
+ "core-video-rs",
  "dispatch",
  "objc",
- "objc-foundation",
- "objc_id",
- "once_cell",
 ]
 
 [[package]]
