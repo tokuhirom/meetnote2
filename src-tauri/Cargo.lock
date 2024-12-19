@@ -654,9 +654,9 @@ dependencies = [
 
 [[package]]
 name = "config"
-version = "0.15.2"
+version = "0.15.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87a6a7d8628236381296f45bc661db1e67d2f90fa2e00b7d2fc78e2ed0f6cde8"
+checksum = "d73c1a90f0e9b8aa27881dedf820679d851991c138a3371d6364a38ea0a59552"
 dependencies = [
  "async-trait",
  "convert_case 0.6.0",
